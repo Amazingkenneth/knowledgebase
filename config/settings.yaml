@@ -1,0 +1,33 @@
+# Runtime settings. Values can be overridden via env vars (KB_<UPPER>__<NESTED>).
+# See src/kb/config.py for the schema.
+
+es:
+  # docker-compose runs ES with xpack.security.enabled=false — use plain HTTP.
+  # For a secure cluster: change to https, set ssl_fingerprint, username, password.
+  url: "http://localhost:9200"
+  index_prefix: "kb"
+  request_timeout_s: 10
+  verify_certs: false
+  # ssl_fingerprint: ""   # set for HTTPS with self-signed cert
+  # username: "elastic"
+  # password: ""          # override via KB_ES__PASSWORD env var
+
+embedding:
+  url: "http://localhost:8080"
+  model: "BAAI/bge-m3"
+  dims: 1024
+  batch_size: 32
+  timeout_s: 30
+
+search:
+  # If a strict search returns more than this, the response is `too_many` instead of `strict_hit`.
+  # Tuned per the thoughts.md guidance: prefer asking the user to narrow down over dumping many docs.
+  strict_max_hits: 8
+  # Title field weight in BM25 (vs body at 1.0).
+  title_boost: 3.0
+  # Rank-window for RRF.
+  rrf_window: 50
+  rrf_rank_constant: 60
+
+taxonomy:
+  path: "config/taxonomy.yaml"

@@ -1,0 +1,301 @@
+项目,机台,代码,英文标题,中文标题,内容,解除流程,注意事项,ppt文件,ppt页面
+Kinneret,Loader,120001,Alignment Drift,对位漂移,Alignment Drift detected on Loader; code 120001.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_Loader_1.pptx,2
+MEM,Pump,120002,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on Pump; code 120002.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_Pump_2.pptx,28
+所有项目,SensorModule,120003,Alignment Drift,对位漂移,Alignment Drift detected on SensorModule; code 120003.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_SensorModule_3.pptx,1
+MEM,Stage,120004,Sensor Timeout,传感器超时,Sensor Timeout detected on Stage; code 120004.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_Stage_4.pptx,3
+所有项目,Heater,120005,Low Pressure,压力过低,Low Pressure detected on Heater; code 120005.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_Heater_5.pptx,20
+Kinneret,SensorModule,120006,Low Pressure,压力过低,Low Pressure detected on SensorModule; code 120006.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_SensorModule_6.pptx,28
+Kinneret,Pump,120007,Alignment Drift,对位漂移,Alignment Drift detected on Pump; code 120007.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_Pump_7.pptx,28
+MHK,SensorModule,120008,Belt Slip,皮带打滑,Belt Slip detected on SensorModule; code 120008.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_SensorModule_8.pptx,21
+Sonora,Conveyor,120009,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on Conveyor; code 120009.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Conveyor_9.pptx,14
+PDX,SensorModule,120010,Alignment Drift,对位漂移,Alignment Drift detected on SensorModule; code 120010.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_PDX_SensorModule_10.pptx,6
+Sonora,FTU,120011,Vacuum Failure,穿梭真空感应失败,Vacuum Failure detected on FTU; code 120011.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_FTU_11.pptx,11
+MHK,Heater,120012,Low Pressure,压力过低,Low Pressure detected on Heater; code 120012.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_Heater_12.pptx,12
+Kinneret,Loader,120013,Belt Slip,皮带打滑,Belt Slip detected on Loader; code 120013.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_Loader_13.pptx,17
+Kinneret,Loader,120014,Sensor Timeout,传感器超时,Sensor Timeout detected on Loader; code 120014.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_Loader_14.pptx,6
+PDX,Stage,120015,Belt Slip,皮带打滑,Belt Slip detected on Stage; code 120015.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_PDX_Stage_15.pptx,16
+MEM,Conveyor,120016,Alignment Drift,对位漂移,Alignment Drift detected on Conveyor; code 120016.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_Conveyor_16.pptx,21
+Sonora,Aligner,120017,Over Temperature,过温报警,Over Temperature detected on Aligner; code 120017.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Aligner_17.pptx,22
+MHK,Aligner,120018,Over Temperature,过温报警,Over Temperature detected on Aligner; code 120018.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_Aligner_18.pptx,22
+MEM,SensorModule,120019,Alignment Drift,对位漂移,Alignment Drift detected on SensorModule; code 120019.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_SensorModule_19.pptx,12
+Sonora,Stage,120020,Over Temperature,过温报警,Over Temperature detected on Stage; code 120020.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Stage_20.pptx,15
+Sonora,Conveyor,120021,Position Error,定位错误,Position Error detected on Conveyor; code 120021.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Conveyor_21.pptx,28
+所有项目,SensorModule,120022,Belt Slip,皮带打滑,Belt Slip detected on SensorModule; code 120022.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_SensorModule_22.pptx,13
+Yucatan,Heater,120023,Over Temperature,过温报警,Over Temperature detected on Heater; code 120023.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Yucatan_Heater_23.pptx,1
+Kinneret,Heater,120024,Vacuum Failure,穿梭真空感应失败,Vacuum Failure detected on Heater; code 120024.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_Heater_24.pptx,19
+MHK,Aligner,120025,Over Temperature,过温报警,Over Temperature detected on Aligner; code 120025.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_Aligner_25.pptx,25
+Boston,Pump,120026,Belt Slip,皮带打滑,Belt Slip detected on Pump; code 120026.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Boston_Pump_26.pptx,21
+Boston,Heater,120027,Sensor Timeout,传感器超时,Sensor Timeout detected on Heater; code 120027.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Boston_Heater_27.pptx,21
+PDX,FTU,120028,Over Temperature,过温报警,Over Temperature detected on FTU; code 120028.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_PDX_FTU_28.pptx,26
+所有项目,FTU,120029,Low Pressure,压力过低,Low Pressure detected on FTU; code 120029.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_FTU_29.pptx,24
+MEM,SensorModule,120030,Over Temperature,过温报警,Over Temperature detected on SensorModule; code 120030.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_SensorModule_30.pptx,11
+Kinneret,Loader,120031,Belt Slip,皮带打滑,Belt Slip detected on Loader; code 120031.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_Loader_31.pptx,5
+Yucatan,Heater,120032,Sensor Timeout,传感器超时,Sensor Timeout detected on Heater; code 120032.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Yucatan_Heater_32.pptx,9
+所有项目,Heater,120033,Low Pressure,压力过低,Low Pressure detected on Heater; code 120033.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_Heater_33.pptx,26
+PDX,Aligner,120034,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on Aligner; code 120034.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_PDX_Aligner_34.pptx,5
+Boston,Stage,120035,Low Pressure,压力过低,Low Pressure detected on Stage; code 120035.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Boston_Stage_35.pptx,3
+Kinneret,FTU,120036,Over Temperature,过温报警,Over Temperature detected on FTU; code 120036.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_FTU_36.pptx,18
+PDX,Aligner,120037,Low Pressure,压力过低,Low Pressure detected on Aligner; code 120037.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_PDX_Aligner_37.pptx,22
+Sonora,Stage,120038,Low Pressure,压力过低,Low Pressure detected on Stage; code 120038.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Stage_38.pptx,4
+Boston,Aligner,120039,Vacuum Failure,穿梭真空感应失败,Vacuum Failure detected on Aligner; code 120039.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Boston_Aligner_39.pptx,20
+Yucatan,Conveyor,120040,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on Conveyor; code 120040.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Yucatan_Conveyor_40.pptx,21
+所有项目,Heater,120041,Position Error,定位错误,Position Error detected on Heater; code 120041.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_Heater_41.pptx,4
+MEM,FTU,120042,Vacuum Failure,穿梭真空感应失败,Vacuum Failure detected on FTU; code 120042.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_FTU_42.pptx,10
+所有项目,SensorModule,120043,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on SensorModule; code 120043.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_SensorModule_43.pptx,8
+MEM,Stage,120044,Alignment Drift,对位漂移,Alignment Drift detected on Stage; code 120044.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_Stage_44.pptx,12
+Kinneret,Loader,120045,Position Error,定位错误,Position Error detected on Loader; code 120045.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_Loader_45.pptx,21
+PDX,Aligner,120046,Position Error,定位错误,Position Error detected on Aligner; code 120046.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_PDX_Aligner_46.pptx,9
+MHK,Pump,120047,Belt Slip,皮带打滑,Belt Slip detected on Pump; code 120047.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_Pump_47.pptx,15
+所有项目,Conveyor,120048,Low Pressure,压力过低,Low Pressure detected on Conveyor; code 120048.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_Conveyor_48.pptx,4
+Yucatan,Pump,120049,Vacuum Failure,穿梭真空感应失败,Vacuum Failure detected on Pump; code 120049.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Yucatan_Pump_49.pptx,13
+Sonora,Conveyor,120050,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on Conveyor; code 120050.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Conveyor_50.pptx,28
+所有项目,SensorModule,120051,Belt Slip,皮带打滑,Belt Slip detected on SensorModule; code 120051.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_SensorModule_51.pptx,21
+MHK,FTU,120052,Low Pressure,压力过低,Low Pressure detected on FTU; code 120052.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_FTU_52.pptx,8
+MEM,Conveyor,120053,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on Conveyor; code 120053.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_Conveyor_53.pptx,27
+Boston,Conveyor,120054,Belt Slip,皮带打滑,Belt Slip detected on Conveyor; code 120054.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Boston_Conveyor_54.pptx,11
+MEM,FTU,120055,Over Temperature,过温报警,Over Temperature detected on FTU; code 120055.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_FTU_55.pptx,28
+MEM,Loader,120056,Over Temperature,过温报警,Over Temperature detected on Loader; code 120056.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_Loader_56.pptx,26
+MEM,SensorModule,120057,Vacuum Failure,穿梭真空感应失败,Vacuum Failure detected on SensorModule; code 120057.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_SensorModule_57.pptx,5
+MHK,Pump,120058,Belt Slip,皮带打滑,Belt Slip detected on Pump; code 120058.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_Pump_58.pptx,19
+Yucatan,FTU,120059,Sensor Timeout,传感器超时,Sensor Timeout detected on FTU; code 120059.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Yucatan_FTU_59.pptx,9
+MHK,Loader,120060,Position Error,定位错误,Position Error detected on Loader; code 120060.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_Loader_60.pptx,17
+PDX,SensorModule,120061,Alignment Drift,对位漂移,Alignment Drift detected on SensorModule; code 120061.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_PDX_SensorModule_61.pptx,15
+Yucatan,SensorModule,120062,Alignment Drift,对位漂移,Alignment Drift detected on SensorModule; code 120062.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Yucatan_SensorModule_62.pptx,17
+Boston,FTU,120063,Over Temperature,过温报警,Over Temperature detected on FTU; code 120063.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Boston_FTU_63.pptx,15
+MHK,FTU,120064,Alignment Drift,对位漂移,Alignment Drift detected on FTU; code 120064.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_FTU_64.pptx,28
+Kinneret,Stage,120065,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on Stage; code 120065.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_Stage_65.pptx,16
+所有项目,SensorModule,120066,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on SensorModule; code 120066.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_SensorModule_66.pptx,11
+MEM,SensorModule,120067,Sensor Timeout,传感器超时,Sensor Timeout detected on SensorModule; code 120067.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_SensorModule_67.pptx,9
+Yucatan,Stage,120068,Over Temperature,过温报警,Over Temperature detected on Stage; code 120068.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Yucatan_Stage_68.pptx,15
+Kinneret,SensorModule,120069,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on SensorModule; code 120069.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_SensorModule_69.pptx,28
+Boston,Stage,120070,Alignment Drift,对位漂移,Alignment Drift detected on Stage; code 120070.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Boston_Stage_70.pptx,29
+Boston,Stage,120071,Low Pressure,压力过低,Low Pressure detected on Stage; code 120071.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Boston_Stage_71.pptx,27
+所有项目,Stage,120072,Position Error,定位错误,Position Error detected on Stage; code 120072.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_Stage_72.pptx,24
+PDX,Pump,120073,Position Error,定位错误,Position Error detected on Pump; code 120073.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_PDX_Pump_73.pptx,11
+Sonora,Pump,120074,Sensor Timeout,传感器超时,Sensor Timeout detected on Pump; code 120074.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Pump_74.pptx,22
+所有项目,SensorModule,120075,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on SensorModule; code 120075.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_SensorModule_75.pptx,27
+PDX,SensorModule,120076,Position Error,定位错误,Position Error detected on SensorModule; code 120076.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_PDX_SensorModule_76.pptx,4
+Yucatan,Loader,120077,Vacuum Failure,穿梭真空感应失败,Vacuum Failure detected on Loader; code 120077.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Yucatan_Loader_77.pptx,19
+Yucatan,SensorModule,120078,Position Error,定位错误,Position Error detected on SensorModule; code 120078.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Yucatan_SensorModule_78.pptx,12
+Kinneret,FTU,120079,Over Temperature,过温报警,Over Temperature detected on FTU; code 120079.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_FTU_79.pptx,20
+Sonora,Pump,120080,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on Pump; code 120080.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Pump_80.pptx,19
+Boston,Loader,120081,Alignment Drift,对位漂移,Alignment Drift detected on Loader; code 120081.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Boston_Loader_81.pptx,8
+PDX,Pump,120082,Low Pressure,压力过低,Low Pressure detected on Pump; code 120082.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_PDX_Pump_82.pptx,4
+Sonora,Conveyor,120083,Position Error,定位错误,Position Error detected on Conveyor; code 120083.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Conveyor_83.pptx,28
+MHK,Heater,120084,Vacuum Failure,穿梭真空感应失败,Vacuum Failure detected on Heater; code 120084.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_Heater_84.pptx,6
+Sonora,Heater,120085,Low Pressure,压力过低,Low Pressure detected on Heater; code 120085.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Heater_85.pptx,12
+MHK,Loader,120086,Sensor Timeout,传感器超时,Sensor Timeout detected on Loader; code 120086.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_Loader_86.pptx,19
+Kinneret,SensorModule,120087,Sensor Timeout,传感器超时,Sensor Timeout detected on SensorModule; code 120087.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_SensorModule_87.pptx,24
+MHK,SensorModule,120088,Belt Slip,皮带打滑,Belt Slip detected on SensorModule; code 120088.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_SensorModule_88.pptx,13
+Kinneret,Aligner,120089,Low Pressure,压力过低,Low Pressure detected on Aligner; code 120089.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_Aligner_89.pptx,6
+Yucatan,Heater,120090,Low Pressure,压力过低,Low Pressure detected on Heater; code 120090.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Yucatan_Heater_90.pptx,25
+PDX,FTU,120091,Sensor Timeout,传感器超时,Sensor Timeout detected on FTU; code 120091.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_PDX_FTU_91.pptx,6
+MHK,SensorModule,120092,Over Temperature,过温报警,Over Temperature detected on SensorModule; code 120092.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_SensorModule_92.pptx,15
+Kinneret,Aligner,120093,Alignment Drift,对位漂移,Alignment Drift detected on Aligner; code 120093.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_Aligner_93.pptx,14
+Sonora,Conveyor,120094,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on Conveyor; code 120094.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Conveyor_94.pptx,12
+Kinneret,SensorModule,120095,Over Temperature,过温报警,Over Temperature detected on SensorModule; code 120095.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_SensorModule_95.pptx,22
+所有项目,Heater,120096,Vacuum Failure,穿梭真空感应失败,Vacuum Failure detected on Heater; code 120096.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_Heater_96.pptx,8
+Kinneret,FTU,120097,Vacuum Failure,穿梭真空感应失败,Vacuum Failure detected on FTU; code 120097.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_FTU_97.pptx,7
+Sonora,Conveyor,120098,Sensor Timeout,传感器超时,Sensor Timeout detected on Conveyor; code 120098.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Conveyor_98.pptx,25
+Sonora,Heater,120099,Low Pressure,压力过低,Low Pressure detected on Heater; code 120099.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Heater_99.pptx,4
+MHK,Aligner,120100,Position Error,定位错误,Position Error detected on Aligner; code 120100.,"1. 停机
+2. 检查相关部件
+3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_Aligner_100.pptx,6

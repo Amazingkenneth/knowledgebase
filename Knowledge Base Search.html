@@ -1,0 +1,4161 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>知识库检索 · Knowledge Base Search</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+/* ============================================================
+   Knowledge Base Search — design tokens
+   Clean enterprise neutral, restrained accent.
+   ============================================================ */
+
+:root {
+  --bg:        #FAFAF7;
+  --surface:   #FFFFFF;
+  --surface-2: #F5F4EE;
+  --border:    #E8E5DC;
+  --border-2:  #D9D5C8;
+  --ink:       #1A1A19;
+  --ink-1:     #2E2D2A;
+  --ink-2:     #57544D;
+  --muted:     #8E8B82;
+  --muted-2:   #B7B4AA;
+  --accent:    #4F4FAE;
+  --accent-soft: oklch(0.95 0.03 265);
+  --on-accent: #FFFFFF;
+  --strict:    #2E8C5B;
+  --loose:     #C68C26;
+  --danger:    #C04545;
+
+  --radius:    8px;
+  --radius-sm: 6px;
+  --radius-lg: 12px;
+
+  --shadow-1: 0 1px 0 rgba(20, 18, 12, 0.04);
+  --shadow-2: 0 4px 16px -8px rgba(20, 18, 12, 0.18), 0 1px 0 rgba(20, 18, 12, 0.04);
+  --shadow-3: 0 16px 48px -16px rgba(20, 18, 12, 0.28), 0 2px 6px -2px rgba(20, 18, 12, 0.1);
+
+  --font-zh: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft Yahei", sans-serif;
+  --font-latin: "Geist", "Inter", -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font: var(--font-zh), var(--font-latin);
+
+  --pad-x: 32px;
+  --gap-row: 14px;
+}
+
+[data-density="compact"] {
+  --gap-row: 10px;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+input {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "ss01";
+}
+.mono.mini {
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ============================================================
+   App shell
+   ============================================================ */
+
+.app {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 var(--pad-x);
+  height: 56px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  margin-left: -8px;
+  border-radius: 8px;
+}
+.brand:hover { background: var(--surface-2); }
+.brand-mark {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  border-radius: 4px;
+}
+.brand-name {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+  text-align: left;
+}
+.brand-zh {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.brand-en {
+  font-family: var(--font-latin);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.header-nav {
+  display: flex;
+  gap: 4px;
+  margin-left: 8px;
+}
+.nav-item {
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.nav-item:hover { background: var(--surface-2); color: var(--ink); }
+.nav-active { color: var(--ink); background: var(--surface-2); }
+.nav-en {
+  font-family: var(--font-latin);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.domain-switch {
+  display: inline-flex;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2px;
+}
+.switch-btn {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.switch-on {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-1);
+}
+.switch-en {
+  font-family: var(--font-latin);
+  font-size: 9.5px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.switch-on .switch-en { color: var(--ink-2); }
+
+.user-pip {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-latin);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.app-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================
+   Landing
+   ============================================================ */
+
+.landing {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 56px var(--pad-x) 80px;
+  width: 100%;
+}
+
+.landing-hero {
+  margin-bottom: 72px;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.eyebrow-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  align-self: center;
+}
+.eyebrow-zh {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-1);
+}
+.eyebrow-en {
+  font-family: var(--font-latin);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.hero-title {
+  font-size: 38px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0 0 12px;
+  max-width: 780px;
+  text-wrap: pretty;
+}
+.hero-accent {
+  color: var(--accent);
+}
+
+.hero-sub {
+  font-family: var(--font-latin);
+  font-size: 14.5px;
+  color: var(--muted);
+  margin: 0 0 32px;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0 18px;
+  box-shadow: var(--shadow-2);
+  transition: border-color 120ms, box-shadow 120ms;
+}
+.search-box:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft), var(--shadow-2);
+}
+.search-box svg { color: var(--ink-2); flex-shrink: 0; }
+.search-box input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: none;
+  font-size: 16px;
+  color: var(--ink);
+}
+.search-box input::placeholder { color: var(--muted-2); }
+
+.search-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.search-hint {
+  font-family: var(--font-latin);
+  font-size: 11.5px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  border: 1px solid var(--border-2);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--ink-1);
+  line-height: 1.4;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--surface-2);
+  color: var(--ink);
+  border: 1px solid transparent;
+  transition: background 120ms, border-color 120ms;
+}
+.btn:hover { background: var(--border); }
+.btn-primary {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.btn-primary:hover { background: color-mix(in oklab, var(--accent) 88%, #000); }
+.btn-primary:disabled {
+  background: var(--surface-2);
+  color: var(--muted-2);
+  cursor: not-allowed;
+}
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn-ghost { color: var(--ink-2); padding: 8px 14px; border-radius: 7px; }
+.btn-ghost:hover { background: var(--surface-2); }
+
+.example-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding-left: 4px;
+}
+.example-label {
+  font-family: var(--font-latin);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-right: 4px;
+}
+.example-chip {
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 12.5px;
+  color: var(--ink-2);
+  transition: border-color 120ms, color 120ms;
+}
+.example-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Section */
+.section { margin-bottom: 48px; }
+.section-tight { margin-bottom: 0; }
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.section-en {
+  font-family: var(--font-latin);
+  font-size: 10.5px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.section-meta, .section-link {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--font-latin);
+}
+.section-link:hover { color: var(--ink); }
+
+/* Category grid */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.cat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-align: left;
+  transition: border-color 120ms, transform 120ms;
+}
+.cat-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+.cat-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+}
+.cat-text { flex: 1; min-width: 0; }
+.cat-zh { font-size: 13.5px; font-weight: 500; color: var(--ink); }
+.cat-en {
+  font-family: var(--font-latin);
+  font-size: 10.5px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.cat-count {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Recent */
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.recent-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  transition: background 120ms;
+}
+.recent-row:last-child { border-bottom: none; }
+.recent-row:hover { background: var(--surface-2); }
+.recent-q {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-1);
+  font-size: 13.5px;
+  min-width: 0;
+}
+.recent-q svg { color: var(--muted-2); flex-shrink: 0; }
+.recent-meta {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Info card */
+.info-card {
+  display: flex;
+  gap: 14px;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+}
+.info-icon { color: var(--accent); padding-top: 2px; }
+.info-title { font-weight: 600; font-size: 13.5px; margin-bottom: 4px; }
+.info-text { font-size: 13px; color: var(--ink-2); line-height: 1.6; }
+.info-text b { color: var(--ink); font-weight: 600; }
+
+/* ============================================================
+   Results page
+   ============================================================ */
+
+.results-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.results-topbar {
+  border-bottom: 1px solid var(--border);
+  padding: 16px var(--pad-x) 0;
+  background: var(--bg);
+  position: sticky;
+  top: 56px;
+  z-index: 30;
+}
+
+.results-search-row { margin-bottom: 12px; }
+
+.search-box-inline {
+  height: 42px;
+  border-radius: 8px;
+  box-shadow: none;
+  padding: 0 14px;
+  max-width: 720px;
+}
+.search-box-static {
+  cursor: text;
+  transition: border-color 120ms;
+}
+.search-box-static:hover { border-color: var(--border-2); }
+.search-query {
+  flex: 1;
+  color: var(--ink);
+  font-size: 14px;
+}
+.search-edit-hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-latin);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.search-box-static:hover .search-edit-hint { color: var(--accent); }
+
+/* Param strip */
+.param-strip {
+  padding: 0 0 14px;
+}
+.param-strip-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+.param-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11.5px;
+  font-weight: 500;
+}
+.param-tag-en {
+  font-family: var(--font-latin);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+.param-confidence {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+.conf-bar {
+  display: inline-block;
+  width: 56px;
+  height: 4px;
+  background: var(--surface-2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.conf-bar span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+}
+.conf-text { font-size: 10.5px; color: var(--muted); }
+
+.param-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.param-sentence {
+  font-size: 13.5px;
+  color: var(--ink-1);
+  padding: 4px 0;
+  line-height: 1.7;
+}
+.param-sentence b {
+  color: var(--accent);
+  font-weight: 600;
+  padding: 1px 6px;
+  background: var(--accent-soft);
+  border-radius: 4px;
+  margin: 0 1px;
+}
+
+/* Chips */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  background: var(--surface-2);
+  color: var(--ink-1);
+  border: 1px solid transparent;
+  line-height: 1.5;
+  vertical-align: middle;
+}
+.chip-ghost {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--ink-2);
+}
+.chip-outline {
+  background: var(--surface);
+  border-color: var(--border);
+}
+.chip-solid {
+  background: var(--accent-soft);
+  border-color: color-mix(in oklab, var(--accent) 20%, transparent);
+  color: var(--accent);
+}
+.chip-code {
+  background: #FFF;
+  border-color: var(--border);
+  color: var(--ink-1);
+  padding-left: 4px;
+}
+.chip-icon { display: flex; }
+.chip-k {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-right: 4px;
+  padding-right: 6px;
+  border-right: 1px solid var(--border);
+}
+.chip-solid .chip-k { color: color-mix(in oklab, var(--accent) 60%, var(--muted)); border-color: color-mix(in oklab, var(--accent) 18%, transparent); }
+.chip-remove {
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  font-size: 14px;
+  color: inherit;
+  opacity: 0.5;
+  margin-left: 2px;
+}
+.chip-remove:hover { background: rgba(0,0,0,0.06); opacity: 1; }
+.chip-clickable { cursor: pointer; }
+.chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 2px;
+}
+.dot-strict { background: var(--strict); }
+.dot-loose { background: var(--loose); }
+
+.chip-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px dashed var(--border-2);
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.chip-add:hover { color: var(--accent); border-color: var(--accent); }
+
+/* Results main split */
+.results-main {
+  display: grid;
+  grid-template-columns: 232px 1fr;
+  gap: 32px;
+  padding: 20px var(--pad-x) 64px;
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
+  align-items: flex-start;
+}
+
+/* Filter side */
+.filter-side {
+  position: sticky;
+  top: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.filter-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-latin);
+  font-size: 10.5px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.filter-group-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-1);
+  margin-bottom: 6px;
+}
+.filter-group-en {
+  font-family: var(--font-latin);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.filter-rows { display: flex; flex-direction: column; }
+.filter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 8px;
+  margin: 0 -8px;
+  border-radius: 6px;
+  text-align: left;
+  color: var(--ink-2);
+  font-size: 13px;
+}
+.filter-row:hover { background: var(--surface-2); color: var(--ink); }
+.filter-row-on {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 500;
+}
+.filter-row-on:hover { background: var(--accent-soft); color: var(--accent); }
+.filter-row-main {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.filter-row-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.filter-row-en {
+  font-family: var(--font-latin);
+  font-size: 9.5px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.filter-row-on .filter-row-en { color: color-mix(in oklab, var(--accent) 70%, transparent); }
+.filter-row-count {
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.filter-row-on .filter-row-count { color: var(--accent); }
+
+/* Results body */
+.results-body { min-width: 0; }
+
+.results-stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.results-stat {
+  font-size: 13px;
+  color: var(--ink-1);
+}
+.results-stat b { font-weight: 600; color: var(--ink); }
+.results-stat-sep { color: var(--muted-2); margin: 0 8px; }
+.results-stat-muted {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.results-mode-toggle {
+  display: inline-flex;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 2px;
+  gap: 2px;
+}
+.mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.mode-on { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-1); }
+.mode-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.mode-dot-strict { background: var(--strict); }
+.mode-dot-loose { background: var(--loose); }
+
+/* Result grid */
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+}
+.result-grid-compact {
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.result-card {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 14px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 120ms, transform 120ms, box-shadow 120ms;
+  text-align: left;
+}
+.result-card:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-2);
+  transform: translateY(-1px);
+}
+.result-card-compact {
+  grid-template-columns: 64px 1fr;
+  gap: 12px;
+  padding: 10px 14px;
+}
+
+.result-thumb-wrap {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--accent);
+}
+.result-card-compact .result-thumb-wrap { aspect-ratio: 1; }
+
+.thumb { width: 100%; height: 100%; }
+.thumb svg { display: block; }
+.thumb-overlay {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(4px);
+  display: grid;
+  place-items: center;
+  color: var(--ink-1);
+}
+
+.result-body { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.result-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 2px;
+}
+.result-title {
+  font-size: 14.5px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--ink);
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+.result-title-en {
+  font-family: var(--font-latin);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+.result-snippet {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  margin: 4px 0 0;
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.result-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+}
+
+.match-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.match-strict {
+  background: color-mix(in oklab, var(--strict) 8%, transparent);
+  color: var(--strict);
+}
+.match-loose {
+  background: color-mix(in oklab, var(--loose) 10%, transparent);
+  color: var(--loose);
+}
+.match-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.match-meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  opacity: 0.75;
+  margin-left: 2px;
+}
+
+.score-bar-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.score-bar-track {
+  width: 38px;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.score-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+.score-pct {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--muted);
+}
+
+.result-source {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+.result-source svg { color: var(--muted-2); }
+
+mark.hl {
+  background: color-mix(in oklab, var(--accent) 18%, transparent);
+  color: var(--accent);
+  padding: 0 1px;
+  border-radius: 2px;
+}
+
+/* Disambiguation */
+.disambig {
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  margin-bottom: 18px;
+}
+.disambig-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.disambig-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 500;
+}
+.disambig-en {
+  font-family: var(--font-latin);
+  font-size: 10.5px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.disambig-body { font-size: 13.5px; color: var(--ink-1); margin-bottom: 12px; }
+.disambig-body b { color: var(--accent); font-weight: 600; }
+.disambig-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.disambig-opt {
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 7px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  transition: border-color 120ms, background 120ms;
+}
+.disambig-opt:hover {
+  border-color: var(--accent);
+  background: var(--surface);
+}
+.disambig-opt-q { font-size: 13px; color: var(--ink); margin-bottom: 2px; }
+.disambig-opt-hint { font-size: 10.5px; color: var(--muted); }
+
+/* Loose notice */
+.loose-notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: color-mix(in oklab, var(--loose) 6%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--loose) 30%, var(--border));
+  border-radius: 8px;
+  margin-bottom: 18px;
+  color: var(--ink-1);
+  font-size: 13px;
+}
+.loose-notice svg { color: var(--loose); }
+.loose-text { flex: 1; }
+.loose-text b { color: var(--ink); font-weight: 600; }
+.loose-action {
+  color: var(--loose);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.loose-action:hover { text-decoration: underline; }
+
+/* Empty */
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--muted);
+}
+.empty-illus { color: var(--muted-2); margin-bottom: 16px; display: flex; justify-content: center; }
+.empty-title { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+.empty-sub { font-size: 13px; max-width: 400px; margin: 0 auto 18px; }
+
+/* ============================================================
+   Detail drawer
+   ============================================================ */
+.drawer-shade {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 18, 12, 0.32);
+  backdrop-filter: blur(2px);
+  z-index: 100;
+  animation: drawer-fade 200ms ease;
+}
+@keyframes drawer-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: min(640px, 92vw);
+  background: var(--bg);
+  box-shadow: var(--shadow-3);
+  display: flex;
+  flex-direction: column;
+  animation: drawer-slide 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes drawer-slide { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+.drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--border);
+}
+.drawer-crumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-latin);
+  font-size: 11.5px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.crumb-sep { color: var(--muted-2); }
+
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  color: var(--ink-2);
+}
+.icon-btn:hover { background: var(--surface-2); color: var(--ink); }
+
+.drawer-hero {
+  height: 180px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.drawer-hero .thumb svg { height: 100%; }
+
+.drawer-body {
+  padding: 24px 28px 48px;
+  overflow-y: auto;
+}
+
+.drawer-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 14px;
+}
+
+.drawer-title {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 4px;
+  line-height: 1.3;
+}
+.drawer-title-en {
+  font-family: var(--font-latin);
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: 0.01em;
+  margin-bottom: 24px;
+}
+
+.drawer-section { margin-top: 24px; }
+.drawer-section h4 {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 8px;
+}
+.drawer-prose {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--ink-1);
+  margin: 0;
+  white-space: pre-wrap;
+}
+.drawer-pre {
+  font-family: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.drawer-section-note .drawer-pre {
+  background: color-mix(in oklab, var(--loose) 6%, var(--surface));
+  border-color: color-mix(in oklab, var(--loose) 25%, var(--border));
+}
+
+.drawer-source {
+  margin-top: 32px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+.source-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  color: var(--ink-1);
+}
+.source-row svg { color: var(--muted); }
+.source-file { color: var(--ink); }
+.source-pages { color: var(--muted); }
+.src-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--ink-1);
+}
+.src-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Tweak note */
+.tweak-note {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+  padding: 6px 0 0;
+}
+
+/* Loading spinner */
+@keyframes kb-spin { to { transform: rotate(360deg); } }
+.kb-spinner {
+  width: 20px; height: 20px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: kb-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+.kb-loading {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 10px; padding: 60px 0; color: var(--muted); font-size: 13px;
+}
+
+/* Inline keyword input */
+.kw-inline-input {
+  display: inline-block; height: 26px; padding: 0 8px;
+  border-radius: 6px; border: 1px solid var(--accent);
+  background: var(--surface); font-size: 12px; color: var(--ink);
+  outline: none; width: 140px;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* Copy-filename feedback state */
+.src-btn-copied {
+  border-color: var(--strict); color: var(--strict);
+  background: color-mix(in oklab, var(--strict) 6%, var(--surface));
+}
+.src-btn-copied:hover { border-color: var(--strict); color: var(--strict); }
+
+/* Library topbar */
+.lib-topbar { padding-bottom: 16px; }
+.lib-topbar-inner { display: flex; align-items: baseline; gap: 14px; }
+.lib-title {
+  font-size: 18px; font-weight: 600; margin: 0;
+  display: flex; align-items: baseline; gap: 10px;
+}
+.lib-title-en {
+  font-family: var(--font-latin); font-size: 11px; color: var(--muted);
+  letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500;
+}
+.lib-total { font-size: 12px; color: var(--muted); }
+
+/* Admin page */
+.admin-page {
+  max-width: 860px; margin: 0 auto;
+  padding: 32px var(--pad-x) 80px; width: 100%; position: relative;
+}
+.admin-inner { display: flex; flex-direction: column; gap: 32px; }
+.admin-section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 22px 24px;
+}
+.admin-section-head {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 16px;
+}
+.admin-section-title { font-size: 14px; font-weight: 600; margin: 0; }
+.admin-stats-grid { display: flex; gap: 12px; flex-wrap: wrap; }
+.admin-stat-card {
+  padding: 12px 18px; background: var(--surface-2);
+  border: 1px solid var(--border); border-radius: 8px;
+  text-align: center; min-width: 80px;
+}
+.admin-stat-num {
+  font-size: 24px; font-weight: 600;
+  font-family: var(--font-mono); color: var(--accent);
+}
+.admin-stat-label { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.admin-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.admin-type-pills { display: flex; gap: 8px; margin-bottom: 20px; }
+.admin-type-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border);
+  font-size: 13px; color: var(--ink-2); background: var(--surface-2);
+  transition: border-color 120ms, background 120ms, color 120ms;
+}
+.admin-type-pill:hover { border-color: var(--accent); color: var(--accent); }
+.admin-type-pill-on {
+  border-color: var(--accent); background: var(--accent-soft);
+  color: var(--accent); font-weight: 500;
+}
+.admin-form { display: flex; flex-direction: column; gap: 14px; }
+.admin-field { display: flex; flex-direction: column; gap: 5px; }
+.admin-label { font-size: 12.5px; font-weight: 500; color: var(--ink-1); }
+.admin-required { color: var(--danger); margin-left: 3px; }
+.admin-input {
+  padding: 7px 10px; border: 1px solid var(--border);
+  border-radius: 7px; background: var(--surface);
+  font-size: 13.5px; color: var(--ink); font-family: inherit;
+  outline: none; transition: border-color 120ms, box-shadow 120ms;
+}
+.admin-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.admin-input-err { border-color: var(--danger); }
+.admin-textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+.admin-field-err { font-size: 11px; color: var(--danger); }
+.admin-form-foot {
+  display: flex; align-items: center;
+  justify-content: flex-end; gap: 14px; padding-top: 6px;
+}
+.admin-success {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12.5px; color: var(--strict);
+}
+.admin-toast {
+  position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+  z-index: 200; display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px; border-radius: 8px; font-size: 13px;
+  box-shadow: var(--shadow-3); animation: drawer-fade 180ms ease;
+}
+.admin-toast-ok {
+  background: color-mix(in oklab, var(--strict) 8%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--strict) 30%, var(--border));
+  color: var(--strict);
+}
+.admin-toast-err {
+  background: color-mix(in oklab, var(--danger) 8%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--danger) 30%, var(--border));
+  color: var(--danger);
+}
+
+/* Library filter: smaller sticky top (topbar is shorter than Results) */
+.lib-filter-side { top: 120px; }
+
+/* ── AI Chat ────────────────────────────────────────────────────────────── */
+.chat-fab {
+  position: fixed; right: 24px; bottom: 24px; z-index: 900;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--accent); color: var(--on-accent);
+  display: grid; place-items: center;
+  box-shadow: var(--shadow-3); border: none; cursor: pointer;
+  transition: transform 120ms, box-shadow 120ms;
+}
+.chat-fab:hover { transform: translateY(-2px); box-shadow: 0 20px 60px -16px rgba(20,18,12,.35), 0 2px 6px -2px rgba(20,18,12,.1); }
+
+.chat-panel {
+  position: fixed; right: 24px; bottom: 84px; z-index: 899;
+  width: 360px; height: 480px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; box-shadow: var(--shadow-3);
+  display: flex; flex-direction: column; overflow: hidden;
+  animation: drawer-fade 180ms ease;
+}
+.chat-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px; border-bottom: 1px solid var(--border);
+  background: var(--bg); flex-shrink: 0;
+}
+.chat-head-title {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 13px; font-weight: 600; color: var(--ink);
+}
+.chat-head-title svg { color: var(--accent); }
+.chat-messages {
+  flex: 1; overflow-y: auto; padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 10px;
+  scrollbar-width: thin; scrollbar-color: var(--border-2) transparent;
+}
+.chat-empty {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 6px; text-align: center; color: var(--muted); padding: 20px;
+}
+.chat-empty svg { color: var(--accent); margin-bottom: 4px; }
+.chat-empty p { margin: 0; font-size: 12.5px; line-height: 1.6; }
+.chat-msg { max-width: 88%; font-size: 13px; line-height: 1.55; }
+.chat-msg-user { align-self: flex-end; }
+.chat-msg-assistant { align-self: flex-start; }
+.chat-msg-content {
+  padding: 8px 11px; border-radius: 10px;
+  white-space: pre-wrap; word-break: break-word;
+}
+.chat-msg-content.chat-md { white-space: normal; }
+.chat-msg-user .chat-msg-content {
+  background: var(--accent); color: var(--on-accent);
+  border-bottom-right-radius: 3px;
+}
+.chat-msg-assistant .chat-msg-content {
+  background: var(--surface-2); color: var(--ink-1);
+  border-bottom-left-radius: 3px; border: 1px solid var(--border);
+}
+.chat-loading { display: flex; gap: 4px; align-items: center; padding: 10px 14px; }
+.chat-loading span {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--muted); animation: chat-dot 1.2s infinite;
+}
+.chat-loading span:nth-child(2) { animation-delay: .2s; }
+.chat-loading span:nth-child(3) { animation-delay: .4s; }
+@keyframes chat-dot {
+  0%, 60%, 100% { opacity: .3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
+}
+.chat-input-area {
+  flex-shrink: 0; border-top: 1px solid var(--border); background: var(--bg);
+}
+.chat-quickshots {
+  display: flex; gap: 5px; flex-wrap: wrap;
+  padding: 7px 12px 0; border-top: 1px solid var(--border);
+}
+.chat-quickshot-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 8px; border-radius: 12px; font-size: 11.5px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--ink-2); cursor: pointer; white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis;
+  transition: border-color 100ms, color 100ms;
+}
+.chat-quickshot-chip:hover { border-color: var(--accent); color: var(--accent); }
+.chat-input-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px;
+}
+.chat-hint-btn {
+  width: 26px; height: 26px; border-radius: 6px; flex-shrink: 0;
+  display: grid; place-items: center; color: var(--muted);
+  border: 1px solid transparent; transition: background 100ms, color 100ms;
+}
+.chat-hint-btn:hover, .chat-hint-btn.active { background: var(--surface-2); color: var(--accent); border-color: var(--border); }
+.chat-input {
+  flex: 1; height: 34px; padding: 0 10px;
+  border: 1px solid var(--border); border-radius: 7px;
+  background: var(--surface); font-size: 13px; color: var(--ink);
+  outline: none; transition: border-color 120ms; font-family: inherit;
+}
+.chat-input:focus { border-color: var(--accent); }
+.chat-input:disabled { background: var(--surface-2); }
+
+/* Chat resize handle */
+.chat-resize-handle {
+  position: absolute; top: 0; left: 0; width: 28px; height: 28px;
+  cursor: nw-resize; z-index: 10; opacity: 0.35; transition: opacity 150ms;
+}
+.chat-resize-handle::before {
+  content: ''; position: absolute; top: 6px; left: 6px;
+  width: 12px; height: 12px;
+  border-top: 2px solid var(--border-2); border-left: 2px solid var(--border-2);
+  border-radius: 3px 0 0 0;
+}
+.chat-resize-handle::after {
+  content: ''; position: absolute; top: 10px; left: 10px;
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--border-2);
+}
+.chat-panel:hover .chat-resize-handle { opacity: 1; }
+
+/* Chat suggestion chips */
+.chat-suggestions {
+  padding: 0 14px 10px; display: flex; flex-direction: column; gap: 5px;
+}
+.chat-suggestions-label {
+  font-size: 10.5px; color: var(--muted); text-transform: uppercase;
+  letter-spacing: 0.05em; margin-bottom: 2px;
+}
+.chat-suggestion-chip {
+  display: flex; align-items: flex-start; gap: 7px;
+  padding: 6px 10px; border-radius: 7px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  text-align: left; font-size: 12.5px; color: var(--ink-1);
+  transition: border-color 120ms, background 120ms; cursor: pointer;
+  line-height: 1.45;
+}
+.chat-suggestion-chip:hover { border-color: var(--accent); background: var(--surface); color: var(--accent); }
+.chat-suggestion-chip svg { flex-shrink: 0; margin-top: 1px; color: var(--muted); }
+.chat-suggestion-chip:hover svg { color: var(--accent); }
+
+/* Markdown rendered inside assistant messages */
+.chat-md { line-height: 1.5; }
+.chat-md p { margin: 0 0 2px; }
+.chat-md p:last-child { margin-bottom: 0; }
+.chat-md br { display: none; }
+.chat-md h1,.chat-md h2,.chat-md h3 { font-size: 13px; font-weight: 600; margin: 6px 0 3px; color: var(--ink); }
+.chat-md h1:first-child,.chat-md h2:first-child,.chat-md h3:first-child { margin-top: 0; }
+.chat-md ul,.chat-md ol { margin: 3px 0 4px 16px; padding: 0; }
+.chat-md li { margin-bottom: 2px; }
+.chat-md code { font-family: var(--font-mono); font-size: 11.5px; background: var(--surface-2); padding: 1px 4px; border-radius: 3px; }
+.chat-md pre { background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; overflow-x: auto; margin: 6px 0; }
+.chat-md pre code { background: none; padding: 0; }
+.chat-md strong { font-weight: 600; color: var(--ink); }
+.chat-md a { color: var(--accent); text-decoration: underline; }
+.chat-md hr { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+
+/* ============================================================
+   Responsive trims
+   ============================================================ */
+@media (max-width: 1100px) {
+  .category-grid { grid-template-columns: repeat(2, 1fr); }
+  .results-main { grid-template-columns: 200px 1fr; gap: 22px; }
+  .disambig-options { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  :root { --pad-x: 18px; }
+  .header-nav { display: none; }
+  .results-main { grid-template-columns: 1fr; }
+  .filter-side { position: static; flex-direction: row; flex-wrap: wrap; gap: 12px; }
+  .hero-title { font-size: 28px; }
+}
+
+</style>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+window.addEventListener('keydown', function(e) {
+  if ((e.key === 't' || e.key === 'T') && !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) {
+    window.postMessage({ type: '__activate_edit_mode' }, '*');
+  }
+});
+</script>
+<script type="text/babel">
+// API client — replaces the old hardcoded semicon/cnc data.
+// All data is fetched from the FastAPI backend which talks to Elasticsearch.
+
+const TYPE_DEFS = {
+  alarm:      { zh: "机台报警",  en: "Machine alarm",    icon: "alarm"  },
+  setup:      { zh: "设备 Setup", en: "Equipment setup", icon: "wrench" },
+  experience: { zh: "设备经验",  en: "Field experience", icon: "book"   },
+};
+
+// Fallback taxonomy (mirrors config/taxonomy.yaml) used when the API is unreachable.
+const FALLBACK_TAXONOMY = {
+  version: "fallback",
+  knowledge_types: ["alarm", "setup", "experience"],
+  projects: ["Kinneret", "MEM", "MHK", "PDX", "Boston", "Sonora", "Yucatan", "所有项目"],
+  equipment: ["Aligner", "Conveyor", "FTU", "Heater", "Loader", "Pump", "SensorModule", "Stage"],
+};
+const FALLBACK_STATS = { total: 0, by_type: {}, by_project: {}, by_equipment: {} };
+
+// ── Recent searches (localStorage-backed) ───────────────────────────────────
+const RECENT_KEY = 'kb.recentSearches';
+const MAX_RECENT = 10;
+
+function saveRecentSearch(q, project, equipment) {
+  try {
+    const existing = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+    const entry = { q, project: project || null, machine: equipment || null, ts: Date.now() };
+    const updated = [entry, ...existing.filter(r => r.q !== q)].slice(0, MAX_RECENT);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(updated));
+  } catch (e) {}
+}
+
+function getRecentSearches() {
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); }
+  catch (e) { return []; }
+}
+
+// Shared state loaded at startup.
+window.KB_TAXONOMY = null;  // {version, knowledge_types, projects, equipment}
+window.KB_STATS    = null;  // {total, by_type, by_project, by_equipment}
+
+async function loadKBData() {
+  try {
+    const [tax, stats] = await Promise.all([
+      fetch('/api/v1/facets').then(r => r.json()),
+      fetch('/api/v1/documents/stats').then(r => r.json()),
+    ]);
+    window.KB_TAXONOMY = tax;
+    window.KB_STATS    = stats;
+    return { tax, stats };
+  } catch (e) {
+    console.warn('KB_LOAD failed — using fallback taxonomy:', e);
+    window.KB_TAXONOMY = FALLBACK_TAXONOMY;
+    window.KB_STATS    = FALLBACK_STATS;
+    return { tax: FALLBACK_TAXONOMY, stats: FALLBACK_STATS };
+  }
+}
+
+function thumbForType(kt) {
+  switch (kt) {
+    case 'alarm':      return 'circuit';
+    case 'setup':      return 'grid';
+    case 'experience': return 'wave';
+    default:           return 'lines';
+  }
+}
+
+function hitToDoc(hit, keywords) {
+  const sec = hit.sections || {};
+  return {
+    doc: {
+      id:        hit.id,
+      type:      hit.knowledge_type,
+      project:   hit.project,
+      equipment: hit.equipment,
+      codes:     hit.error_codes || [],
+      title:     hit.title,
+      body:      sec.content || sec.body || '',
+      procedure: sec.resolution || sec.procedure || '',
+      notes:     sec.notes || '',
+      sections:  sec,
+      source: {
+        file:  hit.source_file || '—',
+        pages: (hit.source_pages || []).join(', '),
+      },
+      thumb: thumbForType(hit.knowledge_type),
+    },
+    score: Math.round(hit.score * 100) / 100,
+    hits: (keywords || []).filter(k => {
+      const hay = (hit.title + ' ' + (sec.content || sec.body || '') + ' ' + (sec.resolution || sec.procedure || '')).toLowerCase();
+      return hay.includes(k.toLowerCase());
+    }),
+    strictPass: true,
+    loosePass:  true,
+  };
+}
+
+async function kbSearch(params, mode, from_offset) {
+  // Sentence/question queries bypass strict AND-search to avoid the "too many" disambiguation.
+  // Use loose (kNN + keyword-OR) so the semantic component handles the intent.
+  const effectiveMode = (params.isSentence && (mode === 'auto' || !mode)) ? 'loose' : (mode || 'auto');
+  const body = {
+    knowledge_type: params.type   || null,
+    project:        params.project || null,
+    equipment:      params.equipment || null,
+    error_codes:    params.code ? [params.code] : [],
+    keywords:       params.keywords || [],
+    query_text:     params.raw || null,
+    mode:           effectiveMode,
+    size:           20,
+    from_:          from_offset || 0,
+  };
+  const resp = await fetch('/api/v1/search', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!resp.ok) throw new Error(`Search failed: ${resp.status}`);
+  const data = await resp.json();
+  const kw = params.keywords || [];
+  return {
+    status:          data.status,
+    total:           data.total,
+    hits:            (data.hits || []).map(h => hitToDoc(h, kw)),
+    effective_params: data.effective_params,
+    facets:          data.facets || {},
+    banner:          data.banner || null,
+  };
+}
+
+window.KB_SEARCH            = kbSearch;
+window.KB_LOAD              = loadKBData;
+window.KB_TYPE_DEFS         = TYPE_DEFS;
+window.KB_FALLBACK_TAXONOMY = FALLBACK_TAXONOMY;
+window.KB_FALLBACK_STATS    = FALLBACK_STATS;
+window.saveRecentSearch     = saveRecentSearch;
+window.getRecentSearches    = getRecentSearches;
+
+// Legacy stubs
+window.KB_DATA     = {};
+window.KB_RETRIEVE = () => [];
+
+</script>
+<script type="text/babel">
+// Shared UI primitives + style tokens.
+// All components are global on window so they're reachable from sibling babel scripts.
+
+const { useState, useEffect, useRef, useMemo, useCallback } = React;
+
+// --- Thumbnails: subtle SVG placeholders, used as the "preview image" on result cards
+// and at the top of the detail drawer. Style is intentionally restrained.
+function Thumb({ kind = "lines", label = "" }) {
+  const id = useMemo(() => "th-" + Math.random().toString(36).slice(2, 8), []);
+  let body;
+  if (kind === "circuit") {
+    body = (
+      <g stroke="currentColor" strokeWidth="0.6" fill="none" opacity="0.55">
+        <path d="M4 14 L18 14 L18 26 L34 26" />
+        <path d="M4 30 L12 30 L12 42 L40 42" />
+        <path d="M28 8 L28 18 L48 18" />
+        <circle cx="18" cy="14" r="1.4" fill="currentColor" />
+        <circle cx="18" cy="26" r="1.4" fill="currentColor" />
+        <circle cx="12" cy="30" r="1.4" fill="currentColor" />
+        <circle cx="28" cy="18" r="1.4" fill="currentColor" />
+        <rect x="36" y="20" width="14" height="6" rx="0.5" />
+        <rect x="48" y="32" width="6" height="14" rx="0.5" />
+      </g>
+    );
+  } else if (kind === "rings") {
+    body = (
+      <g stroke="currentColor" strokeWidth="0.5" fill="none" opacity="0.5">
+        <circle cx="32" cy="26" r="4" />
+        <circle cx="32" cy="26" r="9" />
+        <circle cx="32" cy="26" r="15" />
+        <circle cx="32" cy="26" r="21" opacity="0.4" />
+        <line x1="32" y1="2" x2="32" y2="50" opacity="0.3" />
+        <line x1="6" y1="26" x2="58" y2="26" opacity="0.3" />
+      </g>
+    );
+  } else if (kind === "grid") {
+    body = (
+      <g stroke="currentColor" strokeWidth="0.4" fill="none" opacity="0.45">
+        {Array.from({ length: 9 }).map((_, i) => (
+          <line key={"v" + i} x1={4 + i * 7} y1="4" x2={4 + i * 7} y2="48" />
+        ))}
+        {Array.from({ length: 7 }).map((_, i) => (
+          <line key={"h" + i} x1="4" y1={4 + i * 7} x2="60" y2={4 + i * 7} />
+        ))}
+        <rect x="18" y="18" width="14" height="14" stroke="currentColor" strokeWidth="0.9" fill="currentColor" fillOpacity="0.18" />
+      </g>
+    );
+  } else if (kind === "wave") {
+    body = (
+      <g stroke="currentColor" strokeWidth="0.7" fill="none" opacity="0.55">
+        <path d="M2 36 Q12 18 22 30 T42 24 T62 30" />
+        <path d="M2 42 Q12 30 22 36 T42 32 T62 36" opacity="0.6" />
+        <path d="M2 18 Q14 8 26 14 T50 12 T64 14" opacity="0.4" />
+      </g>
+    );
+  } else {
+    body = (
+      <g stroke="currentColor" strokeWidth="0.5" opacity="0.5">
+        {Array.from({ length: 14 }).map((_, i) => (
+          <line key={i} x1={-10 + i * 6} y1="60" x2={20 + i * 6} y2="-10" />
+        ))}
+      </g>
+    );
+  }
+  return (
+    <div className="thumb" aria-hidden="true">
+      <svg viewBox="0 0 64 52" preserveAspectRatio="xMidYMid slice" width="100%" height="100%">
+        <defs>
+          <pattern id={id} width="6" height="6" patternUnits="userSpaceOnUse">
+            <path d="M0 6 L6 0" stroke="currentColor" strokeWidth="0.3" opacity="0.12" />
+          </pattern>
+        </defs>
+        <rect width="64" height="52" fill={`url(#${id})`} />
+        {body}
+      </svg>
+      {label ? <span className="thumb-label">{label}</span> : null}
+    </div>
+  );
+}
+
+// --- Generic chrome ---
+
+function Chip({ children, tone = "neutral", icon, dot, onClick, removable, onRemove, active, title }) {
+  return (
+    <span
+      className={`chip chip-${tone} ${active ? "chip-active" : ""} ${onClick ? "chip-clickable" : ""}`}
+      onClick={onClick}
+      title={title}
+    >
+      {dot ? <span className={`chip-dot dot-${dot}`} /> : null}
+      {icon ? <span className="chip-icon">{icon}</span> : null}
+      <span>{children}</span>
+      {removable ? (
+        <button
+          className="chip-remove"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove && onRemove();
+          }}
+          aria-label="remove"
+        >
+          ×
+        </button>
+      ) : null}
+    </span>
+  );
+}
+
+function Kbd({ children }) {
+  return <span className="kbd">{children}</span>;
+}
+
+function Score({ score }) {
+  const raw = score || 0;
+  // BM25 scores are unbounded; use 15 as a soft reference max for bar fill.
+  // Semantic/RRF scores are typically 0-1. Both show the raw decimal.
+  const barPct = Math.min(Math.round((raw / 15) * 100), 100);
+  const color = barPct >= 55 ? 'var(--strict)' : barPct >= 28 ? 'var(--loose)' : 'var(--danger)';
+  return (
+    <span className="score-bar-wrap" title={`相关度分 ${raw.toFixed(2)} · ES BM25/语义匹配原始得分（越高越相关；BM25 典型区间 1–15，语义得分 0–1）· Relevance score — higher is better`}>
+      <span className="score-bar-track">
+        <span className="score-bar-fill" style={{ width: `${barPct}%`, background: color }} />
+      </span>
+      <span className="score-pct">{raw.toFixed(2)}</span>
+    </span>
+  );
+}
+
+function MatchBadge({ mode, hits, total }) {
+  if (mode === "strict") {
+    return (
+      <span className="match-badge match-strict" title="严格匹配：所有关键词均命中，所有筛选条件已满足 · All keywords matched, all filters satisfied">
+        <span className="match-dot" />
+        <span>严格匹配 · Strict</span>
+      </span>
+    );
+  }
+  return (
+    <span className="match-badge match-loose" title={`宽松匹配（仅供参考）：在文档中找到 ${total} 个搜索关键词中的 ${hits} 个 · Loose match: ${hits} of ${total} keywords found in this document — partial match, for reference only`}>
+      <span className="match-dot" />
+      <span>
+        宽松匹配 · Loose <span className="match-meta">{hits}/{total} 词</span>
+      </span>
+    </span>
+  );
+}
+
+// Highlight matching keywords inside text.
+function highlight(text, keywords) {
+  if (!text || !keywords || keywords.length === 0) return text;
+  const escaped = keywords.filter(Boolean).map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  if (!escaped.length) return text;
+  const re = new RegExp("(" + escaped.join("|") + ")", "gi");
+  const parts = text.split(re);
+  return parts.map((p, i) =>
+    re.test(p) ? <mark key={i} className="hl">{p}</mark> : <span key={i}>{p}</span>
+  );
+}
+
+// Small inline icon — just stroked SVG, no clever drawing.
+function Icon({ name, size = 16 }) {
+  const stroke = "currentColor";
+  const sw = 1.5;
+  const props = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke, strokeWidth: sw, strokeLinecap: "round", strokeLinejoin: "round" };
+  switch (name) {
+    case "search":
+      return (
+        <svg {...props}>
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.5-3.5" />
+        </svg>
+      );
+    case "filter":
+      return (
+        <svg {...props}>
+          <path d="M3 5h18M6 12h12M10 19h4" />
+        </svg>
+      );
+    case "alarm":
+      return (
+        <svg {...props}>
+          <path d="M6 8a6 6 0 1 1 12 0c0 5 2 6 2 7H4c0-1 2-2 2-7z" />
+          <path d="M10 19a2 2 0 0 0 4 0" />
+        </svg>
+      );
+    case "wrench":
+      return (
+        <svg {...props}>
+          <path d="M14.7 6.3a4 4 0 1 1 5 5l-9 9-5-5z" />
+          <path d="m8 14 2 2" />
+        </svg>
+      );
+    case "book":
+      return (
+        <svg {...props}>
+          <path d="M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2V5z" />
+          <path d="M4 19a2 2 0 0 1 2-2h12" />
+        </svg>
+      );
+    case "recipe":
+      return (
+        <svg {...props}>
+          <path d="M5 3h11l3 3v15H5z" />
+          <path d="M9 8h7M9 12h7M9 16h4" />
+        </svg>
+      );
+    case "x":
+      return (
+        <svg {...props}>
+          <path d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      );
+    case "arrow-right":
+      return (
+        <svg {...props}>
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
+      );
+    case "arrow-left":
+      return (
+        <svg {...props}>
+          <path d="M19 12H5M11 6l-6 6 6 6" />
+        </svg>
+      );
+    case "external":
+      return (
+        <svg {...props}>
+          <path d="M10 4H4v16h16v-6" />
+          <path d="M14 4h6v6M20 4l-8 8" />
+        </svg>
+      );
+    case "sparkle":
+      return (
+        <svg {...props}>
+          <path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18" />
+        </svg>
+      );
+    case "clock":
+      return (
+        <svg {...props}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+      );
+    case "doc":
+      return (
+        <svg {...props}>
+          <path d="M6 3h9l4 4v14H6z" />
+          <path d="M15 3v4h4" />
+        </svg>
+      );
+    case "check":
+      return (
+        <svg {...props}>
+          <path d="m5 12 4 4 10-10" />
+        </svg>
+      );
+    case "info":
+      return (
+        <svg {...props}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 8h.01M11 12h1v5h1" />
+        </svg>
+      );
+    case "edit":
+      return (
+        <svg {...props}>
+          <path d="M4 20h4l11-11-4-4L4 16z" />
+          <path d="m13.5 6.5 4 4" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
+const typeIconMap = {
+  alarm:      "alarm",
+  setup:      "wrench",
+  experience: "book",
+  // legacy HTML type IDs (kept for any stale references)
+  machine_alarm:        "alarm",
+  equipment_setup:      "wrench",
+  equipment_experience: "book",
+};
+
+Object.assign(window, {
+  Thumb, Chip, Kbd, Score, MatchBadge, highlight, Icon, typeIconMap,
+});
+
+</script>
+<script type="text/babel">
+// Landing view: app shell + giant search + categories + recent searches.
+
+const { useState: _us, useEffect: _ue, useRef: _ur } = React;
+
+function Landing({ taxonomy, stats, onSubmit, onPickRecent, onPickType }) {
+  const [q, setQ] = _us("");
+  const inputRef = _ur(null);
+  const [recent, setRecent] = _us(() =>
+    window.getRecentSearches ? window.getRecentSearches() : []
+  );
+
+  _ue(() => { inputRef.current && inputRef.current.focus(); }, []);
+  _ue(() => {
+    if (window.getRecentSearches) setRecent(window.getRecentSearches());
+  }, []);
+
+  const typeDefs = window.KB_TYPE_DEFS || {};
+  const examples = recent.slice(0, 3).map((r) => r.q);
+  const kts       = (taxonomy?.knowledge_types || []);
+  const total     = stats?.total || 0;
+
+  return (
+    <div className="landing">
+      <div className="landing-hero">
+        <div className="hero-eyebrow">
+          <span className="eyebrow-dot" />
+          <span className="eyebrow-zh">知识库检索</span>
+          <span className="eyebrow-en">Knowledge Base · Internal Search</span>
+        </div>
+        <h1 className="hero-title">
+          告诉我您要找的<span className="hero-accent"> 报警代码、设备或问题</span>
+        </h1>
+        <p className="hero-sub">
+          Type a code, equipment name or a question — we'll filter &amp; retrieve, never invent.
+        </p>
+
+        <form
+          className="search-box search-box-hero"
+          onSubmit={(e) => { e.preventDefault(); if (q.trim()) onSubmit(q.trim()); }}
+        >
+          <Icon name="search" size={18} />
+          <input
+            ref={inputRef}
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="例如：FTU 125002 穿梭真空报警怎么处理？"
+          />
+          <div className="search-actions">
+            <span className="search-hint">
+              <Kbd>Enter</Kbd> 提问 · <Kbd>↑↓</Kbd> 切例
+            </span>
+            <button type="submit" className="btn btn-primary" disabled={!q.trim()}>
+              <span>检索</span>
+              <Icon name="arrow-right" size={14} />
+            </button>
+          </div>
+        </form>
+
+        <div className="example-row">
+          <span className="example-label">试试 · Try</span>
+          {examples.map((ex, i) => (
+            <button key={i} className="example-chip" onClick={() => onSubmit(ex)}>{ex}</button>
+          ))}
+        </div>
+      </div>
+
+      <section className="section">
+        <div className="section-head">
+          <h2 className="section-title">
+            <span>知识分类</span>
+            <span className="section-en">Categories</span>
+          </h2>
+          <span className="section-meta">{total} 篇文档 · {kts.length} 类</span>
+        </div>
+        <div className="category-grid">
+          {kts.map((kt) => {
+            const def   = typeDefs[kt] || {};
+            const count = stats?.by_type?.[kt] || 0;
+            return (
+              <button key={kt} className="cat-card" onClick={() => onPickType(kt)}>
+                <div className="cat-icon">
+                  <Icon name={typeIconMap[kt] || "doc"} size={18} />
+                </div>
+                <div className="cat-text">
+                  <div className="cat-zh">{def.zh || kt}</div>
+                  <div className="cat-en">{def.en || kt}</div>
+                </div>
+                <div className="cat-count">{count}</div>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {recent.length > 0 && (
+        <section className="section">
+          <div className="section-head">
+            <h2 className="section-title">
+              <span>最近检索</span>
+              <span className="section-en">Recent</span>
+            </h2>
+            <button className="section-link" onClick={() => {
+              try { localStorage.removeItem(window.RECENT_KEY || 'kb.recentSearches'); } catch(e) {}
+              setRecent([]);
+            }}>清除 · Clear</button>
+          </div>
+          <div className="recent-list">
+            {recent.map((r, i) => (
+              <button key={i} className="recent-row" onClick={() => onPickRecent(r)}>
+                <div className="recent-q">
+                  <Icon name="clock" size={13} />
+                  <span>{r.q}</span>
+                </div>
+                <div className="recent-meta">
+                  {r.project && <Chip tone="ghost">{r.project}</Chip>}
+                  {r.machine && <Chip tone="ghost">{r.machine}</Chip>}
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section className="section section-tight">
+        <div className="info-card">
+          <div className="info-icon"><Icon name="info" size={16} /></div>
+          <div className="info-body">
+            <div className="info-title">为什么不直接让 AI 回答？</div>
+            <div className="info-text">
+              制造业知识库的内容（设备、报警代码、参数）几乎不与通识相关。本系统采用 <b>筛选 + 关键词检索 + 向量重排</b>，
+              结果保证 100% 来自原文档，不进行 AI 组合发挥。
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+window.Landing = Landing;
+
+</script>
+<script type="text/babel">
+// Results view: param-extraction strip + filter chips + grid + disambiguation + detail drawer.
+
+const { useState: rsUse, useEffect: rsEff, useMemo: rsMemo } = React;
+
+// --- AI-parsed parameter strip
+function ParamStrip({ params, setParams, displayStyle }) {
+  const typeDefs = window.KB_TYPE_DEFS || {};
+  const [addingKw, setAddingKw] = rsUse(false);
+  const addInputRef = React.useRef(null);
+  React.useEffect(() => {
+    if (addingKw && addInputRef.current) addInputRef.current.focus();
+  }, [addingKw]);
+
+  const confScore = React.useMemo(() => {
+    let c = 0.25;
+    if (params.project)  c += 0.15;
+    if (params.equipment) c += 0.15;
+    if (params.code)     c += 0.20;
+    if (params.type)     c += 0.10;
+    if (params.keywords && params.keywords.length > 0)
+      c += Math.min(0.15, params.keywords.length * 0.05);
+    return Math.min(0.98, c);
+  }, [params]);
+
+  const summary = (
+    <span>
+      您询问
+      {params.project ? <> <b>{params.project}</b> 项目</> : null}
+      {params.equipment ? <>，<b>{params.equipment}</b> 机台</> : null}
+      {params.code ? <>，错误代码 <b className="mono">{params.code}</b></> : null}
+      {params.type ? (
+        <>，类型 <b>{typeDefs[params.type]?.zh || params.type}</b></>
+      ) : null}
+      {params.keywords && params.keywords.length
+        ? <>，关键词 <b>{params.keywords.join(" · ")}</b></>
+        : null}
+      。
+    </span>
+  );
+
+  const removeKw = (kw) => {
+    setParams({ ...params, keywords: params.keywords.filter((k) => k !== kw) });
+  };
+
+  return (
+    <div className="param-strip">
+      <div className="param-strip-head">
+        <span className="param-tag">
+          <Icon name="sparkle" size={12} />
+          <span>AI 解析</span>
+          <span className="param-tag-en">parsed query</span>
+        </span>
+        <span className="param-confidence" title={`查询解析置信度 ${Math.round(confScore * 100)}% · 从查询中成功提取到的参数越多（项目/机台/代码/类型/关键词），置信度越高 · Query extraction confidence — increases with each recognized field`}>
+          <span className="conf-bar"><span style={{ width: `${Math.round(confScore * 100)}%` }} /></span>
+          <span className="conf-text mono">conf {Math.round(confScore * 100)}%</span>
+        </span>
+      </div>
+
+      {displayStyle === "sentence" ? (
+        <div className="param-sentence">{summary}</div>
+      ) : (
+        <div className="param-chips">
+          {params.type ? (
+            <Chip tone="solid" icon={<Icon name={typeIconMap[params.type]} size={12} />} removable onRemove={() => setParams({ ...params, type: null })}>
+              <span className="chip-k">type</span>
+              {typeDefs[params.type]?.zh || params.type}
+            </Chip>
+          ) : null}
+          {params.project ? (
+            <Chip tone="solid" removable onRemove={() => setParams({ ...params, project: null })}>
+              <span className="chip-k">project</span>
+              {params.project}
+            </Chip>
+          ) : null}
+          {params.equipment ? (
+            <Chip tone="solid" removable onRemove={() => setParams({ ...params, equipment: null })}>
+              <span className="chip-k">equipment</span>
+              {params.equipment}
+            </Chip>
+          ) : null}
+          {params.code ? (
+            <Chip tone="solid" removable onRemove={() => setParams({ ...params, code: null })}>
+              <span className="chip-k">code</span>
+              <span className="mono">{params.code}</span>
+            </Chip>
+          ) : null}
+          {(params.keywords || []).map((kw) => (
+            <Chip key={kw} tone="outline" removable onRemove={() => removeKw(kw)}>
+              <span className="chip-k">kw</span>
+              {kw}
+            </Chip>
+          ))}
+          {addingKw ? (
+            <input
+              ref={addInputRef}
+              className="kw-inline-input"
+              placeholder="关键词 / keyword"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const v = e.target.value.trim();
+                  if (v) setParams({ ...params, keywords: [...(params.keywords || []), v] });
+                  setAddingKw(false);
+                }
+                if (e.key === 'Escape') setAddingKw(false);
+              }}
+              onBlur={(e) => {
+                const v = e.target.value.trim();
+                if (v) setParams({ ...params, keywords: [...(params.keywords || []), v] });
+                setAddingKw(false);
+              }}
+            />
+          ) : (
+            <button className="chip-add" onClick={() => setAddingKw(true)}>
+              <Icon name="filter" size={12} /> 添加
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// --- Single result card
+function ResultCard({ scored, keywords, onOpen, mode, density }) {
+  const d = scored.doc;
+  const isCompact = density === "compact";
+  const snippet = React.useMemo(() => {
+    const text = d.body || "";
+    if (!keywords || keywords.length === 0) return text.slice(0, 140);
+    const kw = keywords[0];
+    const idx = text.toLowerCase().indexOf(kw.toLowerCase());
+    if (idx === -1) return text.slice(0, 140);
+    const start = Math.max(0, idx - 30);
+    return (start > 0 ? "…" : "") + text.slice(start, start + 160);
+  }, [d, keywords]);
+
+  return (
+    <article className={`result-card ${isCompact ? "result-card-compact" : ""}`} onClick={onOpen}>
+      <div className="result-thumb-wrap">
+        <Thumb kind={d.thumb} />
+        <span className="thumb-overlay">
+          <Icon name={typeIconMap[d.type]} size={11} />
+        </span>
+      </div>
+      <div className="result-body">
+        <div className="result-meta-row">
+          <Chip tone="ghost">{d.project}</Chip>
+          <Chip tone="ghost">{d.equipment}</Chip>
+          {(d.codes || []).map((c) => (
+            <Chip key={c} tone="code" icon={<span className="mono mini">CODE</span>}>
+              <span className="mono">{c}</span>
+            </Chip>
+          ))}
+        </div>
+        <h3 className="result-title">{highlight(d.title, keywords)}</h3>
+        <div className="result-title-en">{d.titleEn}</div>
+        {!isCompact ? (
+          <p className="result-snippet">{highlight(snippet, keywords)}</p>
+        ) : null}
+        <div className="result-foot">
+          <MatchBadge
+            mode={mode}
+            hits={scored.hits.length}
+            total={keywords.length || 1}
+          />
+          <Score score={scored.score} />
+          <span className="result-source mono" title={`来源文件 Source file: ${d.source.file}${d.source.pages ? ` · 页码 Pages: ${d.source.pages}` : ''}`}>
+            <Icon name="doc" size={11} />
+            {d.source.file} · p.{d.source.pages}
+          </span>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+// --- Disambiguation banner: too many strict hits
+function DisambiguateBanner({ count, suggestions, onPick }) {
+  return (
+    <div className="disambig">
+      <div className="disambig-head">
+        <span className="disambig-tag">
+          <Icon name="sparkle" size={12} /> 结果过多，请选择范围
+        </span>
+        <span className="disambig-en">Too many matches — click one option below to narrow down</span>
+      </div>
+      <div className="disambig-body">
+        共命中 <b>{count}</b> 篇文档，无法确定最相关的一篇。请点击下方选项进一步缩小范围：
+      </div>
+      <div className="disambig-options">
+        {suggestions.map((s, i) => (
+          <button key={i} className="disambig-opt" onClick={() => onPick(s)}>
+            <div className="disambig-opt-q">{s.label}</div>
+            <div className="disambig-opt-hint mono">{s.hint}</div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// --- Fallback notice (loose match)
+function LooseNotice({ banner, isSentence, onRetry }) {
+  const msg = banner || "未找到 100% 匹配的知识。以下结果由宽松检索得到，仅包含部分关键词，请用户自行判断是否相关。";
+  const label = isSentence ? '语义检索结果' : '宽松检索结果';
+  return (
+    <div className="loose-notice">
+      <Icon name="info" size={14} />
+      <div className="loose-text">
+        <b>{label}</b> {msg}
+      </div>
+      <button className="loose-action" onClick={onRetry}>切换为严格关键词 →</button>
+    </div>
+  );
+}
+
+// --- No results
+function EmptyState({ onBack }) {
+  return (
+    <div className="empty-state">
+      <div className="empty-illus">
+        <svg viewBox="0 0 80 80" width="64" height="64">
+          <rect x="6" y="14" width="52" height="56" rx="2" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.5" />
+          <path d="M14 26h36M14 34h24M14 42h30M14 50h18" stroke="currentColor" strokeWidth="1" opacity="0.3" />
+          <circle cx="58" cy="58" r="14" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          <path d="m68 68 8 8" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M52 52l12 12M64 52L52 64" stroke="currentColor" strokeWidth="1.2" opacity="0.7" />
+        </svg>
+      </div>
+      <div className="empty-title">知识库中暂无匹配内容</div>
+      <div className="empty-sub">系统不会编造答案。建议调整筛选条件，或联系负责工程师补充知识。</div>
+      <button className="btn btn-ghost" onClick={onBack}>← 返回检索</button>
+    </div>
+  );
+}
+
+// --- Detail drawer
+function Detail({ doc, keywords, onClose }) {
+  rsEff(() => {
+    const h = (e) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [onClose]);
+
+  const [copied, setCopied] = rsUse(false);
+  const copySourceFile = () => {
+    const filename = doc.source?.file || '—';
+    if (filename === '—') return;
+    navigator.clipboard.writeText(filename).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {});
+  };
+
+  if (!doc) return null;
+
+  return (
+    <div className="drawer-shade" onClick={onClose}>
+      <aside className="drawer" onClick={(e) => e.stopPropagation()}>
+        <header className="drawer-head">
+          <div className="drawer-crumbs">
+            <span>{doc.project}</span>
+            <span className="crumb-sep">/</span>
+            <span>{doc.equipment}</span>
+            <span className="crumb-sep">/</span>
+            <span className="mono">{doc.id}</span>
+          </div>
+          <button className="icon-btn" onClick={onClose} aria-label="close">
+            <Icon name="x" size={16} />
+          </button>
+        </header>
+
+        <div className="drawer-hero">
+          <Thumb kind={doc.thumb} />
+        </div>
+
+        <div className="drawer-body">
+          <div className="drawer-tags">
+            <Chip tone="ghost" icon={<Icon name={typeIconMap[doc.type]} size={11} />}>
+              {(window.KB_TYPE_DEFS || {})[doc.type]?.zh || doc.type}
+            </Chip>
+            <Chip tone="ghost">{doc.project}</Chip>
+            <Chip tone="ghost">{doc.equipment}</Chip>
+            {(doc.codes || []).map((c) => (
+              <Chip key={c} tone="code"><span className="mono">{c}</span></Chip>
+            ))}
+          </div>
+
+          <h2 className="drawer-title">{highlight(doc.title, keywords)}</h2>
+          <div className="drawer-title-en">{doc.titleEn}</div>
+
+          <section className="drawer-section">
+            <h4>说明 · Description</h4>
+            <p className="drawer-prose">{highlight(doc.body, keywords)}</p>
+          </section>
+
+          {doc.procedure ? (
+            <section className="drawer-section">
+              <h4>解除流程 · Procedure</h4>
+              <pre className="drawer-prose drawer-pre">{doc.procedure}</pre>
+            </section>
+          ) : null}
+
+          {doc.notes ? (
+            <section className="drawer-section drawer-section-note">
+              <h4>注意事项 · Notes</h4>
+              <pre className="drawer-prose drawer-pre">{doc.notes}</pre>
+            </section>
+          ) : null}
+
+          <section className="drawer-section drawer-source">
+            <h4>来源 · Source</h4>
+            <div className="source-row">
+              <Icon name="doc" size={14} />
+              <span className="source-file mono">{doc.source.file}</span>
+              <span className="source-pages mono">页 / pages: {doc.source.pages}</span>
+              <button className={`src-btn ${copied ? 'src-btn-copied' : ''}`} onClick={copySourceFile}>
+                {copied
+                  ? <><Icon name="check" size={11} /> 已复制</>
+                  : <>打开原文档 <Icon name="external" size={11} /></>}
+              </button>
+            </div>
+          </section>
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+window.ParamStrip = ParamStrip;
+window.ResultCard = ResultCard;
+window.DisambiguateBanner = DisambiguateBanner;
+window.LooseNotice = LooseNotice;
+window.EmptyState = EmptyState;
+window.Detail = Detail;
+
+</script>
+<script type="text/babel">
+
+// tweaks-panel.jsx
+// Reusable Tweaks shell + form-control helpers.
+//
+// Owns the host protocol (listens for __activate_edit_mode / __deactivate_edit_mode,
+// posts __edit_mode_available / __edit_mode_set_keys / __edit_mode_dismissed) so
+// individual prototypes don't re-roll it. Ships a consistent set of controls so you
+// don't hand-draw <input type="range">, segmented radios, steppers, etc.
+//
+// Usage (in an HTML file that loads React + Babel):
+//
+//   const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+//     "primaryColor": "#D97757",
+//     "palette": ["#D97757", "#29261b", "#f6f4ef"],
+//     "fontSize": 16,
+//     "density": "regular",
+//     "dark": false
+//   }/*EDITMODE-END*/;
+//
+//   function App() {
+//     const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+//     return (
+//       <div style={{ fontSize: t.fontSize, color: t.primaryColor }}>
+//         Hello
+//         <TweaksPanel>
+//           <TweakSection label="Typography" />
+//           <TweakSlider label="Font size" value={t.fontSize} min={10} max={32} unit="px"
+//                        onChange={(v) => setTweak('fontSize', v)} />
+//           <TweakRadio  label="Density" value={t.density}
+//                        options={['compact', 'regular', 'comfy']}
+//                        onChange={(v) => setTweak('density', v)} />
+//           <TweakSection label="Theme" />
+//           <TweakColor  label="Primary" value={t.primaryColor}
+//                        options={['#D97757', '#2A6FDB', '#1F8A5B', '#7A5AE0']}
+//                        onChange={(v) => setTweak('primaryColor', v)} />
+//           <TweakColor  label="Palette" value={t.palette}
+//                        options={[['#D97757', '#29261b', '#f6f4ef'],
+//                                  ['#475569', '#0f172a', '#f1f5f9']]}
+//                        onChange={(v) => setTweak('palette', v)} />
+//           <TweakToggle label="Dark mode" value={t.dark}
+//                        onChange={(v) => setTweak('dark', v)} />
+//         </TweaksPanel>
+//       </div>
+//     );
+//   }
+//
+// ─────────────────────────────────────────────────────────────────────────────
+
+const __TWEAKS_STYLE = `
+  .twk-panel{position:fixed;right:16px;bottom:16px;z-index:2147483646;width:280px;
+    max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+    transform:scale(var(--dc-inv-zoom,1));transform-origin:bottom right;
+    background:rgba(250,249,247,.78);color:#29261b;
+    -webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);
+    border:.5px solid rgba(255,255,255,.6);border-radius:14px;
+    box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 12px 40px rgba(0,0,0,.18);
+    font:11.5px/1.4 ui-sans-serif,system-ui,-apple-system,sans-serif;overflow:hidden}
+  .twk-hd{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 8px 10px 14px;cursor:move;user-select:none}
+  .twk-hd b{font-size:12px;font-weight:600;letter-spacing:.01em}
+  .twk-x{appearance:none;border:0;background:transparent;color:rgba(41,38,27,.55);
+    width:22px;height:22px;border-radius:6px;cursor:default;font-size:13px;line-height:1}
+  .twk-x:hover{background:rgba(0,0,0,.06);color:#29261b}
+  .twk-body{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px;
+    overflow-y:auto;overflow-x:hidden;min-height:0;
+    scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.15) transparent}
+  .twk-body::-webkit-scrollbar{width:8px}
+  .twk-body::-webkit-scrollbar-track{background:transparent;margin:2px}
+  .twk-body::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:4px;
+    border:2px solid transparent;background-clip:content-box}
+  .twk-body::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.25);
+    border:2px solid transparent;background-clip:content-box}
+  .twk-row{display:flex;flex-direction:column;gap:5px}
+  .twk-row-h{flex-direction:row;align-items:center;justify-content:space-between;gap:10px}
+  .twk-lbl{display:flex;justify-content:space-between;align-items:baseline;
+    color:rgba(41,38,27,.72)}
+  .twk-lbl>span:first-child{font-weight:500}
+  .twk-val{color:rgba(41,38,27,.5);font-variant-numeric:tabular-nums}
+
+  .twk-sect{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:rgba(41,38,27,.45);padding:10px 0 0}
+  .twk-sect:first-child{padding-top:0}
+
+  .twk-field{appearance:none;box-sizing:border-box;width:100%;min-width:0;height:26px;padding:0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;
+    background:rgba(255,255,255,.6);color:inherit;font:inherit;outline:none}
+  .twk-field:focus{border-color:rgba(0,0,0,.25);background:rgba(255,255,255,.85)}
+  select.twk-field{padding-right:22px;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='rgba(0,0,0,.5)' d='M0 0h10L5 6z'/></svg>");
+    background-repeat:no-repeat;background-position:right 8px center}
+
+  .twk-slider{appearance:none;-webkit-appearance:none;width:100%;height:4px;margin:6px 0;
+    border-radius:999px;background:rgba(0,0,0,.12);outline:none}
+  .twk-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+    width:14px;height:14px;border-radius:50%;background:#fff;
+    border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+  .twk-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
+    background:#fff;border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+
+  .twk-seg{position:relative;display:flex;padding:2px;border-radius:8px;
+    background:rgba(0,0,0,.06);user-select:none}
+  .twk-seg-thumb{position:absolute;top:2px;bottom:2px;border-radius:6px;
+    background:rgba(255,255,255,.9);box-shadow:0 1px 2px rgba(0,0,0,.12);
+    transition:left .15s cubic-bezier(.3,.7,.4,1),width .15s}
+  .twk-seg.dragging .twk-seg-thumb{transition:none}
+  .twk-seg button{appearance:none;position:relative;z-index:1;flex:1;border:0;
+    background:transparent;color:inherit;font:inherit;font-weight:500;min-height:22px;
+    border-radius:6px;cursor:default;padding:4px 6px;line-height:1.2;
+    overflow-wrap:anywhere}
+
+  .twk-toggle{position:relative;width:32px;height:18px;border:0;border-radius:999px;
+    background:rgba(0,0,0,.15);transition:background .15s;cursor:default;padding:0}
+  .twk-toggle[data-on="1"]{background:#34c759}
+  .twk-toggle i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+  .twk-toggle[data-on="1"] i{transform:translateX(14px)}
+
+  .twk-num{display:flex;align-items:center;box-sizing:border-box;min-width:0;height:26px;padding:0 0 0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;background:rgba(255,255,255,.6)}
+  .twk-num-lbl{font-weight:500;color:rgba(41,38,27,.6);cursor:ew-resize;
+    user-select:none;padding-right:8px}
+  .twk-num input{flex:1;min-width:0;height:100%;border:0;background:transparent;
+    font:inherit;font-variant-numeric:tabular-nums;text-align:right;padding:0 8px 0 0;
+    outline:none;color:inherit;-moz-appearance:textfield}
+  .twk-num input::-webkit-inner-spin-button,.twk-num input::-webkit-outer-spin-button{
+    -webkit-appearance:none;margin:0}
+  .twk-num-unit{padding-right:8px;color:rgba(41,38,27,.45)}
+
+  .twk-btn{appearance:none;height:26px;padding:0 12px;border:0;border-radius:7px;
+    background:rgba(0,0,0,.78);color:#fff;font:inherit;font-weight:500;cursor:default}
+  .twk-btn:hover{background:rgba(0,0,0,.88)}
+  .twk-btn.secondary{background:rgba(0,0,0,.06);color:inherit}
+  .twk-btn.secondary:hover{background:rgba(0,0,0,.1)}
+
+  .twk-swatch{appearance:none;-webkit-appearance:none;width:56px;height:22px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:6px;padding:0;cursor:default;
+    background:transparent;flex-shrink:0}
+  .twk-swatch::-webkit-color-swatch-wrapper{padding:0}
+  .twk-swatch::-webkit-color-swatch{border:0;border-radius:5.5px}
+  .twk-swatch::-moz-color-swatch{border:0;border-radius:5.5px}
+
+  .twk-chips{display:flex;gap:6px}
+  .twk-chip{position:relative;appearance:none;flex:1;min-width:0;height:46px;
+    padding:0;border:0;border-radius:6px;overflow:hidden;cursor:default;
+    box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.06);
+    transition:transform .12s cubic-bezier(.3,.7,.4,1),box-shadow .12s}
+  .twk-chip:hover{transform:translateY(-1px);
+    box-shadow:0 0 0 .5px rgba(0,0,0,.18),0 4px 10px rgba(0,0,0,.12)}
+  .twk-chip[data-on="1"]{box-shadow:0 0 0 1.5px rgba(0,0,0,.85),
+    0 2px 6px rgba(0,0,0,.15)}
+  .twk-chip>span{position:absolute;top:0;bottom:0;right:0;width:34%;
+    display:flex;flex-direction:column;box-shadow:-1px 0 0 rgba(0,0,0,.1)}
+  .twk-chip>span>i{flex:1;box-shadow:0 -1px 0 rgba(0,0,0,.1)}
+  .twk-chip>span>i:first-child{box-shadow:none}
+  .twk-chip svg{position:absolute;top:6px;left:6px;width:13px;height:13px;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+`;
+
+// ── useTweaks ───────────────────────────────────────────────────────────────
+// Single source of truth for tweak values. setTweak persists via the host
+// (__edit_mode_set_keys → host rewrites the EDITMODE block on disk).
+function useTweaks(defaults) {
+  const [values, setValues] = React.useState(defaults);
+  // Accepts either setTweak('key', value) or setTweak({ key: value, ... }) so a
+  // useState-style call doesn't write a "[object Object]" key into the persisted
+  // JSON block.
+  const setTweak = React.useCallback((keyOrEdits, val) => {
+    const edits = typeof keyOrEdits === 'object' && keyOrEdits !== null
+      ? keyOrEdits : { [keyOrEdits]: val };
+    setValues((prev) => ({ ...prev, ...edits }));
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits }, '*');
+    // Same-window signal so in-page listeners (deck-stage rail thumbnails)
+    // can react — the parent message only reaches the host, not peers.
+    window.dispatchEvent(new CustomEvent('tweakchange', { detail: edits }));
+  }, []);
+  return [values, setTweak];
+}
+
+// ── TweaksPanel ─────────────────────────────────────────────────────────────
+// Floating shell. Registers the protocol listener BEFORE announcing
+// availability — if the announce ran first, the host's activate could land
+// before our handler exists and the toolbar toggle would silently no-op.
+// The close button posts __edit_mode_dismissed so the host's toolbar toggle
+// flips off in lockstep; the host echoes __deactivate_edit_mode back which
+// is what actually hides the panel.
+function TweaksPanel({ title = 'Tweaks', noDeckControls = false, children }) {
+  const [open, setOpen] = React.useState(false);
+  const dragRef = React.useRef(null);
+  // Auto-inject a rail toggle when a <deck-stage> is on the page. The
+  // toggle drives the deck's per-viewer _railVisible via window message;
+  // state is mirrored from the same localStorage key the deck reads so
+  // the control reflects reality across reloads. The mechanism is the
+  // message — authors who want custom placement can post it directly
+  // and pass noDeckControls to suppress this one.
+  const hasDeckStage = React.useMemo(
+    () => typeof document !== 'undefined' && !!document.querySelector('deck-stage'),
+    [],
+  );
+  // deck-stage enables its rail in connectedCallback, but this panel can
+  // mount before that element has upgraded. The initial read catches the
+  // common case; the listener covers mounting first. (Older deck-stage.js
+  // copies still wait for the host's __omelette_rail_enabled postMessage —
+  // same listener handles those.)
+  const [railEnabled, setRailEnabled] = React.useState(
+    () => hasDeckStage && !!document.querySelector('deck-stage')?._railEnabled,
+  );
+  React.useEffect(() => {
+    if (!hasDeckStage || railEnabled) return undefined;
+    const onMsg = (e) => {
+      if (e.data && e.data.type === '__omelette_rail_enabled') setRailEnabled(true);
+    };
+    window.addEventListener('message', onMsg);
+    return () => window.removeEventListener('message', onMsg);
+  }, [hasDeckStage, railEnabled]);
+  const [railVisible, setRailVisible] = React.useState(() => {
+    try { return localStorage.getItem('deck-stage.railVisible') !== '0'; } catch (e) { return true; }
+  });
+  const toggleRail = (on) => {
+    setRailVisible(on);
+    window.postMessage({ type: '__deck_rail_visible', on }, '*');
+  };
+  const offsetRef = React.useRef({ x: 16, y: 16 });
+  const PAD = 16;
+
+  const clampToViewport = React.useCallback(() => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    const maxRight = Math.max(PAD, window.innerWidth - w - PAD);
+    const maxBottom = Math.max(PAD, window.innerHeight - h - PAD);
+    offsetRef.current = {
+      x: Math.min(maxRight, Math.max(PAD, offsetRef.current.x)),
+      y: Math.min(maxBottom, Math.max(PAD, offsetRef.current.y)),
+    };
+    panel.style.right = offsetRef.current.x + 'px';
+    panel.style.bottom = offsetRef.current.y + 'px';
+  }, []);
+
+  React.useEffect(() => {
+    if (!open) return;
+    clampToViewport();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', clampToViewport);
+      return () => window.removeEventListener('resize', clampToViewport);
+    }
+    const ro = new ResizeObserver(clampToViewport);
+    ro.observe(document.documentElement);
+    return () => ro.disconnect();
+  }, [open, clampToViewport]);
+
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      const t = e?.data?.type;
+      if (t === '__activate_edit_mode') setOpen(true);
+      else if (t === '__deactivate_edit_mode') setOpen(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  const dismiss = () => {
+    setOpen(false);
+    window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*');
+  };
+
+  const onDragStart = (e) => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const r = panel.getBoundingClientRect();
+    const sx = e.clientX, sy = e.clientY;
+    const startRight = window.innerWidth - r.right;
+    const startBottom = window.innerHeight - r.bottom;
+    const move = (ev) => {
+      offsetRef.current = {
+        x: startRight - (ev.clientX - sx),
+        y: startBottom - (ev.clientY - sy),
+      };
+      clampToViewport();
+    };
+    const up = () => {
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  };
+
+  if (!open) return null;
+  return (
+    <>
+      <style>{__TWEAKS_STYLE}</style>
+      <div ref={dragRef} className="twk-panel" data-noncommentable=""
+           style={{ right: offsetRef.current.x, bottom: offsetRef.current.y }}>
+        <div className="twk-hd" onMouseDown={onDragStart}>
+          <b>{title}</b>
+          <button className="twk-x" aria-label="Close tweaks"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={dismiss}>✕</button>
+        </div>
+        <div className="twk-body">
+          {children}
+          {hasDeckStage && railEnabled && !noDeckControls && (
+            <TweakSection label="Deck">
+              <TweakToggle label="Thumbnail rail" value={railVisible} onChange={toggleRail} />
+            </TweakSection>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── Layout helpers ──────────────────────────────────────────────────────────
+
+function TweakSection({ label, children }) {
+  return (
+    <>
+      <div className="twk-sect">{label}</div>
+      {children}
+    </>
+  );
+}
+
+function TweakRow({ label, value, children, inline = false }) {
+  return (
+    <div className={inline ? 'twk-row twk-row-h' : 'twk-row'}>
+      <div className="twk-lbl">
+        <span>{label}</span>
+        {value != null && <span className="twk-val">{value}</span>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// ── Controls ────────────────────────────────────────────────────────────────
+
+function TweakSlider({ label, value, min = 0, max = 100, step = 1, unit = '', onChange }) {
+  return (
+    <TweakRow label={label} value={`${value}${unit}`}>
+      <input type="range" className="twk-slider" min={min} max={max} step={step}
+             value={value} onChange={(e) => onChange(Number(e.target.value))} />
+    </TweakRow>
+  );
+}
+
+function TweakToggle({ label, value, onChange }) {
+  return (
+    <div className="twk-row twk-row-h">
+      <div className="twk-lbl"><span>{label}</span></div>
+      <button type="button" className="twk-toggle" data-on={value ? '1' : '0'}
+              role="switch" aria-checked={!!value}
+              onClick={() => onChange(!value)}><i /></button>
+    </div>
+  );
+}
+
+function TweakRadio({ label, value, options, onChange }) {
+  const trackRef = React.useRef(null);
+  const [dragging, setDragging] = React.useState(false);
+  // The active value is read by pointer-move handlers attached for the lifetime
+  // of a drag — ref it so a stale closure doesn't fire onChange for every move.
+  const valueRef = React.useRef(value);
+  valueRef.current = value;
+
+  // Segments wrap mid-word once per-segment width runs out. The track is
+  // ~248px (280 panel − 28 body pad − 4 seg pad), each button loses 12px
+  // to its own padding, and 11.5px system-ui averages ~6.3px/char — so 2
+  // options fit ~16 chars each, 3 fit ~10. Past that (or >3 options), fall
+  // back to a dropdown rather than wrap.
+  const labelLen = (o) => String(typeof o === 'object' ? o.label : o).length;
+  const maxLen = options.reduce((m, o) => Math.max(m, labelLen(o)), 0);
+  const fitsAsSegments = maxLen <= ({ 2: 16, 3: 10 }[options.length] ?? 0);
+  if (!fitsAsSegments) {
+    // <select> emits strings — map back to the original option value so the
+    // fallback stays type-preserving (numbers, booleans) like the segment path.
+    const resolve = (s) => {
+      const m = options.find((o) => String(typeof o === 'object' ? o.value : o) === s);
+      return m === undefined ? s : typeof m === 'object' ? m.value : m;
+    };
+    return <TweakSelect label={label} value={value} options={options}
+                        onChange={(s) => onChange(resolve(s))} />;
+  }
+  const opts = options.map((o) => (typeof o === 'object' ? o : { value: o, label: o }));
+  const idx = Math.max(0, opts.findIndex((o) => o.value === value));
+  const n = opts.length;
+
+  const segAt = (clientX) => {
+    const r = trackRef.current.getBoundingClientRect();
+    const inner = r.width - 4;
+    const i = Math.floor(((clientX - r.left - 2) / inner) * n);
+    return opts[Math.max(0, Math.min(n - 1, i))].value;
+  };
+
+  const onPointerDown = (e) => {
+    setDragging(true);
+    const v0 = segAt(e.clientX);
+    if (v0 !== valueRef.current) onChange(v0);
+    const move = (ev) => {
+      if (!trackRef.current) return;
+      const v = segAt(ev.clientX);
+      if (v !== valueRef.current) onChange(v);
+    };
+    const up = () => {
+      setDragging(false);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+
+  return (
+    <TweakRow label={label}>
+      <div ref={trackRef} role="radiogroup" onPointerDown={onPointerDown}
+           className={dragging ? 'twk-seg dragging' : 'twk-seg'}>
+        <div className="twk-seg-thumb"
+             style={{ left: `calc(2px + ${idx} * (100% - 4px) / ${n})`,
+                      width: `calc((100% - 4px) / ${n})` }} />
+        {opts.map((o) => (
+          <button key={o.value} type="button" role="radio" aria-checked={o.value === value}>
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </TweakRow>
+  );
+}
+
+function TweakSelect({ label, value, options, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <select className="twk-field" value={value} onChange={(e) => onChange(e.target.value)}>
+        {options.map((o) => {
+          const v = typeof o === 'object' ? o.value : o;
+          const l = typeof o === 'object' ? o.label : o;
+          return <option key={v} value={v}>{l}</option>;
+        })}
+      </select>
+    </TweakRow>
+  );
+}
+
+function TweakText({ label, value, placeholder, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <input className="twk-field" type="text" value={value} placeholder={placeholder}
+             onChange={(e) => onChange(e.target.value)} />
+    </TweakRow>
+  );
+}
+
+function TweakNumber({ label, value, min, max, step = 1, unit = '', onChange }) {
+  const clamp = (n) => {
+    if (min != null && n < min) return min;
+    if (max != null && n > max) return max;
+    return n;
+  };
+  const startRef = React.useRef({ x: 0, val: 0 });
+  const onScrubStart = (e) => {
+    e.preventDefault();
+    startRef.current = { x: e.clientX, val: value };
+    const decimals = (String(step).split('.')[1] || '').length;
+    const move = (ev) => {
+      const dx = ev.clientX - startRef.current.x;
+      const raw = startRef.current.val + dx * step;
+      const snapped = Math.round(raw / step) * step;
+      onChange(clamp(Number(snapped.toFixed(decimals))));
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+  return (
+    <div className="twk-num">
+      <span className="twk-num-lbl" onPointerDown={onScrubStart}>{label}</span>
+      <input type="number" value={value} min={min} max={max} step={step}
+             onChange={(e) => onChange(clamp(Number(e.target.value)))} />
+      {unit && <span className="twk-num-unit">{unit}</span>}
+    </div>
+  );
+}
+
+// Relative-luminance contrast pick — checkmarks drawn over a swatch need to
+// read on both #111 and #fafafa without per-option configuration. Hex input
+// only (#rgb / #rrggbb); named or rgb()/hsl() colors fall through to "light".
+function __twkIsLight(hex) {
+  const h = String(hex).replace('#', '');
+  const x = h.length === 3 ? h.replace(/./g, (c) => c + c) : h.padEnd(6, '0');
+  const n = parseInt(x.slice(0, 6), 16);
+  if (Number.isNaN(n)) return true;
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return r * 299 + g * 587 + b * 114 > 148000;
+}
+
+const __TwkCheck = ({ light }) => (
+  <svg viewBox="0 0 14 14" aria-hidden="true">
+    <path d="M3 7.2 5.8 10 11 4.2" fill="none" strokeWidth="2.2"
+          strokeLinecap="round" strokeLinejoin="round"
+          stroke={light ? 'rgba(0,0,0,.78)' : '#fff'} />
+  </svg>
+);
+
+// TweakColor — curated color/palette picker. Each option is either a single
+// hex string or an array of 1-5 hex strings; the card adapts — a lone color
+// renders solid, a palette renders colors[0] as the hero (left ~2/3) with the
+// rest stacked in a sharp column on the right. onChange emits the
+// option in the shape it was passed (string stays string, array stays array).
+// Without options it falls back to the native color input for back-compat.
+function TweakColor({ label, value, options, onChange }) {
+  if (!options || !options.length) {
+    return (
+      <div className="twk-row twk-row-h">
+        <div className="twk-lbl"><span>{label}</span></div>
+        <input type="color" className="twk-swatch" value={value}
+               onChange={(e) => onChange(e.target.value)} />
+      </div>
+    );
+  }
+  // Native <input type=color> emits lowercase hex per the HTML spec, so
+  // compare case-insensitively. String() guards JSON.stringify(undefined),
+  // which returns the primitive undefined (no .toLowerCase).
+  const key = (o) => String(JSON.stringify(o)).toLowerCase();
+  const cur = key(value);
+  return (
+    <TweakRow label={label}>
+      <div className="twk-chips" role="radiogroup">
+        {options.map((o, i) => {
+          const colors = Array.isArray(o) ? o : [o];
+          const [hero, ...rest] = colors;
+          const sup = rest.slice(0, 4);
+          const on = key(o) === cur;
+          return (
+            <button key={i} type="button" className="twk-chip" role="radio"
+                    aria-checked={on} data-on={on ? '1' : '0'}
+                    aria-label={colors.join(', ')} title={colors.join(' · ')}
+                    style={{ background: hero }}
+                    onClick={() => onChange(o)}>
+              {sup.length > 0 && (
+                <span>
+                  {sup.map((c, j) => <i key={j} style={{ background: c }} />)}
+                </span>
+              )}
+              {on && <__TwkCheck light={__twkIsLight(hero)} />}
+            </button>
+          );
+        })}
+      </div>
+    </TweakRow>
+  );
+}
+
+function TweakButton({ label, onClick, secondary = false }) {
+  return (
+    <button type="button" className={secondary ? 'twk-btn secondary' : 'twk-btn'}
+            onClick={onClick}>{label}</button>
+  );
+}
+
+Object.assign(window, {
+  useTweaks, TweaksPanel, TweakSection, TweakRow,
+  TweakSlider, TweakToggle, TweakRadio, TweakSelect,
+  TweakText, TweakNumber, TweakColor, TweakButton,
+});
+
+</script>
+<script type="text/babel">
+// Main app: state machine across landing, results, disambiguation, detail.
+// Also: a tiny rule-based "AI parser" that extracts params from a free-text query
+// using the domain's enum lists (projects, equipment, codes, types).
+
+const { useState: aUs, useEffect: aUe, useMemo: aMemo, useCallback: aCb } = React;
+
+// --- The parser. Deterministic rule-based extractor using ES taxonomy enums.
+function parseQuery(q) {
+  const tax      = window.KB_TAXONOMY || {};
+  const projects = tax.projects  || [];
+  const equips   = tax.equipment || [];
+  const text  = q;
+  const lower = q.toLowerCase();
+
+  const project = projects.find((p) => text.includes(p)) || null;
+  const equip   = equips.find((e) => lower.includes(e.toLowerCase())) || null;
+
+  // codes: numeric 5-7 digit alarms, or alphanumeric forms like ERR-115, SP-0421
+  let code = null;
+  const codeMatch = text.match(/\b([A-Z]{1,4}[-_]?\d{3,7}|\d{5,7})\b/);
+  if (codeMatch) code = codeMatch[1];
+
+  // Detect natural-language / question-form queries — skip type forcing to avoid over-constraining
+  const isSentence = /如何|怎么|怎样|是什么|什么是|是否|为什么|为何|多少|[？?]/.test(text);
+
+  // type — keyword heuristics; disabled for sentence queries
+  let type = null;
+  if (!isSentence) {
+    if (/报警|alarm|error|err|代码|code/i.test(text)) type = "alarm";
+    else if (/setup|装夹|安装|配置|校准|calibrat/i.test(text)) type = "setup";
+    else if (/经验|漂移|抖动|不均|chatter|drift|wobble|uneven/i.test(text)) type = "experience";
+  }
+
+  // keywords: strip matched tokens, extract CJK runs ≥2 and Latin words ≥3
+  let remainder = text;
+  [project, equip, code].forEach((tok) => {
+    if (tok) remainder = remainder.split(tok).join(" ");
+  });
+  remainder = remainder
+    .replace(/怎么处理|如何处理|怎么办|是什么|什么是|的处理|的解决|的方法|如何|怎么|怎样|是否|为什么|为何/g, " ")
+    .replace(/解决|处理|操作|使用|查看|检查|修复|修改|设置|配置|校准|验证|确认|原因|步骤|方法|流程|注意/g, " ")
+    .replace(/[，。？！,.?!:;:：；()（）"'""]/g, " ");
+
+  // Generic category suffixes common in manufacturing alarm queries.
+  // When a compound contains one of these as the tail bigram, only keep the head.
+  const GENERIC_TAIL = new Set(["\u62a5\u8b66", "\u6545\u969c", "\u5931\u8d25", "\u9519\u8bef", "\u5f02\u5e38", "\u95ee\u9898", "\u62a5\u9519", "\u8b66\u544a"]);
+  const tokens = [];
+  const cjk = remainder.match(/[\u4e00-\u9fff]+/g) || [];
+  cjk.forEach((c) => {
+    if (isSentence && c.length >= 4) {
+      // For sentence queries with compound CJK terms (e.g. "\u771f\u7a7a\u62a5\u8b66"):
+      // prefer the subject/noun head (first bigram) for precision. If the tail bigram is
+      // a generic category word (\u62a5\u8b66/\u6545\u969c/\u2026) we skip it to avoid over-broad BM25 matches.
+      for (let i = 0; i + 2 <= c.length; i += 2) {
+        const bigram = c.slice(i, i + 2);
+        if (!GENERIC_TAIL.has(bigram)) tokens.push(bigram);
+      }
+      // Always include at least the first bigram as a fallback
+      if (tokens.length === 0 || !tokens.includes(c.slice(0, 2))) tokens.push(c.slice(0, 2));
+    } else if (c.length >= 2) {
+      tokens.push(c);
+    }
+  });
+  const latin = remainder.match(/[A-Za-z][A-Za-z0-9\-_]{2,}/g) || [];
+  latin.forEach((w) => {
+    if (!projects.includes(w) && !equips.includes(w)) tokens.push(w);
+  });
+
+  const seen = new Set();
+  const keywords = [];
+  tokens.forEach((t) => {
+    const k = t.toLowerCase();
+    if (!seen.has(k)) { seen.add(k); keywords.push(t); }
+  });
+
+  return { project, equipment: equip, code, type, keywords: keywords.slice(0, 5), raw: q, isSentence };
+}
+
+// --- Header app shell
+function AppHeader({ onHome, onLibrary, onAdmin, page }) {
+  return (
+    <header className="app-header">
+      <button className="brand" onClick={onHome}>
+        <span className="brand-mark">
+          <svg viewBox="0 0 16 16" width="14" height="14">
+            <rect x="1" y="1" width="6" height="6" fill="currentColor" />
+            <rect x="9" y="1" width="6" height="6" fill="currentColor" opacity="0.4" />
+            <rect x="1" y="9" width="6" height="6" fill="currentColor" opacity="0.4" />
+            <rect x="9" y="9" width="6" height="6" fill="currentColor" />
+          </svg>
+        </span>
+        <span className="brand-name">
+          <span className="brand-zh">索 · Sou</span>
+          <span className="brand-en">Knowledge Base Search</span>
+        </span>
+      </button>
+
+      <nav className="header-nav">
+        <button className={`nav-item ${page === "landing" ? "nav-active" : ""}`} onClick={onHome}>
+          检索 <span className="nav-en">Search</span>
+        </button>
+        <button className={`nav-item ${page === "library" ? "nav-active" : ""}`} onClick={onLibrary}>
+          知识库 <span className="nav-en">Library</span>
+        </button>
+        <button className={`nav-item ${page === "admin" ? "nav-active" : ""}`} onClick={onAdmin}>
+          管理 <span className="nav-en">Admin</span>
+        </button>
+      </nav>
+
+      <div className="header-right">
+        <button
+          className="tweaks-toggle-btn"
+          title="Tweaks panel (T)"
+          onClick={() => window.postMessage({ type: "__activate_edit_mode" }, "*")}
+          style={{
+            display: "inline-flex", alignItems: "center", gap: "5px",
+            padding: "5px 10px", borderRadius: "6px",
+            background: "var(--surface-2)", border: "1px solid var(--border)",
+            fontSize: "12px", color: "var(--ink-2)",
+          }}
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" />
+          </svg>
+          Tweaks
+        </button>
+        <div className="user-pip" title="WB / 维护工程师">WB</div>
+      </div>
+    </header>
+  );
+}
+
+// --- Results page (filters sidebar + grid) — async, backed by ES via FastAPI
+function ResultsPage({ taxonomy, stats, params, setParams, mode, setMode, paramDisplay, density, onOpen, onResultsChange }) {
+  const typeDefs = window.KB_TYPE_DEFS || {};
+
+  // Async search state
+  const [result, setResult]   = rsUse(null);
+  const [loading, setLoading] = rsUse(false);
+  const [error, setError]     = rsUse(null);
+
+  rsEff(() => {
+    if (!params) return;
+    setLoading(true);
+    setError(null);
+    window.KB_SEARCH(params, mode).then(r => {
+      setResult(r);
+      onResultsChange && onResultsChange(r);
+      setLoading(false);
+    }).catch(err => {
+      setError(err.message);
+      setLoading(false);
+    });
+  }, [params, mode]);
+
+  const [editingQuery, setEditingQuery] = rsUse(false);
+  const [editText, setEditText]         = rsUse(params.raw || "");
+
+  const submitEdit = () => {
+    if (!editText.trim()) return;
+    setParams(parseQuery(editText.trim()));
+    setEditingQuery(false);
+  };
+
+  // Sidebar facet data from pre-loaded stats (total counts, not filtered)
+  const kts       = taxonomy?.knowledge_types || [];
+  const projects  = taxonomy?.projects        || [];
+  const equipment = taxonomy?.equipment       || [];
+  const byProject  = stats?.by_project  || {};
+  const byEquip    = stats?.by_equipment || {};
+  const byType     = stats?.by_type     || {};
+
+  // Interpret search result
+  const hits         = result?.hits       || [];
+  const total        = result?.total      || 0;
+  const searchStatus = result?.status     || null;
+  const isLoose      = searchStatus === 'loose_hit' || searchStatus === 'vector_only';
+  const isTooMany    = searchStatus === 'too_many';
+  const isEmpty      = searchStatus === 'no_hit' || (!loading && result && hits.length === 0);
+
+  return (
+    <div className="results-page">
+      {/* Top bar: search + AI parse */}
+      <div className="results-topbar">
+        <div className="results-search-row">
+          {editingQuery ? (
+            <form className="search-box search-box-inline"
+                  onSubmit={(e) => { e.preventDefault(); submitEdit(); }}>
+              <Icon name="search" size={16} />
+              <input autoFocus value={editText}
+                     onChange={(e) => setEditText(e.target.value)}
+                     onKeyDown={(e) => e.key === "Escape" && setEditingQuery(false)} />
+              <button type="submit" className="btn btn-primary btn-sm">重新解析</button>
+            </form>
+          ) : (
+            <div className="search-box search-box-inline search-box-static"
+                 onClick={() => { setEditText(params.raw || ""); setEditingQuery(true); }}>
+              <Icon name="search" size={16} />
+              <span className="search-query">{params.raw}</span>
+              <span className="search-edit-hint">
+                <Icon name="edit" size={12} /> 修改 / edit
+              </span>
+            </div>
+          )}
+        </div>
+        <ParamStrip params={params} setParams={setParams} displayStyle={paramDisplay} />
+      </div>
+
+      <div className="results-main">
+        {/* Filter sidebar */}
+        <aside className="filter-side">
+          <div className="filter-head">
+            <Icon name="filter" size={13} />
+            <span>筛选 · Filters</span>
+          </div>
+
+          <FilterGroup label="类型" labelEn="Type">
+            {kts.map((kt) => (
+              <FilterRow key={kt}
+                active={params.type === kt}
+                onClick={() => setParams({ ...params, type: params.type === kt ? null : kt })}
+                label={typeDefs[kt]?.zh || kt}
+                en={typeDefs[kt]?.en || kt}
+                count={byType[kt] || 0}
+                icon={typeIconMap[kt]}
+              />
+            ))}
+          </FilterGroup>
+
+          <FilterGroup label="项目" labelEn="Project">
+            {projects.map((p) => (
+              <FilterRow key={p}
+                active={params.project === p}
+                onClick={() => setParams({ ...params, project: params.project === p ? null : p })}
+                label={p}
+                count={byProject[p] || 0}
+              />
+            ))}
+          </FilterGroup>
+
+          <FilterGroup label="机台 / 设备" labelEn="Equipment">
+            {equipment.map((eq) => (
+              <FilterRow key={eq}
+                active={params.equipment === eq}
+                onClick={() => setParams({ ...params, equipment: params.equipment === eq ? null : eq })}
+                label={eq}
+                count={byEquip[eq] || 0}
+              />
+            ))}
+          </FilterGroup>
+        </aside>
+
+        {/* Results body */}
+        <main className="results-body">
+          {loading ? (
+            <div className="kb-loading">
+              <div className="kb-spinner" />
+              <span>检索中… Searching</span>
+            </div>
+          ) : error ? (
+            <div style={{ padding: "40px 0", textAlign: "center", color: "var(--danger)", fontSize: 13 }}>
+              检索失败：{error}
+            </div>
+          ) : (
+            <>
+              <div className="results-stat-row">
+                <div className="results-stat">
+                  {searchStatus === 'strict_hit' && <><b title="所有关键词均命中的结果数">{total}</b> 篇严格匹配 · strict</>}
+                  {searchStatus === 'loose_hit'  && <><b title="部分关键词命中的结果数（宽松模式）">{total}</b> 篇宽松匹配 · loose</>}
+                  {searchStatus === 'vector_only' && <><b title="语义向量检索命中数">{total}</b> 篇语义匹配 · vector</>}
+                  {searchStatus === 'too_many'   && <><b title="命中文档过多，请进一步缩小筛选范围">{total}</b> 篇匹配（过多）</>}
+                  {searchStatus === 'no_hit'     && <>无匹配结果</>}
+                  {!searchStatus && <>—</>}
+                </div>
+                <div className="results-mode-toggle">
+                  <button className={`mode-btn ${mode === "strict" ? "mode-on" : ""}`}
+                          onClick={() => setMode("strict")}>
+                    <span className="mode-dot mode-dot-strict" /> 严格 Strict
+                  </button>
+                  <button className={`mode-btn ${mode === "loose" ? "mode-on" : ""}`}
+                          onClick={() => setMode("loose")}>
+                    <span className="mode-dot mode-dot-loose" /> 宽松 Loose
+                  </button>
+                </div>
+              </div>
+
+              {isTooMany && (
+                <DisambiguateBanner
+                  count={total}
+                  suggestions={buildSuggestionsFromFacets(result.facets, params)}
+                  onPick={(s) => setParams({ ...params, ...s.apply })}
+                />
+              )}
+
+              {isLoose && result.banner && (
+                <LooseNotice
+                  banner={params.isSentence
+                    ? '问句模式：已使用语义+关键词检索，结果按相关度排序。如需更精确的关键词匹配，请切换至严格模式。'
+                    : result.banner}
+                  isSentence={params.isSentence}
+                  onRetry={() => setMode("strict")}
+                />
+              )}
+
+              {isEmpty ? (
+                <EmptyState onBack={() => setMode("strict")} />
+              ) : (
+                <div className={`result-grid ${density === "compact" ? "result-grid-compact" : ""}`}>
+                  {hits.map((s) => (
+                    <ResultCard key={s.doc.id} scored={s}
+                      keywords={params.keywords} mode={isLoose ? "loose" : "strict"}
+                      density={density} onOpen={() => onOpen(s.doc)} />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </main>
+      </div>
+    </div>
+  );
+}
+
+function FilterGroup({ label, labelEn, children }) {
+  return (
+    <div className="filter-group">
+      <div className="filter-group-head">
+        <span>{label}</span>
+        <span className="filter-group-en">{labelEn}</span>
+      </div>
+      <div className="filter-rows">{children}</div>
+    </div>
+  );
+}
+
+function FilterRow({ active, onClick, label, en, count, icon }) {
+  return (
+    <button className={`filter-row ${active ? "filter-row-on" : ""}`} onClick={onClick}>
+      <span className="filter-row-main">
+        {icon ? <Icon name={icon} size={12} /> : null}
+        <span className="filter-row-label">{label}</span>
+        {en ? <span className="filter-row-en">{en}</span> : null}
+      </span>
+      <span className="filter-row-count mono" title={`知识库中共 ${count} 篇文档属于此类别 · ${count} documents in this category`}>{count}</span>
+    </button>
+  );
+}
+
+function buildSuggestionsFromFacets(facets, params) {
+  const out = [];
+  if (!facets) return out;
+  // Backend facets keys: "equipment", "project", "error_codes" (no by_ prefix).
+  if (!params.equipment && facets.equipment) {
+    Object.entries(facets.equipment)
+      .sort((a, b) => b[1] - a[1]).slice(0, 3)
+      .forEach(([eq, n]) => {
+        out.push({ label: `仅看 ${eq} 机台`, hint: `${n} 篇文档 · ${n} docs`, apply: { equipment: eq } });
+      });
+  }
+  if (!params.project && facets.project) {
+    Object.entries(facets.project)
+      .sort((a, b) => b[1] - a[1]).slice(0, 2)
+      .forEach(([p, n]) => {
+        out.push({ label: `仅看 ${p} 项目`, hint: `${n} 篇文档 · ${n} docs`, apply: { project: p } });
+      });
+  }
+  // Show code suggestions only when few codes exist (avoid overwhelming the user)
+  if (!params.code && facets.error_codes) {
+    const codes = Object.entries(facets.error_codes).sort((a, b) => b[1] - a[1]);
+    if (codes.length <= 6) {
+      codes.slice(0, 2).forEach(([c, n]) => {
+        out.push({ label: `报警代码 ${c}`, hint: `${n} 篇文档`, apply: { code: c } });
+      });
+    }
+  }
+  return out.slice(0, 4);
+}
+
+// --- Library page: browse all documents
+function LibraryPage({ taxonomy, stats, density, onOpen }) {
+  const typeDefs = window.KB_TYPE_DEFS || {};
+  const [filters, setFilters] = React.useState({ type: null, project: null, equipment: null });
+  const [result, setResult]   = React.useState(null);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError]     = React.useState(null);
+  const [offset, setOffset]   = React.useState(0);
+
+  React.useEffect(() => { setOffset(0); setResult(null); }, [filters]);
+
+  React.useEffect(() => {
+    setLoading(true);
+    setError(null);
+    window.KB_SEARCH({ type: filters.type, project: filters.project, equipment: filters.equipment, keywords: [] }, 'loose', offset)
+      .then(r => {
+        setResult(prev =>
+          offset === 0 ? r : prev ? { ...r, hits: [...prev.hits, ...r.hits] } : r
+        );
+        setLoading(false);
+      })
+      .catch(err => { setError(err.message); setLoading(false); });
+  }, [filters, offset]);
+
+  const kts      = taxonomy?.knowledge_types || [];
+  const projects = taxonomy?.projects        || [];
+  const equips   = taxonomy?.equipment       || [];
+  const byType     = stats?.by_type     || {};
+  const byProject  = stats?.by_project  || {};
+  const byEquip    = stats?.by_equipment || {};
+  const hits  = result?.hits  || [];
+  const total = result?.total || 0;
+  const hasMore = hits.length < total;
+
+  return (
+    <div className="results-page">
+      <div className="results-topbar lib-topbar">
+        <div className="lib-topbar-inner">
+          <h2 className="lib-title">知识库 <span className="lib-title-en">Library</span></h2>
+          <span className="lib-total mono">{total} 篇文档</span>
+        </div>
+      </div>
+      <div className="results-main">
+        <aside className="filter-side lib-filter-side">
+          <div className="filter-head"><Icon name="filter" size={13} /><span>筛选 · Filters</span></div>
+          <FilterGroup label="类型" labelEn="Type">
+            {kts.map(kt => (
+              <FilterRow key={kt} active={filters.type === kt}
+                onClick={() => setFilters(f => ({ ...f, type: f.type === kt ? null : kt }))}
+                label={typeDefs[kt]?.zh || kt} en={typeDefs[kt]?.en || kt}
+                count={byType[kt] || 0} icon={typeIconMap[kt]} />
+            ))}
+          </FilterGroup>
+          <FilterGroup label="项目" labelEn="Project">
+            {projects.map(p => (
+              <FilterRow key={p} active={filters.project === p}
+                onClick={() => setFilters(f => ({ ...f, project: f.project === p ? null : p }))}
+                label={p} count={byProject[p] || 0} />
+            ))}
+          </FilterGroup>
+          <FilterGroup label="机台 / 设备" labelEn="Equipment">
+            {equips.map(eq => (
+              <FilterRow key={eq} active={filters.equipment === eq}
+                onClick={() => setFilters(f => ({ ...f, equipment: f.equipment === eq ? null : eq }))}
+                label={eq} count={byEquip[eq] || 0} />
+            ))}
+          </FilterGroup>
+        </aside>
+        <main className="results-body">
+          {loading && offset === 0 ? (
+            <div className="kb-loading"><div className="kb-spinner" /><span>加载中… Loading</span></div>
+          ) : error ? (
+            <div style={{ padding: "40px 0", textAlign: "center", color: "var(--danger)", fontSize: 13 }}>加载失败：{error}</div>
+          ) : (
+            <>
+              <div className="results-stat-row">
+                <div className="results-stat">
+                  共 <b>{total}</b> 篇文档
+                  {(filters.type || filters.project || filters.equipment) ? ' · 已筛选' : ''}
+                </div>
+              </div>
+              <div className="result-grid result-grid-compact">
+                {hits.map(s => (
+                  <ResultCard key={s.doc.id} scored={s} keywords={[]} mode="strict" density="compact" onOpen={() => onOpen(s.doc)} />
+                ))}
+              </div>
+              {hasMore && (
+                <div style={{ textAlign: "center", marginTop: 24 }}>
+                  <button className="btn" onClick={() => setOffset(hits.length)} disabled={loading}>
+                    {loading ? "加载中…" : `加载更多 · Load more (${total - hits.length} 剩余)`}
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </main>
+      </div>
+    </div>
+  );
+}
+
+// --- Admin page: stats + taxonomy reload + add knowledge form
+const ADMIN_FIELDS = {
+  alarm: [
+    { key: "title",       label: "标题 Title",            type: "text",     required: true  },
+    { key: "project",     label: "项目 Project",           type: "text",     required: true  },
+    { key: "equipment",   label: "机台 Equipment",         type: "text",     required: true  },
+    { key: "error_codes", label: "报警代码（逗号分隔）",     type: "text",     required: false },
+    { key: "content",     label: "内容 Content",           type: "textarea", required: true  },
+    { key: "resolution",  label: "解除流程 Resolution",    type: "textarea", required: true  },
+    { key: "notes",       label: "注意事项 Notes",         type: "textarea", required: false },
+    { key: "source_file", label: "来源文件 Source file",   type: "text",     required: false },
+  ],
+  setup: [
+    { key: "title",         label: "标题 Title",            type: "text",     required: true  },
+    { key: "project",       label: "项目 Project",           type: "text",     required: true  },
+    { key: "equipment",     label: "机台 Equipment",         type: "text",     required: true  },
+    { key: "prerequisites", label: "前提 Prerequisites",     type: "textarea", required: false },
+    { key: "procedure",     label: "流程 Procedure",         type: "textarea", required: true  },
+    { key: "notes",         label: "注意事项 Notes",         type: "textarea", required: false },
+    { key: "source_file",   label: "来源文件 Source file",   type: "text",     required: false },
+  ],
+  experience: [
+    { key: "title",       label: "标题 Title",            type: "text",     required: true  },
+    { key: "project",     label: "项目 Project",           type: "text",     required: true  },
+    { key: "equipment",   label: "机台 Equipment",         type: "text",     required: true  },
+    { key: "body_text",   label: "内容 Body",             type: "textarea", required: true  },
+    { key: "procedure",   label: "流程 Procedure",         type: "textarea", required: false },
+    { key: "notes",       label: "注意事项 Notes",         type: "textarea", required: false },
+    { key: "source_file", label: "来源文件 Source file",   type: "text",     required: false },
+  ],
+};
+
+function AdminPage({ stats, onStatsRefresh }) {
+  const typeDefs = window.KB_TYPE_DEFS || {};
+  const [statsData, setStatsData]       = React.useState(stats);
+  const [statsLoading, setStatsLoading] = React.useState(false);
+  const [toast, setToast]               = React.useState(null);
+
+  const showToast = (msg, kind = 'ok') => {
+    setToast({ msg, kind });
+    setTimeout(() => setToast(null), 3000);
+  };
+  const reloadStats = () => {
+    setStatsLoading(true);
+    fetch('/api/v1/documents/stats').then(r => r.json()).then(s => {
+      setStatsData(s); onStatsRefresh(s); setStatsLoading(false);
+    }).catch(() => setStatsLoading(false));
+  };
+  const reloadTaxonomy = () => {
+    fetch('/api/v1/admin/reload-taxonomy', { method: 'POST' })
+      .then(r => r.ok ? showToast('分类已重新加载 Taxonomy reloaded') : showToast('重载失败 Reload failed', 'err'))
+      .catch(() => showToast('网络错误 Network error', 'err'));
+  };
+
+  const [formType, setFormType]     = React.useState(null);
+  const [formValues, setFormValues] = React.useState({});
+  const [formErrors, setFormErrors] = React.useState({});
+  const [submitting, setSubmitting] = React.useState(false);
+  const [lastDocId, setLastDocId]   = React.useState(null);
+
+  const selectType = (kt) => { setFormType(kt); setFormValues({}); setFormErrors({}); setLastDocId(null); };
+  const setField = (key, val) => {
+    setFormValues(v => ({ ...v, [key]: val }));
+    setFormErrors(e => ({ ...e, [key]: null }));
+  };
+  const validateForm = () => {
+    const errs = {};
+    (ADMIN_FIELDS[formType] || []).forEach(f => {
+      if (f.required && !(formValues[f.key] || '').trim()) errs[f.key] = '必填 Required';
+    });
+    setFormErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+  const submitForm = () => {
+    if (!validateForm()) return;
+    setSubmitting(true);
+    const payload = { ...formValues };
+    payload.error_codes = payload.error_codes
+      ? payload.error_codes.split(',').map(s => s.trim()).filter(Boolean)
+      : [];
+    fetch(`/api/v1/documents/${formType}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+      .then(r => r.json().then(d => ({ ok: r.ok, data: d })))
+      .then(({ ok, data }) => {
+        setSubmitting(false);
+        if (ok) { setLastDocId(data.id); setFormValues({}); showToast(`已添加 · ID: ${data.id}`); }
+        else showToast(JSON.stringify(data.detail || data), 'err');
+      })
+      .catch(() => { setSubmitting(false); showToast('提交失败 Submit failed', 'err'); });
+  };
+
+  const liveStats = statsData || stats || {};
+  const fields = ADMIN_FIELDS[formType] || [];
+
+  return (
+    <div className="admin-page">
+      {toast && (
+        <div className={`admin-toast admin-toast-${toast.kind}`}>
+          <Icon name={toast.kind === 'err' ? 'info' : 'check'} size={14} />
+          {toast.msg}
+        </div>
+      )}
+      <div className="admin-inner">
+        <section className="admin-section">
+          <div className="admin-section-head">
+            <h3 className="admin-section-title">统计 · Stats</h3>
+            <button className="btn btn-sm" onClick={reloadStats} disabled={statsLoading}>
+              {statsLoading ? '加载中…' : '刷新'}
+            </button>
+          </div>
+          <div className="admin-stats-grid">
+            <div className="admin-stat-card">
+              <div className="admin-stat-num">{liveStats.total || 0}</div>
+              <div className="admin-stat-label">总文档 Total</div>
+            </div>
+            {Object.entries(liveStats.by_type || {}).map(([k, v]) => (
+              <div key={k} className="admin-stat-card">
+                <div className="admin-stat-num">{v}</div>
+                <div className="admin-stat-label">{typeDefs[k]?.zh || k}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="admin-section">
+          <div className="admin-section-head">
+            <h3 className="admin-section-title">操作 · Actions</h3>
+          </div>
+          <div className="admin-actions">
+            <button className="btn" onClick={reloadTaxonomy}>
+              <Icon name="sparkle" size={13} /> 重新加载分类 Reload Taxonomy
+            </button>
+          </div>
+        </section>
+
+        <section className="admin-section">
+          <div className="admin-section-head">
+            <h3 className="admin-section-title">添加知识 · Add Knowledge</h3>
+          </div>
+          <div className="admin-type-pills">
+            {['alarm', 'setup', 'experience'].map(kt => (
+              <button key={kt}
+                className={`admin-type-pill ${formType === kt ? 'admin-type-pill-on' : ''}`}
+                onClick={() => selectType(kt)}>
+                <Icon name={typeIconMap[kt]} size={13} />
+                {typeDefs[kt]?.zh || kt}
+              </button>
+            ))}
+          </div>
+          {formType && (
+            <div className="admin-form">
+              {fields.map(f => (
+                <div key={f.key} className="admin-field">
+                  <label className="admin-label">
+                    {f.label}{f.required && <span className="admin-required">*</span>}
+                  </label>
+                  {f.type === 'textarea'
+                    ? <textarea
+                        className={`admin-input admin-textarea ${formErrors[f.key] ? 'admin-input-err' : ''}`}
+                        value={formValues[f.key] || ''}
+                        onChange={e => setField(f.key, e.target.value)}
+                        rows={4}
+                      />
+                    : <input
+                        className={`admin-input ${formErrors[f.key] ? 'admin-input-err' : ''}`}
+                        type="text"
+                        value={formValues[f.key] || ''}
+                        onChange={e => setField(f.key, e.target.value)}
+                      />
+                  }
+                  {formErrors[f.key] && <span className="admin-field-err">{formErrors[f.key]}</span>}
+                </div>
+              ))}
+              <div className="admin-form-foot">
+                {lastDocId && (
+                  <span className="admin-success">
+                    <Icon name="check" size={13} /> 已添加 ID: <span className="mono">{lastDocId}</span>
+                  </span>
+                )}
+                <button className="btn btn-primary" onClick={submitForm} disabled={submitting}>
+                  {submitting ? '提交中…' : '提交 Submit'}
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
+      </div>
+    </div>
+  );
+}
+
+// --- AI Chat panel (backend-proxied, key stays server-side)
+
+function AIChatPanel({ context, results, onClose }) {
+  const [messages, setMessages]   = aUs([]);
+  const [input, setInput]         = aUs('');
+  const [loading, setLoading]     = aUs(false);
+  const [panelSize, setPanelSize] = aUs({ w: 360, h: 480 });
+  const [showQuickshots, setShowQuickshots] = aUs(false);
+  const bottomRef = React.useRef(null);
+  const inputRef  = React.useRef(null);
+
+  const hits = results?.hits || [];
+
+  // Build rich context for the system prompt
+  const docsContext = hits.length > 0
+    ? '\n\n当前检索到以下文档（按相关度排序）：\n' + hits.slice(0, 6).map((h, i) => {
+        const d = h.doc;
+        const snippets = Object.values(d.sections || {}).filter(Boolean).map(s => s.slice(0, 180)).join(' ');
+        return `${i + 1}. 【${d.title}】类型:${d.type || '—'} 项目:${d.project || '—'} 机台:${d.equipment || '—'}\n   ${snippets}`;
+      }).join('\n')
+    : '';
+
+  const systemPrompt = `你是半导体制造设备知识库助手，帮助工程师理解报警代码、设备操作和故障排查。只根据知识库实际内容作答，不确定时明确说明，不编造设备参数或步骤。回复请使用 Markdown 格式（标题、列表、代码块等）以便阅读。${context ? `\n\n用户当前查询：${context}` : ''}${docsContext}`;
+
+  // Suggestions shown in the empty state — context-aware shortcuts
+  const suggestions = aMemo(() => {
+    const chips = [];
+    if (hits.length > 0) {
+      const first = hits[0].doc;
+      chips.push(`「${first.title}」的处理步骤是什么？`);
+      if (first.codes?.length) chips.push(`报警代码 ${first.codes[0]} 的根本原因？`);
+      if (hits.length > 1) chips.push(`这 ${hits.length} 篇文档有什么区别？`);
+      chips.push(`${first.project || '设备'} 的日常维护注意事项？`);
+    } else {
+      chips.push('真空系统报警如何处理？', '设备维护的注意事项有哪些？', '如何校准设备参数？');
+    }
+    return chips.slice(0, 4);
+  }, [hits, context]);
+
+  aCb(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const sendText = async (text) => {
+    if (!text || loading) return;
+    const userMsg = { role: 'user', content: text };
+    const history = [...messages, userMsg];
+    setMessages(history);
+    setInput('');
+    setLoading(true);
+    try {
+      const resp = await fetch('/api/v1/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{ role: 'system', content: systemPrompt }, ...history],
+        }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.detail || `HTTP ${resp.status}`);
+      }
+      const data = await resp.json();
+      const reply = data.content || '（无回复）';
+      setMessages(m => [...m, { role: 'assistant', content: reply }]);
+    } catch (err) {
+      setMessages(m => [...m, { role: 'assistant', content: `⚠ ${err.message}` }]);
+    }
+    setLoading(false);
+    setTimeout(() => inputRef.current?.focus(), 50);
+  };
+
+  const send = () => sendText(input.trim());
+
+  // Drag-to-resize from the top-left handle
+  const onResizeStart = (e) => {
+    e.preventDefault();
+    const startX = e.clientX, startY = e.clientY;
+    const startW = panelSize.w, startH = panelSize.h;
+    const onMove = (me) => {
+      setPanelSize({
+        w: Math.max(280, Math.min(700, startW + (startX - me.clientX))),
+        h: Math.max(320, Math.min(860, startH + (startY - me.clientY))),
+      });
+    };
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  };
+
+  return (
+    <div className="chat-panel" style={{ width: panelSize.w, height: panelSize.h }}>
+      <div className="chat-resize-handle" onMouseDown={onResizeStart} title="拖动调整大小 Drag to resize" />
+      <div className="chat-head">
+        <span className="chat-head-title">
+          <Icon name="sparkle" size={14} />
+          AI 助手 · DeepSeek
+        </span>
+        <button className="icon-btn" onClick={onClose} aria-label="close chat">
+          <Icon name="x" size={16} />
+        </button>
+      </div>
+
+      <div className="chat-messages">
+        {messages.length === 0 && (
+          <>
+            <div className="chat-empty">
+              <Icon name="sparkle" size={22} />
+              <p>您好！我是 AI 助手，可以帮您理解知识库内容。</p>
+              <p style={{ opacity: .7, fontSize: '11.5px' }}>Hi — ask me about any document or alarm code.</p>
+            </div>
+            <div className="chat-suggestions">
+              <div className="chat-suggestions-label">快速提问 Quick questions</div>
+              {suggestions.map((s, i) => (
+                <button key={i} className="chat-suggestion-chip" onClick={() => sendText(s)}>
+                  <Icon name="arrow-right" size={12} />
+                  {s}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+        {messages.map((m, i) => (
+          <div key={i} className={`chat-msg chat-msg-${m.role}`}>
+            {m.role === 'assistant'
+              ? <div className="chat-msg-content chat-md" dangerouslySetInnerHTML={{ __html: window.marked ? window.marked.parse(m.content) : m.content }} />
+              : <div className="chat-msg-content">{m.content}</div>
+            }
+          </div>
+        ))}
+        {loading && (
+          <div className="chat-msg chat-msg-assistant">
+            <div className="chat-msg-content chat-loading">
+              <span /><span /><span />
+            </div>
+          </div>
+        )}
+        <div ref={bottomRef} />
+      </div>
+
+      <div className="chat-input-area">
+        {messages.length > 0 && showQuickshots && (
+          <div className="chat-quickshots">
+            {suggestions.map((s, i) => (
+              <button key={i} className="chat-quickshot-chip" onClick={() => { sendText(s); setShowQuickshots(false); }}>
+                <Icon name="arrow-right" size={10} />{s}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="chat-input-row">
+          {messages.length > 0 && (
+            <button
+              className={`chat-hint-btn${showQuickshots ? ' active' : ''}`}
+              title="快捷问题 / Quick questions"
+              onClick={() => setShowQuickshots(s => !s)}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" />
+              </svg>
+            </button>
+          )}
+          <input
+            ref={inputRef}
+            className="chat-input"
+            placeholder="问一个问题… / Ask a question…"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+            disabled={loading}
+            autoFocus
+          />
+          <button className="btn btn-primary btn-sm" onClick={send} disabled={!input.trim() || loading}>
+            <Icon name="arrow-right" size={14} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+// --- Root
+function App() {
+  const [t, setTweak] = useTweaks(/*EDITMODE-BEGIN*/{
+    "accent": "#4F4FAE",
+    "density": "comfortable",
+    "matchMode": "strict",
+    "paramDisplay": "chips"
+  }/*EDITMODE-END*/);
+
+  const [page, setPage]         = aUs("landing");
+  const [params, setParams]     = aUs(null);
+  const [openDoc, setOpenDoc]   = aUs(null);
+  const [taxonomy, setTax]      = aUs(null);
+  const [stats, setStats]       = aUs(null);
+  const [chatOpen, setChatOpen] = aUs(false);
+  const [chatResults, setChatResults] = aUs(null);
+
+  // Load taxonomy + stats from ES on mount (loadKBData auto-falls-back on failure)
+  aUe(() => {
+    window.KB_LOAD && window.KB_LOAD().then(({ tax, stats }) => {
+      setTax(tax);
+      setStats(stats);
+    });
+  }, []);
+
+  // Apply accent palette to root
+  aUe(() => {
+    const palette = {
+      "#4F4FAE": { soft: "oklch(0.95 0.03 265)", on: "#fff" },
+      "#4B5563": { soft: "oklch(0.94 0.01 240)", on: "#fff" },
+      "#0F9F73": { soft: "oklch(0.95 0.04 160)", on: "#fff" },
+      "#C68C26": { soft: "oklch(0.95 0.05 70)",  on: "#1a1a1a" },
+    };
+    const meta = palette[t.accent] || palette["#4F4FAE"];
+    document.documentElement.style.setProperty("--accent", t.accent);
+    document.documentElement.style.setProperty("--accent-soft", meta.soft);
+    document.documentElement.style.setProperty("--on-accent", meta.on);
+  }, [t.accent]);
+
+  aUe(() => {
+    document.documentElement.dataset.density = t.density;
+  }, [t.density]);
+
+  const submitQuery = async (q) => {
+    const rulesBased = parseQuery(q);
+    if (window.saveRecentSearch) window.saveRecentSearch(q, rulesBased.project, rulesBased.equipment);
+    // Navigate immediately with rule-based params; LLM extraction refines asynchronously.
+    setParams(rulesBased);
+    setPage("results");
+    setOpenDoc(null);
+    try {
+      const resp = await fetch('/api/v1/extract', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: q }),
+        signal: AbortSignal.timeout(4000),
+      });
+      if (resp.ok) {
+        const llm = await resp.json();
+        setParams({
+          project:    llm.project    || rulesBased.project,
+          equipment:  llm.equipment  || rulesBased.equipment,
+          code:       llm.error_codes?.[0] || rulesBased.code,
+          type:       llm.knowledge_type   || rulesBased.type,
+          keywords:   llm.keywords?.length ? llm.keywords : rulesBased.keywords,
+          raw:        q,
+          isSentence: llm.is_sentence ?? rulesBased.isSentence,
+        });
+      }
+    } catch (_) { /* rule-based params already set; LLM extraction optional */ }
+  };
+
+  return (
+    <div className="app">
+      <AppHeader
+        onHome={() => { setPage("landing"); setParams(null); setOpenDoc(null); }}
+        onLibrary={() => { setPage("library"); setOpenDoc(null); }}
+        onAdmin={() => { setPage("admin"); setOpenDoc(null); }}
+        page={page}
+      />
+
+      <div className="app-body">
+        {page === "landing" ? (
+          <Landing
+            taxonomy={taxonomy}
+            stats={stats}
+            onSubmit={submitQuery}
+            onPickRecent={(r) => submitQuery(r.q)}
+            onPickType={(tId) => {
+              setParams({ project: null, equipment: null, code: null, type: tId, keywords: [], raw: `类型：${tId}` });
+              setPage("results");
+            }}
+          />
+        ) : page === "library" ? (
+          <LibraryPage taxonomy={taxonomy} stats={stats} density={t.density} onOpen={(d) => setOpenDoc(d)} />
+        ) : page === "admin" ? (
+          <AdminPage stats={stats} onStatsRefresh={(s) => setStats(s)} />
+        ) : (
+          <ResultsPage
+            taxonomy={taxonomy}
+            stats={stats}
+            params={params}
+            setParams={setParams}
+            mode={t.matchMode}
+            setMode={(m) => setTweak("matchMode", m)}
+            paramDisplay={t.paramDisplay}
+            density={t.density}
+            onOpen={(d) => setOpenDoc(d)}
+            onResultsChange={setChatResults}
+          />
+        )}
+      </div>
+
+      {openDoc ? (
+        <Detail
+          doc={openDoc}
+          keywords={page === "results" && params ? params.keywords : []}
+          onClose={() => setOpenDoc(null)}
+        />
+      ) : null}
+
+      {/* AI Chat FAB + Panel */}
+      <button
+        className="chat-fab"
+        title="AI 助手 · Chat"
+        onClick={() => setChatOpen(o => !o)}
+        aria-label={chatOpen ? "Close AI chat" : "Open AI chat"}
+      >
+        {chatOpen ? <Icon name="x" size={20} /> : <Icon name="sparkle" size={20} />}
+      </button>
+      {chatOpen && (
+        <AIChatPanel
+          context={
+            page === 'results' && params
+              ? `查询: ${params.raw || ''}${params.project ? ` · 项目: ${params.project}` : ''}${params.equipment ? ` · 机台: ${params.equipment}` : ''}${params.type ? ` · 类型: ${params.type}` : ''}`
+              : null
+          }
+          results={chatResults}
+          onClose={() => setChatOpen(false)}
+        />
+      )}
+
+      {/* Tweaks Panel */}
+      <TweaksPanel title="Tweaks">
+        <TweakSection label="主题 · Theme">
+          <TweakColor
+            label="Accent"
+            value={t.accent}
+            onChange={(v) => setTweak("accent", v)}
+            options={["#4F4FAE", "#4B5563", "#0F9F73", "#C68C26"]}
+          />
+        </TweakSection>
+
+        <TweakSection label="布局 · Layout">
+          <TweakRadio
+            label="Density"
+            value={t.density}
+            onChange={(v) => setTweak("density", v)}
+            options={[
+              { value: "comfortable", label: "Comfort" },
+              { value: "compact",     label: "Compact" },
+            ]}
+          />
+          <TweakRadio
+            label="参数展示 Params"
+            value={t.paramDisplay}
+            onChange={(v) => setTweak("paramDisplay", v)}
+            options={[
+              { value: "chips",    label: "Chips" },
+              { value: "sentence", label: "Sentence" },
+            ]}
+          />
+        </TweakSection>
+
+        <TweakSection label="检索模式 · Match">
+          <TweakRadio
+            label="Match mode"
+            value={t.matchMode}
+            onChange={(v) => setTweak("matchMode", v)}
+            options={[
+              { value: "strict", label: "Strict" },
+              { value: "loose",  label: "Loose" },
+            ]}
+          />
+          <div className="tweak-note">
+            Loose mode demos the fallback state: keywords joined by OR, with a notice that AI did not find an exact match.
+          </div>
+        </TweakSection>
+      </TweaksPanel>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+
+</script>
+</body>
+</html>

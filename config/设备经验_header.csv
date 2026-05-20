@@ -1,0 +1,101 @@
+项目,机台,问题,失败描述,失败分析,根因,纠正步骤,PPT文件,PPT页面
+MEM,Stage,振动异常,Observed Vibration Issue during run #513; symptom: sudden,Root analysis suggests electrical cause leading to vibration issue,老化,步骤1; 步骤2; 步骤3,experience_MEM_Stage_1.pptx,13
+MHK,Stage,光学对位漂移,Observed Optics Drift during run #471; symptom: intermittent,Root analysis suggests electrical cause leading to optics drift,环境因素,步骤1; 步骤2; 步骤3,experience_MHK_Stage_2.pptx,14
+Kinneret,Stage,加热元件失效,Observed Heater Element Burnout during run #118; symptom: continuous,Root analysis suggests thermal cause leading to heater element burnout,供应商批次,步骤1; 步骤2; 步骤3,experience_Kinneret_Stage_3.pptx,6
+所有项目,Pump,液压系统漏油,Observed Hydraulic Leak during run #448; symptom: intermittent,Root analysis suggests mechanical cause leading to hydraulic leak,设计缺陷,步骤1; 步骤2; 步骤3,experience_所有项目_Pump_4.pptx,19
+Kinneret,SensorModule,软件崩溃,Observed Software Crash during run #892; symptom: continuous,Root analysis suggests electrical cause leading to software crash,装配问题,步骤1; 步骤2; 步骤3,experience_Kinneret_SensorModule_5.pptx,11
+MEM,SensorModule,液压系统漏油,Observed Hydraulic Leak during run #544; symptom: sudden,Root analysis suggests mechanical cause leading to hydraulic leak,供应商批次,步骤1; 步骤2; 步骤3,experience_MEM_SensorModule_6.pptx,12
+MEM,Conveyor,液压系统漏油,Observed Hydraulic Leak during run #150; symptom: continuous,Root analysis suggests mechanical cause leading to hydraulic leak,装配问题,步骤1; 步骤2; 步骤3,experience_MEM_Conveyor_7.pptx,20
+MEM,SensorModule,传感器失效,Observed Sensor Failure during run #975; symptom: sudden,Root analysis suggests software cause leading to sensor failure,设计缺陷,步骤1; 步骤2; 步骤3,experience_MEM_SensorModule_8.pptx,25
+所有项目,Pump,电气噪声,Observed Electrical Noise during run #155; symptom: continuous,Root analysis suggests thermal cause leading to electrical noise,设计缺陷,步骤1; 步骤2; 步骤3,experience_所有项目_Pump_9.pptx,15
+Sonora,Heater,光学对位漂移,Observed Optics Drift during run #361; symptom: sudden,Root analysis suggests thermal cause leading to optics drift,供应商批次,步骤1; 步骤2; 步骤3,experience_Sonora_Heater_10.pptx,15
+所有项目,FTU,光学对位漂移,Observed Optics Drift during run #378; symptom: continuous,Root analysis suggests thermal cause leading to optics drift,老化,步骤1; 步骤2; 步骤3,experience_所有项目_FTU_11.pptx,20
+Kinneret,Aligner,光学对位漂移,Observed Optics Drift during run #461; symptom: sudden,Root analysis suggests mechanical cause leading to optics drift,供应商批次,步骤1; 步骤2; 步骤3,experience_Kinneret_Aligner_12.pptx,20
+所有项目,Loader,光学对位漂移,Observed Optics Drift during run #462; symptom: intermittent,Root analysis suggests electrical cause leading to optics drift,老化,步骤1; 步骤2; 步骤3,experience_所有项目_Loader_13.pptx,17
+MEM,FTU,振动异常,Observed Vibration Issue during run #725; symptom: continuous,Root analysis suggests software cause leading to vibration issue,环境因素,步骤1; 步骤2; 步骤3,experience_MEM_FTU_14.pptx,17
+MEM,Pump,电气噪声,Observed Electrical Noise during run #940; symptom: continuous,Root analysis suggests software cause leading to electrical noise,设计缺陷,步骤1; 步骤2; 步骤3,experience_MEM_Pump_15.pptx,25
+Yucatan,FTU,电气噪声,Observed Electrical Noise during run #68; symptom: continuous,Root analysis suggests thermal cause leading to electrical noise,环境因素,步骤1; 步骤2; 步骤3,experience_Yucatan_FTU_16.pptx,22
+Kinneret,Heater,加热元件失效,Observed Heater Element Burnout during run #742; symptom: sudden,Root analysis suggests mechanical cause leading to heater element burnout,供应商批次,步骤1; 步骤2; 步骤3,experience_Kinneret_Heater_17.pptx,3
+MEM,Pump,加热元件失效,Observed Heater Element Burnout during run #991; symptom: sudden,Root analysis suggests software cause leading to heater element burnout,装配问题,步骤1; 步骤2; 步骤3,experience_MEM_Pump_18.pptx,20
+PDX,Heater,软件崩溃,Observed Software Crash during run #659; symptom: continuous,Root analysis suggests mechanical cause leading to software crash,环境因素,步骤1; 步骤2; 步骤3,experience_PDX_Heater_19.pptx,3
+Kinneret,Pump,光学对位漂移,Observed Optics Drift during run #372; symptom: continuous,Root analysis suggests mechanical cause leading to optics drift,装配问题,步骤1; 步骤2; 步骤3,experience_Kinneret_Pump_20.pptx,11
+所有项目,Conveyor,振动异常,Observed Vibration Issue during run #141; symptom: intermittent,Root analysis suggests thermal cause leading to vibration issue,供应商批次,步骤1; 步骤2; 步骤3,experience_所有项目_Conveyor_21.pptx,4
+MHK,Pump,传感器失效,Observed Sensor Failure during run #612; symptom: continuous,Root analysis suggests mechanical cause leading to sensor failure,装配问题,步骤1; 步骤2; 步骤3,experience_MHK_Pump_22.pptx,6
+MEM,Aligner,光学对位漂移,Observed Optics Drift during run #421; symptom: continuous,Root analysis suggests mechanical cause leading to optics drift,设计缺陷,步骤1; 步骤2; 步骤3,experience_MEM_Aligner_23.pptx,20
+Sonora,Aligner,振动异常,Observed Vibration Issue during run #547; symptom: intermittent,Root analysis suggests electrical cause leading to vibration issue,设计缺陷,步骤1; 步骤2; 步骤3,experience_Sonora_Aligner_24.pptx,7
+Yucatan,Aligner,机械卡死,Observed Mechanical Jam during run #788; symptom: continuous,Root analysis suggests software cause leading to mechanical jam,环境因素,步骤1; 步骤2; 步骤3,experience_Yucatan_Aligner_25.pptx,17
+Kinneret,Loader,振动异常,Observed Vibration Issue during run #821; symptom: sudden,Root analysis suggests mechanical cause leading to vibration issue,供应商批次,步骤1; 步骤2; 步骤3,experience_Kinneret_Loader_26.pptx,2
+所有项目,Pump,液压系统漏油,Observed Hydraulic Leak during run #729; symptom: sudden,Root analysis suggests thermal cause leading to hydraulic leak,供应商批次,步骤1; 步骤2; 步骤3,experience_所有项目_Pump_27.pptx,3
+MEM,Heater,机械卡死,Observed Mechanical Jam during run #928; symptom: sudden,Root analysis suggests mechanical cause leading to mechanical jam,设计缺陷,步骤1; 步骤2; 步骤3,experience_MEM_Heater_28.pptx,3
+Boston,Aligner,电气噪声,Observed Electrical Noise during run #953; symptom: intermittent,Root analysis suggests software cause leading to electrical noise,老化,步骤1; 步骤2; 步骤3,experience_Boston_Aligner_29.pptx,13
+Yucatan,Conveyor,软件崩溃,Observed Software Crash during run #84; symptom: continuous,Root analysis suggests mechanical cause leading to software crash,老化,步骤1; 步骤2; 步骤3,experience_Yucatan_Conveyor_30.pptx,11
+PDX,Pump,传感器失效,Observed Sensor Failure during run #141; symptom: intermittent,Root analysis suggests electrical cause leading to sensor failure,设计缺陷,步骤1; 步骤2; 步骤3,experience_PDX_Pump_31.pptx,23
+MEM,Aligner,机械卡死,Observed Mechanical Jam during run #631; symptom: intermittent,Root analysis suggests thermal cause leading to mechanical jam,老化,步骤1; 步骤2; 步骤3,experience_MEM_Aligner_32.pptx,9
+Boston,Loader,软件崩溃,Observed Software Crash during run #114; symptom: continuous,Root analysis suggests mechanical cause leading to software crash,供应商批次,步骤1; 步骤2; 步骤3,experience_Boston_Loader_33.pptx,4
+MHK,Conveyor,软件崩溃,Observed Software Crash during run #655; symptom: sudden,Root analysis suggests software cause leading to software crash,老化,步骤1; 步骤2; 步骤3,experience_MHK_Conveyor_34.pptx,4
+所有项目,FTU,振动异常,Observed Vibration Issue during run #736; symptom: intermittent,Root analysis suggests electrical cause leading to vibration issue,设计缺陷,步骤1; 步骤2; 步骤3,experience_所有项目_FTU_35.pptx,1
+Yucatan,Conveyor,软件崩溃,Observed Software Crash during run #192; symptom: sudden,Root analysis suggests thermal cause leading to software crash,环境因素,步骤1; 步骤2; 步骤3,experience_Yucatan_Conveyor_36.pptx,12
+PDX,FTU,软件崩溃,Observed Software Crash during run #895; symptom: continuous,Root analysis suggests thermal cause leading to software crash,设计缺陷,步骤1; 步骤2; 步骤3,experience_PDX_FTU_37.pptx,12
+Sonora,FTU,电气噪声,Observed Electrical Noise during run #808; symptom: intermittent,Root analysis suggests electrical cause leading to electrical noise,装配问题,步骤1; 步骤2; 步骤3,experience_Sonora_FTU_38.pptx,24
+PDX,Pump,传感器失效,Observed Sensor Failure during run #46; symptom: continuous,Root analysis suggests electrical cause leading to sensor failure,装配问题,步骤1; 步骤2; 步骤3,experience_PDX_Pump_39.pptx,25
+所有项目,Aligner,传感器失效,Observed Sensor Failure during run #831; symptom: intermittent,Root analysis suggests thermal cause leading to sensor failure,设计缺陷,步骤1; 步骤2; 步骤3,experience_所有项目_Aligner_40.pptx,2
+Sonora,Conveyor,光学对位漂移,Observed Optics Drift during run #811; symptom: intermittent,Root analysis suggests thermal cause leading to optics drift,供应商批次,步骤1; 步骤2; 步骤3,experience_Sonora_Conveyor_41.pptx,10
+Kinneret,Aligner,加热元件失效,Observed Heater Element Burnout during run #38; symptom: sudden,Root analysis suggests mechanical cause leading to heater element burnout,供应商批次,步骤1; 步骤2; 步骤3,experience_Kinneret_Aligner_42.pptx,12
+MHK,Pump,加热元件失效,Observed Heater Element Burnout during run #128; symptom: continuous,Root analysis suggests software cause leading to heater element burnout,设计缺陷,步骤1; 步骤2; 步骤3,experience_MHK_Pump_43.pptx,24
+所有项目,Stage,电气噪声,Observed Electrical Noise during run #998; symptom: intermittent,Root analysis suggests software cause leading to electrical noise,设计缺陷,步骤1; 步骤2; 步骤3,experience_所有项目_Stage_44.pptx,12
+Sonora,SensorModule,软件崩溃,Observed Software Crash during run #81; symptom: continuous,Root analysis suggests mechanical cause leading to software crash,环境因素,步骤1; 步骤2; 步骤3,experience_Sonora_SensorModule_45.pptx,10
+Yucatan,SensorModule,液压系统漏油,Observed Hydraulic Leak during run #336; symptom: sudden,Root analysis suggests electrical cause leading to hydraulic leak,供应商批次,步骤1; 步骤2; 步骤3,experience_Yucatan_SensorModule_46.pptx,15
+Kinneret,Loader,机械卡死,Observed Mechanical Jam during run #360; symptom: continuous,Root analysis suggests thermal cause leading to mechanical jam,供应商批次,步骤1; 步骤2; 步骤3,experience_Kinneret_Loader_47.pptx,20
+Kinneret,Heater,光学对位漂移,Observed Optics Drift during run #77; symptom: sudden,Root analysis suggests software cause leading to optics drift,供应商批次,步骤1; 步骤2; 步骤3,experience_Kinneret_Heater_48.pptx,17
+MEM,FTU,传感器失效,Observed Sensor Failure during run #870; symptom: sudden,Root analysis suggests software cause leading to sensor failure,老化,步骤1; 步骤2; 步骤3,experience_MEM_FTU_49.pptx,5
+PDX,Conveyor,电气噪声,Observed Electrical Noise during run #371; symptom: continuous,Root analysis suggests thermal cause leading to electrical noise,环境因素,步骤1; 步骤2; 步骤3,experience_PDX_Conveyor_50.pptx,5
+所有项目,Pump,电气噪声,Observed Electrical Noise during run #455; symptom: intermittent,Root analysis suggests mechanical cause leading to electrical noise,环境因素,步骤1; 步骤2; 步骤3,experience_所有项目_Pump_51.pptx,12
+Kinneret,Pump,加热元件失效,Observed Heater Element Burnout during run #256; symptom: intermittent,Root analysis suggests thermal cause leading to heater element burnout,装配问题,步骤1; 步骤2; 步骤3,experience_Kinneret_Pump_52.pptx,16
+Kinneret,SensorModule,加热元件失效,Observed Heater Element Burnout during run #794; symptom: continuous,Root analysis suggests software cause leading to heater element burnout,装配问题,步骤1; 步骤2; 步骤3,experience_Kinneret_SensorModule_53.pptx,20
+Sonora,Aligner,振动异常,Observed Vibration Issue during run #126; symptom: intermittent,Root analysis suggests thermal cause leading to vibration issue,设计缺陷,步骤1; 步骤2; 步骤3,experience_Sonora_Aligner_54.pptx,6
+所有项目,SensorModule,电气噪声,Observed Electrical Noise during run #684; symptom: continuous,Root analysis suggests thermal cause leading to electrical noise,环境因素,步骤1; 步骤2; 步骤3,experience_所有项目_SensorModule_55.pptx,18
+Sonora,Heater,传感器失效,Observed Sensor Failure during run #729; symptom: sudden,Root analysis suggests mechanical cause leading to sensor failure,供应商批次,步骤1; 步骤2; 步骤3,experience_Sonora_Heater_56.pptx,17
+Boston,SensorModule,振动异常,Observed Vibration Issue during run #812; symptom: intermittent,Root analysis suggests mechanical cause leading to vibration issue,设计缺陷,步骤1; 步骤2; 步骤3,experience_Boston_SensorModule_57.pptx,1
+Yucatan,Pump,机械卡死,Observed Mechanical Jam during run #823; symptom: sudden,Root analysis suggests mechanical cause leading to mechanical jam,环境因素,步骤1; 步骤2; 步骤3,experience_Yucatan_Pump_58.pptx,3
+PDX,Heater,软件崩溃,Observed Software Crash during run #735; symptom: sudden,Root analysis suggests software cause leading to software crash,环境因素,步骤1; 步骤2; 步骤3,experience_PDX_Heater_59.pptx,14
+Kinneret,SensorModule,传感器失效,Observed Sensor Failure during run #996; symptom: continuous,Root analysis suggests thermal cause leading to sensor failure,设计缺陷,步骤1; 步骤2; 步骤3,experience_Kinneret_SensorModule_60.pptx,15
+Yucatan,Loader,传感器失效,Observed Sensor Failure during run #787; symptom: intermittent,Root analysis suggests software cause leading to sensor failure,环境因素,步骤1; 步骤2; 步骤3,experience_Yucatan_Loader_61.pptx,2
+PDX,Loader,加热元件失效,Observed Heater Element Burnout during run #169; symptom: intermittent,Root analysis suggests electrical cause leading to heater element burnout,装配问题,步骤1; 步骤2; 步骤3,experience_PDX_Loader_62.pptx,12
+Sonora,SensorModule,加热元件失效,Observed Heater Element Burnout during run #202; symptom: sudden,Root analysis suggests electrical cause leading to heater element burnout,装配问题,步骤1; 步骤2; 步骤3,experience_Sonora_SensorModule_63.pptx,21
+Sonora,SensorModule,传感器失效,Observed Sensor Failure during run #607; symptom: sudden,Root analysis suggests mechanical cause leading to sensor failure,装配问题,步骤1; 步骤2; 步骤3,experience_Sonora_SensorModule_64.pptx,22
+Yucatan,FTU,光学对位漂移,Observed Optics Drift during run #84; symptom: intermittent,Root analysis suggests electrical cause leading to optics drift,装配问题,步骤1; 步骤2; 步骤3,experience_Yucatan_FTU_65.pptx,25
+Kinneret,FTU,机械卡死,Observed Mechanical Jam during run #911; symptom: sudden,Root analysis suggests electrical cause leading to mechanical jam,供应商批次,步骤1; 步骤2; 步骤3,experience_Kinneret_FTU_66.pptx,16
+Boston,Stage,加热元件失效,Observed Heater Element Burnout during run #465; symptom: intermittent,Root analysis suggests thermal cause leading to heater element burnout,装配问题,步骤1; 步骤2; 步骤3,experience_Boston_Stage_67.pptx,15
+Kinneret,Aligner,机械卡死,Observed Mechanical Jam during run #209; symptom: continuous,Root analysis suggests mechanical cause leading to mechanical jam,供应商批次,步骤1; 步骤2; 步骤3,experience_Kinneret_Aligner_68.pptx,23
+Yucatan,Pump,软件崩溃,Observed Software Crash during run #134; symptom: continuous,Root analysis suggests thermal cause leading to software crash,供应商批次,步骤1; 步骤2; 步骤3,experience_Yucatan_Pump_69.pptx,8
+所有项目,SensorModule,加热元件失效,Observed Heater Element Burnout during run #461; symptom: intermittent,Root analysis suggests mechanical cause leading to heater element burnout,老化,步骤1; 步骤2; 步骤3,experience_所有项目_SensorModule_70.pptx,2
+Sonora,Stage,软件崩溃,Observed Software Crash during run #255; symptom: intermittent,Root analysis suggests electrical cause leading to software crash,环境因素,步骤1; 步骤2; 步骤3,experience_Sonora_Stage_71.pptx,24
+Yucatan,Conveyor,传感器失效,Observed Sensor Failure during run #511; symptom: sudden,Root analysis suggests software cause leading to sensor failure,设计缺陷,步骤1; 步骤2; 步骤3,experience_Yucatan_Conveyor_72.pptx,10
+所有项目,FTU,液压系统漏油,Observed Hydraulic Leak during run #968; symptom: continuous,Root analysis suggests software cause leading to hydraulic leak,装配问题,步骤1; 步骤2; 步骤3,experience_所有项目_FTU_73.pptx,7
+Yucatan,FTU,光学对位漂移,Observed Optics Drift during run #289; symptom: continuous,Root analysis suggests software cause leading to optics drift,供应商批次,步骤1; 步骤2; 步骤3,experience_Yucatan_FTU_74.pptx,18
+MHK,SensorModule,软件崩溃,Observed Software Crash during run #138; symptom: continuous,Root analysis suggests electrical cause leading to software crash,设计缺陷,步骤1; 步骤2; 步骤3,experience_MHK_SensorModule_75.pptx,12
+MHK,Stage,光学对位漂移,Observed Optics Drift during run #584; symptom: sudden,Root analysis suggests mechanical cause leading to optics drift,供应商批次,步骤1; 步骤2; 步骤3,experience_MHK_Stage_76.pptx,18
+Sonora,SensorModule,软件崩溃,Observed Software Crash during run #517; symptom: continuous,Root analysis suggests electrical cause leading to software crash,环境因素,步骤1; 步骤2; 步骤3,experience_Sonora_SensorModule_77.pptx,22
+PDX,Loader,液压系统漏油,Observed Hydraulic Leak during run #404; symptom: continuous,Root analysis suggests electrical cause leading to hydraulic leak,环境因素,步骤1; 步骤2; 步骤3,experience_PDX_Loader_78.pptx,12
+MEM,Conveyor,软件崩溃,Observed Software Crash during run #513; symptom: intermittent,Root analysis suggests thermal cause leading to software crash,老化,步骤1; 步骤2; 步骤3,experience_MEM_Conveyor_79.pptx,5
+Yucatan,Aligner,机械卡死,Observed Mechanical Jam during run #153; symptom: sudden,Root analysis suggests mechanical cause leading to mechanical jam,供应商批次,步骤1; 步骤2; 步骤3,experience_Yucatan_Aligner_80.pptx,20
+Yucatan,Loader,软件崩溃,Observed Software Crash during run #632; symptom: sudden,Root analysis suggests electrical cause leading to software crash,环境因素,步骤1; 步骤2; 步骤3,experience_Yucatan_Loader_81.pptx,11
+所有项目,Heater,机械卡死,Observed Mechanical Jam during run #836; symptom: intermittent,Root analysis suggests electrical cause leading to mechanical jam,供应商批次,步骤1; 步骤2; 步骤3,experience_所有项目_Heater_82.pptx,22
+PDX,Stage,加热元件失效,Observed Heater Element Burnout during run #816; symptom: sudden,Root analysis suggests thermal cause leading to heater element burnout,环境因素,步骤1; 步骤2; 步骤3,experience_PDX_Stage_83.pptx,16
+Sonora,Conveyor,光学对位漂移,Observed Optics Drift during run #598; symptom: continuous,Root analysis suggests mechanical cause leading to optics drift,环境因素,步骤1; 步骤2; 步骤3,experience_Sonora_Conveyor_84.pptx,21
+Kinneret,Loader,振动异常,Observed Vibration Issue during run #33; symptom: sudden,Root analysis suggests thermal cause leading to vibration issue,装配问题,步骤1; 步骤2; 步骤3,experience_Kinneret_Loader_85.pptx,1
+所有项目,Pump,软件崩溃,Observed Software Crash during run #156; symptom: continuous,Root analysis suggests mechanical cause leading to software crash,设计缺陷,步骤1; 步骤2; 步骤3,experience_所有项目_Pump_86.pptx,17
+所有项目,FTU,传感器失效,Observed Sensor Failure during run #532; symptom: intermittent,Root analysis suggests electrical cause leading to sensor failure,设计缺陷,步骤1; 步骤2; 步骤3,experience_所有项目_FTU_87.pptx,17
+Kinneret,Pump,传感器失效,Observed Sensor Failure during run #471; symptom: sudden,Root analysis suggests electrical cause leading to sensor failure,环境因素,步骤1; 步骤2; 步骤3,experience_Kinneret_Pump_88.pptx,12
+Sonora,Aligner,振动异常,Observed Vibration Issue during run #981; symptom: intermittent,Root analysis suggests electrical cause leading to vibration issue,环境因素,步骤1; 步骤2; 步骤3,experience_Sonora_Aligner_89.pptx,10
+Boston,Heater,加热元件失效,Observed Heater Element Burnout during run #722; symptom: intermittent,Root analysis suggests software cause leading to heater element burnout,供应商批次,步骤1; 步骤2; 步骤3,experience_Boston_Heater_90.pptx,16
+Yucatan,Heater,加热元件失效,Observed Heater Element Burnout during run #125; symptom: sudden,Root analysis suggests software cause leading to heater element burnout,设计缺陷,步骤1; 步骤2; 步骤3,experience_Yucatan_Heater_91.pptx,12
+MEM,Heater,光学对位漂移,Observed Optics Drift during run #295; symptom: sudden,Root analysis suggests thermal cause leading to optics drift,供应商批次,步骤1; 步骤2; 步骤3,experience_MEM_Heater_92.pptx,15
+Sonora,Aligner,振动异常,Observed Vibration Issue during run #207; symptom: sudden,Root analysis suggests electrical cause leading to vibration issue,环境因素,步骤1; 步骤2; 步骤3,experience_Sonora_Aligner_93.pptx,23
+Sonora,Loader,液压系统漏油,Observed Hydraulic Leak during run #631; symptom: sudden,Root analysis suggests mechanical cause leading to hydraulic leak,装配问题,步骤1; 步骤2; 步骤3,experience_Sonora_Loader_94.pptx,2
+Boston,Conveyor,光学对位漂移,Observed Optics Drift during run #103; symptom: continuous,Root analysis suggests electrical cause leading to optics drift,设计缺陷,步骤1; 步骤2; 步骤3,experience_Boston_Conveyor_95.pptx,4
+MEM,FTU,传感器失效,Observed Sensor Failure during run #417; symptom: sudden,Root analysis suggests software cause leading to sensor failure,设计缺陷,步骤1; 步骤2; 步骤3,experience_MEM_FTU_96.pptx,21
+Boston,Heater,电气噪声,Observed Electrical Noise during run #293; symptom: sudden,Root analysis suggests thermal cause leading to electrical noise,老化,步骤1; 步骤2; 步骤3,experience_Boston_Heater_97.pptx,21
+Boston,FTU,传感器失效,Observed Sensor Failure during run #428; symptom: intermittent,Root analysis suggests thermal cause leading to sensor failure,设计缺陷,步骤1; 步骤2; 步骤3,experience_Boston_FTU_98.pptx,16
+MEM,Heater,光学对位漂移,Observed Optics Drift during run #10; symptom: continuous,Root analysis suggests thermal cause leading to optics drift,供应商批次,步骤1; 步骤2; 步骤3,experience_MEM_Heater_99.pptx,10
+所有项目,Aligner,传感器失效,Observed Sensor Failure during run #872; symptom: sudden,Root analysis suggests software cause leading to sensor failure,供应商批次,步骤1; 步骤2; 步骤3,experience_所有项目_Aligner_100.pptx,7

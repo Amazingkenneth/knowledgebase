@@ -1,0 +1,33 @@
+# Taxonomy registry — single source of truth for filterable enums.
+# Edit this file to onboard new projects or equipment. Reload without restart via:
+#   curl -X POST http://localhost:8000/api/v1/admin/reload-taxonomy
+#
+# `version` is opaque to the engine; bump it whenever you change this file so
+# Facets API consumers can detect changes.
+
+version: "2026-05-19-r1"
+
+knowledge_types:
+  - alarm        # 机台报警
+  - setup        # 机台 setup / 调试规范
+  - experience   # 设备经验 / 故障案例
+
+projects:
+  - Kinneret
+  - MEM
+  - MHK
+  - PDX
+  - Boston
+  - Sonora
+  - Yucatan
+  - 所有项目    # cross-project documents
+
+equipment:
+  - Aligner
+  - Conveyor
+  - FTU
+  - Heater
+  - Loader
+  - Pump
+  - SensorModule
+  - Stage
