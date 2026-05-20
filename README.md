@@ -13,6 +13,7 @@ A precision information-retrieval service for manufacturing knowledge. Built on 
 - [Quickstart](#quickstart)
 - [Data Source — CSV Files](#data-source--csv-files)
 - [Configuration](#configuration)
+- [AI Chat API](#ai-chat-api)
 - [Taxonomy](#taxonomy)
 - [Document Types](#document-types)
 - [API Reference](#api-reference)
@@ -223,7 +224,7 @@ The system loads its knowledge base from three CSV files in `config/`. These are
 
 ## Configuration
 
-Settings are loaded from `config/settings.yaml`, then overridden by environment variables with the prefix `KB_` and `__` as the nested delimiter.
+Settings are loaded in priority order: `config/settings.yaml` → `.env` (auto-loaded, git-ignored) → shell environment variables. Use `.env.example` as a starting template.
 
 ```yaml
 # config/settings.yaml
@@ -253,6 +254,12 @@ search:
 
 taxonomy:
   path: "config/taxonomy.yaml"
+
+llm:
+  api_url: "https://api.deepseek.com/v1/chat/completions"   # default: DeepSeek
+  model: "deepseek-chat"
+  max_tokens: 1200
+  api_key: ""   # leave empty here — set KB_LLM__API_KEY in the environment instead
 ```
 
 ### Common env-var overrides
@@ -264,6 +271,10 @@ KB_ES__URL=https://my-cluster:9200
 KB_ES__PASSWORD=secret
 KB_ES__SSL_FINGERPRINT=dfbe360e...   # SHA-256 of the server TLS cert
 KB_EMBEDDING__URL=http://gpu-host:8080
+KB_LLM__API_KEY=sk-...               # required to enable AI chat features
+KB_LLM__API_URL=https://api.openai.com/v1/chat/completions   # switch provider
+KB_LLM__MODEL=gpt-4o-mini
+KB_LLM__MAX_TOKENS=1200
 ```
 
 ### TLS fingerprint (production)
@@ -274,6 +285,94 @@ To get the fingerprint of your Elasticsearch TLS certificate:
 openssl s_client -connect localhost:9200 -showcerts 2>/dev/null \
   | openssl x509 -fingerprint -sha256 -noout
 ```
+
+---
+
+## AI Chat API
+
+The server includes a **LLM proxy layer** that keeps API keys server-side and away from the browser. Two endpoints are exposed:
+
+| Endpoint | Purpose |
+|----------|---------|
+| `POST /api/v1/chat` | Forward a conversation to the configured LLM |
+| `POST /api/v1/extract` | Extract structured search parameters from a free-text query using the LLM, primed with the live taxonomy |
+
+### Default provider — DeepSeek
+
+Out of the box the server points at **DeepSeek** (`deepseek-chat`), which implements the OpenAI Chat Completions API wire format:
+
+```yaml
+# config/settings.yaml
+llm:
+  api_url: "https://api.deepseek.com/v1/chat/completions"
+  model: "deepseek-chat"
+  max_tokens: 1200
+  api_key: ""   # set via KB_LLM__API_KEY — never commit a real key
+```
+
+Get a key at [platform.deepseek.com](https://platform.deepseek.com).
+
+### Setting your API key
+
+Copy `.env.example` to `.env` (git-ignored) and set your key:
+
+```bash
+cp .env.example .env
+# then edit .env — only KB_LLM__API_KEY is required
+```
+
+`.env` is **loaded automatically** by `pydantic-settings` on server startup — no `source` or wrapper command needed:
+
+```bash
+uv run uvicorn kb.main:app --reload   # .env is read automatically
+```
+
+You can still override any variable inline or via the shell:
+
+```bash
+# One-off inline override (takes precedence over .env)
+KB_LLM__API_KEY=sk-... uv run uvicorn kb.main:app --reload
+```
+
+> `pydantic-settings` uses `env_prefix="KB_"` and `env_nested_delimiter="__"`. Shell exports always win over `.env` values.
+
+### Switching to a different AI provider
+
+Any provider that implements the **OpenAI Chat Completions API** (`POST /v1/chat/completions`) works without code changes. Override the URL and model via environment variables:
+
+| Provider | `KB_LLM__API_URL` | `KB_LLM__MODEL` |
+|----------|-------------------|-----------------|
+| **DeepSeek** *(default)* | `https://api.deepseek.com/v1/chat/completions` | `deepseek-chat` |
+| **OpenAI** | `https://api.openai.com/v1/chat/completions` | `gpt-4o-mini` |
+| **Azure OpenAI** | `https://<resource>.openai.azure.com/openai/deployments/<deployment>/chat/completions?api-version=2024-08-01-preview` | *(set by deployment)* |
+| **Ollama** (local) | `http://localhost:11434/v1/chat/completions` | `qwen2.5:7b` |
+| Any OpenAI-compat | your endpoint | your model name |
+
+**Example — switch to OpenAI gpt-4o-mini:**
+
+```bash
+export KB_LLM__API_KEY=sk-your-openai-key
+export KB_LLM__API_URL=https://api.openai.com/v1/chat/completions
+export KB_LLM__MODEL=gpt-4o-mini
+uv run uvicorn kb.main:app --reload
+```
+
+### All LLM environment variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `KB_LLM__API_KEY` | *(empty)* | API key for the provider. **Required** to enable AI chat features. |
+| `KB_LLM__API_URL` | `https://api.deepseek.com/v1/chat/completions` | Chat completions endpoint URL. |
+| `KB_LLM__MODEL` | `deepseek-chat` | Model name passed to the provider in the request body. |
+| `KB_LLM__MAX_TOKENS` | `1200` | Maximum tokens in the LLM response. |
+
+### Behaviour when no API key is configured
+
+If `KB_LLM__API_KEY` is not set:
+
+- `POST /api/v1/chat` returns **HTTP 503** with `"LLM not configured"`.
+- `POST /api/v1/extract` returns **HTTP 503** — the frontend silently falls back to its built-in rule-based parameter parser, so full-text search continues to work.
+- All document retrieval and indexing endpoints are completely unaffected.
 
 ---
 
@@ -504,7 +603,9 @@ knowledgebase/
 │   ├── unit/                    # Pure Python, no infrastructure required
 │   └── integration/             # Requires Docker (testcontainers + Elasticsearch)
 ├── Knowledge Base Search.html   # Single-file React frontend (served at GET /)
+├── .env.example                 # Template for .env — copy and fill in KB_LLM__API_KEY
 ├── .gitattributes               # Enforce LF line endings for all text files
 ├── docker-compose.yml           # Elasticsearch 8.15.3 + optional TEI embedding service
+├── CLAUDE.md                    # AI agent quick-reference (architecture, commands, constraints)
 └── pyproject.toml               # Python dependencies and tool config (uv / pip)
 ```
