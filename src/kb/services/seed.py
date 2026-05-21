@@ -1,6 +1,9 @@
-"""Startup seeder — loads documents from CSV files in config/ and injects them on first run.
+"""Startup seeder — loads documents from CSV files in config/ and reloads them on every start.
 
-Idempotent: only runs for each index that has zero documents.
+Always reseeds: clears all documents from each index then bulk-indexes from the CSV files.
+This ensures the live index always reflects the current state of the CSV files — additions,
+edits, and deletions all take effect on the next restart.
+
 Graceful: if the embedding service is unavailable, documents are indexed
 without vectors (BM25 search still works; kNN is enabled once re-indexed).
 """
@@ -26,15 +29,22 @@ from kb.services.indexing import doc_id, validate_against_taxonomy
 log = logging.getLogger("kb.seed")
 
 
-async def _index_count(es: AsyncElasticsearch, index: str) -> int:
+async def _clear_index(es: AsyncElasticsearch, index: str) -> int:
+    """Delete all documents from an index. Returns the count of deleted docs."""
     try:
-        resp = await es.count(index=index)
-        return int(resp["count"])
-    except Exception:
+        resp = await es.delete_by_query(
+            index=index,
+            body={"query": {"match_all": {}}},
+            refresh=True,
+        )
+        deleted: int = int(resp.get("deleted", 0))
+        return deleted
+    except Exception as exc:
+        log.warning("seed: could not clear %s — %s", index, exc)
         return 0
 
 
-async def seed_if_empty(
+async def seed(
     es: AsyncElasticsearch,
     settings: Settings,
     embedder: EmbeddingClient,
@@ -53,35 +63,22 @@ async def seed_if_empty(
         log.warning("seed: no documents loaded from CSV files — skipping")
         return
 
-    # Only seed indices that are currently empty.
-    by_type: dict[KnowledgeType, list[KnowledgeDoc]] = {kt: [] for kt in KnowledgeType}
-    for doc in all_docs:
-        by_type[doc.knowledge_type].append(doc)
-
-    needs_seeding: list[KnowledgeDoc] = []
-    for kt, docs in by_type.items():
+    # Clear each index before reseeding so deletions in the CSV propagate.
+    for kt in KnowledgeType:
         alias = alias_name(settings.es.index_prefix, kt)
-        count = await _index_count(es, alias)
-        if count == 0 and docs:
-            log.info("seed: %s is empty — injecting %d docs", alias, len(docs))
-            needs_seeding.extend(docs)
-        else:
-            log.debug("seed: %s has %d docs — skipping", alias, count)
-
-    if not needs_seeding:
-        log.info("seed: all indices already populated")
-        return
+        deleted = await _clear_index(es, alias)
+        log.info("seed: cleared %d docs from %s", deleted, alias)
 
     # Try embeddings; fall back to BM25-only if TEI is unavailable.
-    title_vecs: list[list[float] | None] = [None] * len(needs_seeding)
-    body_vecs:  list[list[float] | None] = [None] * len(needs_seeding)
+    title_vecs: list[list[float] | None] = [None] * len(all_docs)
+    body_vecs:  list[list[float] | None] = [None] * len(all_docs)
     try:
-        titles   = [build_title_text(d) for d in needs_seeding]
-        bodies   = [build_body(d)       for d in needs_seeding]
+        titles   = [build_title_text(d) for d in all_docs]
+        bodies   = [build_body(d)       for d in all_docs]
         all_vecs = await embedder.embed(titles + bodies)
-        title_vecs = list(all_vecs[: len(needs_seeding)])
-        body_vecs  = list(all_vecs[len(needs_seeding) :])
-        log.info("seed: embeddings obtained for %d docs", len(needs_seeding))
+        title_vecs = list(all_vecs[: len(all_docs)])
+        body_vecs  = list(all_vecs[len(all_docs) :])
+        log.info("seed: embeddings obtained for %d docs", len(all_docs))
     except (EmbeddingError, Exception) as exc:
         log.warning(
             "seed: embedding service unavailable (%s) — indexing without vectors; "
@@ -91,7 +88,7 @@ async def seed_if_empty(
 
     now = datetime.now(UTC).isoformat()
     actions: list[dict[str, Any]] = []
-    for i, doc in enumerate(needs_seeding):
+    for i, doc in enumerate(all_docs):
         source: dict[str, Any] = {
             "knowledge_type": doc.knowledge_type.value,
             "project":        doc.project,
@@ -102,6 +99,7 @@ async def seed_if_empty(
             "source_file":    doc.source_file,
             "source_pages":   doc.source_pages,
             "sections":       dict(doc.content_sections()),
+            "summary":        doc.summary,
             "created_at":     now,
             "updated_at":     now,
         }

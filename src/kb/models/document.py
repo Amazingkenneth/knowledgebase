@@ -12,6 +12,7 @@ ERROR_CODE_RE = re.compile(r"^[A-Z0-9][A-Z0-9_\-]{0,63}$")
 
 NonEmptyStr = Annotated[str, StringConstraints(min_length=1, strip_whitespace=True)]
 TitleStr = Annotated[str, StringConstraints(min_length=1, max_length=200, strip_whitespace=True)]
+SummaryStr = Annotated[str, StringConstraints(max_length=50, strip_whitespace=True)]
 
 
 class DocumentBase(BaseModel):
@@ -28,9 +29,11 @@ class DocumentBase(BaseModel):
     error_codes: list[str] = Field(default_factory=list)
     title: TitleStr
 
-    # Part 2 — display only
+    # Part 2 — display only (index: False in ES; never used in queries or scoring)
     source_file: str | None = None
     source_pages: list[str] = Field(default_factory=list)
+    # ≤50-char digest shown in result lists; avoids sending full sections to the LLM context.
+    summary: SummaryStr | None = None
 
     # Audit
     created_at: datetime | None = None

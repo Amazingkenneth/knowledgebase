@@ -1583,6 +1583,301 @@ mark.hl {
 .chat-md a { color: var(--accent); text-decoration: underline; }
 .chat-md hr { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
 
+/* Conversational-search mode additions */
+.chat-mode-toggle { display: inline-flex; gap: 2px; background: var(--surface-2); border-radius: 6px; padding: 2px; margin-left: auto; margin-right: 6px; }
+.chat-mode-btn { border: none; background: transparent; padding: 3px 9px; font-size: 11px; border-radius: 4px; cursor: pointer; color: var(--muted); }
+.chat-mode-btn.active { background: var(--surface); color: var(--accent); font-weight: 600; }
+.chat-params-bar { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; padding: 6px 12px; font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--border); background: var(--surface-2); }
+.chat-params-chip { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; color: var(--ink-2); }
+.chat-params-reset { margin-left: auto; border: none; background: transparent; color: var(--muted); font-size: 11px; cursor: pointer; padding: 2px 4px; }
+.chat-params-reset:hover { color: var(--accent); }
+.chat-result-banner { font-size: 11px; color: var(--ink-2); margin-bottom: 6px; padding: 4px 8px; background: var(--surface-2); border-radius: 4px; }
+.chat-result-banner.partial { background: oklch(0.95 0.05 70); color: #7a5a10; }
+.chat-result-card { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; margin-top: 6px; cursor: pointer; background: var(--surface); transition: border-color .15s; }
+.chat-result-card:hover { border-color: var(--accent); }
+.chat-result-title { font-size: 12.5px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+.chat-result-meta { font-size: 11px; color: var(--muted); display: flex; gap: 4px; flex-wrap: wrap; }
+
+/* ── Chat Home (primary interface) ──────────────────────────────────────────── */
+.chat-home-wrap {
+  flex: 1; display: flex; flex-direction: column;
+}
+.chat-home-body {
+  flex: 1; display: grid;
+  grid-template-columns: 1fr 380px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .chat-home-body { grid-template-columns: 1fr; }
+  .chat-home-side { display: none; }
+  .chat-home-messages { padding: 20px 18px 8px; }
+  .chat-home-footer { padding: 12px 18px 18px; }
+}
+.chat-home-chat {
+  display: flex; flex-direction: column;
+  min-height: calc(100vh - 56px);
+  border-right: 1px solid var(--border);
+}
+.chat-home-messages {
+  flex: 1; overflow-y: auto; padding: 28px 36px 12px;
+  display: flex; flex-direction: column; gap: 18px;
+  scrollbar-width: thin; scrollbar-color: var(--border-2) transparent;
+}
+.chat-home-welcome {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  flex: 1; padding: 48px 24px; text-align: center; gap: 14px;
+}
+.chat-home-welcome-icon {
+  width: 52px; height: 52px; border-radius: 16px;
+  background: var(--accent-soft); color: var(--accent);
+  display: grid; place-items: center; margin-bottom: 6px;
+}
+.chat-home-welcome h2 { font-size: 24px; font-weight: 600; margin: 0; letter-spacing: -.015em; }
+.chat-home-welcome p { margin: 0; font-size: 13.5px; color: var(--muted); max-width: 480px; line-height: 1.65; }
+.chat-home-starters {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+  max-width: 560px; width: 100%; margin-top: 10px;
+}
+.chat-home-starter {
+  text-align: left; padding: 11px 15px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  font-size: 13px; color: var(--ink-1); line-height: 1.4;
+  transition: border-color 120ms, background 120ms, color 120ms; cursor: pointer;
+}
+.chat-home-starter:hover { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+/* message bubbles */
+.ch-msg { display: flex; gap: 10px; align-items: flex-start; }
+.ch-msg-user { flex-direction: row-reverse; }
+.ch-bubble {
+  max-width: 68%; padding: 10px 14px; border-radius: 14px;
+  font-size: 13.5px; line-height: 1.55;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--ink-1); border-bottom-left-radius: 4px;
+  white-space: pre-wrap; word-break: break-word;
+}
+.ch-msg-user .ch-bubble {
+  background: var(--accent); color: var(--on-accent);
+  border: none; border-bottom-right-radius: 4px; border-bottom-left-radius: 14px;
+}
+.ch-bubble.ch-md { white-space: normal; }
+.ch-bubble.ch-md p { margin: 0 0 4px; }
+.ch-bubble.ch-md p:last-child { margin-bottom: 0; }
+.ch-bubble.ch-md ul, .ch-bubble.ch-md ol { margin: 4px 0 4px 18px; }
+.ch-bubble.ch-md strong { font-weight: 600; }
+.ch-bubble.ch-md code { font-family: var(--font-mono); font-size: 11.5px; background: var(--surface-2); padding: 1px 4px; border-radius: 3px; }
+.ch-results-wrap { display: flex; flex-direction: column; gap: 8px; max-width: 86%; }
+.ch-results-banner {
+  font-size: 11.5px; color: var(--ink-2); padding: 5px 10px;
+  background: color-mix(in oklab, var(--strict) 7%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--strict) 25%, var(--border));
+  border-radius: 6px; color: var(--strict);
+}
+.ch-results-banner.partial {
+  background: oklch(0.95 0.05 70); color: #7a5a10;
+  border-color: oklch(0.88 0.08 70);
+}
+.ch-result-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 14px; cursor: pointer;
+  transition: border-color .12s, transform .12s, box-shadow .12s;
+}
+.ch-result-card:hover { border-color: var(--accent); box-shadow: var(--shadow-2); transform: translateY(-1px); }
+.ch-result-title { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 5px; }
+.ch-result-meta { font-size: 11.5px; color: var(--muted); display: flex; gap: 6px; flex-wrap: wrap; }
+.ch-avatar {
+  width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0; margin-top: 2px;
+  background: var(--accent-soft); color: var(--accent); display: grid; place-items: center;
+}
+.ch-dots { display: flex; gap: 4px; align-items: center; }
+.ch-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--muted-2); animation: chat-dot 1.2s infinite; }
+.ch-dots span:nth-child(2) { animation-delay: .2s; }
+.ch-dots span:nth-child(3) { animation-delay: .4s; }
+/* footer / input */
+.chat-home-footer {
+  flex-shrink: 0; padding: 14px 36px 22px;
+  border-top: 1px solid var(--border); background: var(--bg);
+  /* anchored to the viewport bottom so the input is always reachable
+     even when the chat content scrolls past it */
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+}
+.chat-home-params-bar {
+  display: flex; gap: 5px; flex-wrap: wrap; align-items: center;
+  padding-bottom: 10px; font-size: 11.5px; color: var(--muted);
+}
+.chat-home-params-chip {
+  background: var(--accent-soft); color: var(--accent); font-size: 11.5px;
+  border: 1px solid color-mix(in oklab, var(--accent) 20%, transparent);
+  border-radius: 5px; padding: 1px 8px;
+}
+.chat-home-input-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 12px 14px;
+  box-shadow: var(--shadow-2); transition: border-color 120ms, box-shadow 120ms;
+}
+.chat-home-input-row:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft), var(--shadow-2);
+}
+.chat-home-textarea {
+  flex: 1; border: none; outline: none; background: none;
+  font-size: 14.5px; color: var(--ink); resize: none;
+  min-height: 22px; max-height: 160px; line-height: 1.5;
+  font-family: inherit; overflow-y: auto;
+}
+.chat-home-textarea::placeholder { color: var(--muted-2); }
+.chat-home-send-btn {
+  width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0;
+  display: grid; place-items: center;
+  background: var(--accent); color: var(--on-accent);
+  transition: opacity 120ms, transform 120ms;
+}
+.chat-home-send-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.chat-home-send-btn:not(:disabled):hover { transform: translateY(-1px); }
+.chat-home-hint {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 9px; font-size: 11.5px; color: var(--muted);
+  font-family: var(--font-latin);
+}
+.chat-home-switch-btn {
+  color: var(--accent); background: none; border: none;
+  font-size: 11.5px; cursor: pointer; font-family: inherit;
+}
+.chat-home-switch-btn:hover { text-decoration: underline; }
+/* right: live results side panel */
+.chat-home-side {
+  display: flex; flex-direction: column;
+  background: var(--bg);
+  /* anchored to the viewport: stays pinned at the top of the window
+     (just below the 56px sticky header) regardless of page scroll */
+  position: sticky;
+  top: 56px;
+  height: calc(100vh - 56px);
+  align-self: start;
+  overflow: hidden;
+}
+.chs-params-sticky {
+  flex-shrink: 0;
+  background: var(--bg);
+  padding: 24px 20px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.chs-results-scroll {
+  flex: 1; min-height: 0; overflow-y: auto;
+  padding: 14px 20px 40px;
+  scrollbar-width: thin; scrollbar-color: var(--border-2) transparent;
+}
+.chs-empty-wrap {
+  flex: 1; min-height: 0; overflow-y: auto;
+  padding: 0 20px 40px;
+}
+.chs-empty {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center;
+  gap: 10px; padding: 40px 12px; color: var(--muted);
+}
+.chs-empty-illus { color: var(--muted-2); margin-bottom: 4px; }
+.chs-section-label {
+  font-size: 10.5px; font-weight: 600; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;
+}
+.chs-params-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 22px; }
+.chs-param-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+.chs-param-label { color: var(--muted); min-width: 46px; font-size: 11.5px; }
+.chs-param-value {
+  padding: 2px 8px; border-radius: 5px;
+  background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 500;
+}
+.chs-result-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 14px; margin-bottom: 10px; cursor: pointer; transition: border-color .12s;
+}
+.chs-result-card:hover { border-color: var(--accent); }
+.chs-result-title { font-size: 13.5px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+.chs-result-meta { font-size: 11px; color: var(--muted); display: flex; gap: 5px; flex-wrap: wrap; }
+.chs-switch-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; padding: 9px 14px; margin-top: 4px; border-radius: 8px;
+  background: var(--surface); border: 1px solid var(--border); font-size: 12.5px; color: var(--ink-2);
+  cursor: pointer; transition: border-color 120ms, color 120ms;
+}
+.chs-switch-btn:hover { border-color: var(--accent); color: var(--accent); }
+/* Secondary search tab label in header */
+.nav-secondary { font-size: 10.5px; color: var(--muted); margin-left: 3px; letter-spacing: .03em; }
+
+/* ── History panel ──────────────────────────────────────────────────────── */
+.history-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(20, 18, 12, 0.28); backdrop-filter: blur(2px);
+  animation: drawer-fade 180ms ease;
+}
+.history-panel {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 201;
+  max-height: 55vh; background: var(--surface);
+  border-top: 1px solid var(--border); border-radius: 16px 16px 0 0;
+  box-shadow: var(--shadow-3); display: flex; flex-direction: column;
+  animation: history-slide 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes history-slide {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.history-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.history-head-title { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.history-body { overflow-y: auto; padding: 6px 12px 20px; }
+.history-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 8px; border-radius: 8px; transition: background 120ms;
+}
+.history-item:hover { background: var(--surface-2); }
+.history-item-btn {
+  flex: 1; display: flex; align-items: center; gap: 8px;
+  font-size: 13.5px; color: var(--ink-1); cursor: pointer;
+  text-align: left; border: none; background: none; font-family: inherit; padding: 0; min-width: 0;
+}
+.history-item-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.history-item-meta { display: flex; gap: 5px; flex-shrink: 0; }
+.history-item-del {
+  width: 26px; height: 26px; border-radius: 5px; flex-shrink: 0;
+  display: grid; place-items: center; color: var(--muted-2);
+  border: none; background: none; font-size: 16px; cursor: pointer;
+}
+.history-item-del:hover { background: color-mix(in oklab, var(--danger) 8%, transparent); color: var(--danger); }
+.history-empty { padding: 40px 20px; text-align: center; color: var(--muted); font-size: 13px; }
+
+/* ── Revise conditions bar ──────────────────────────────────────────────── */
+.revise-bar {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  padding: 10px 0 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px;
+}
+.revise-field-wrap {
+  display: flex; align-items: center; gap: 5px;
+  border: 1px solid var(--border); border-radius: 7px; background: var(--surface);
+  padding: 3px 8px 3px 10px; height: 30px;
+}
+.revise-field-wrap:focus-within {
+  border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.revise-field-label {
+  font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; white-space: nowrap;
+}
+.revise-field-input {
+  border: none; outline: none; background: none;
+  font-size: 12.5px; color: var(--ink); width: 90px; font-family: inherit;
+}
+.revise-field-input::placeholder { color: var(--muted-2); }
+.revise-type-select {
+  border: 1px solid var(--border); border-radius: 7px; background: var(--surface);
+  padding: 3px 8px; height: 30px; font-size: 12.5px; color: var(--ink);
+  font-family: inherit; outline: none; cursor: pointer;
+}
+.revise-type-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
 /* ============================================================
    Responsive trims
    ============================================================ */
@@ -1879,7 +2174,7 @@ function Score({ score }) {
   const barPct = Math.min(Math.round((raw / 15) * 100), 100);
   const color = barPct >= 55 ? 'var(--strict)' : barPct >= 28 ? 'var(--loose)' : 'var(--danger)';
   return (
-    <span className="score-bar-wrap" title={`相关度分 ${raw.toFixed(2)} · ES BM25/语义匹配原始得分（越高越相关；BM25 典型区间 1–15，语义得分 0–1）· Relevance score — higher is better`}>
+    <span className="score-bar-wrap" title={`相关度分 ${raw.toFixed(2)} · 两阶段混合得分：关键词召回（BM25）+ 向量重排（余弦相似度）· Two-stage score: keyword recall (BM25) re-ranked by vector similarity — higher is better`}>
       <span className="score-bar-track">
         <span className="score-bar-fill" style={{ width: `${barPct}%`, background: color }} />
       </span>
@@ -2181,7 +2476,8 @@ function Landing({ taxonomy, stats, onSubmit, onPickRecent, onPickType }) {
           <div className="info-body">
             <div className="info-title">为什么不直接让 AI 回答？</div>
             <div className="info-text">
-              制造业知识库的内容（设备、报警代码、参数）几乎不与通识相关。本系统采用 <b>筛选 + 关键词检索 + 向量重排</b>，
+              制造业知识库的内容（设备、报警代码、参数）几乎不与通识相关。本系统采用 <b>两阶段检索</b>：
+              先用关键词精确召回候选文档，再用 <b>BM25 + 向量相似度</b> 混合排序；
               结果保证 100% 来自原文档，不进行 AI 组合发挥。
             </div>
           </div>
@@ -3147,22 +3443,32 @@ function parseQuery(q) {
     .replace(/解决|处理|操作|使用|查看|检查|修复|修改|设置|配置|校准|验证|确认|原因|步骤|方法|流程|注意/g, " ")
     .replace(/[，。？！,.?!:;:：；()（）"'""]/g, " ");
 
-  // Generic category suffixes common in manufacturing alarm queries.
-  // When a compound contains one of these as the tail bigram, only keep the head.
-  const GENERIC_TAIL = new Set(["\u62a5\u8b66", "\u6545\u969c", "\u5931\u8d25", "\u9519\u8bef", "\u5f02\u5e38", "\u95ee\u9898", "\u62a5\u9519", "\u8b66\u544a"]);
+  // Generic bigrams to drop \u2014 category suffixes and vague modifiers that add noise.
+  const GENERIC_TAIL = new Set([
+    "\u62a5\u8b66", "\u6545\u969c", "\u5931\u8d25", "\u9519\u8bef", "\u5f02\u5e38",
+    "\u95ee\u9898", "\u62a5\u9519", "\u8b66\u544a",
+    "\u76f8\u5173", "\u6709\u5173", "\u5904\u7406", "\u64cd\u4f5c", "\u89e3\u51b3",
+  ]);
   const tokens = [];
   const cjk = remainder.match(/[\u4e00-\u9fff]+/g) || [];
   cjk.forEach((c) => {
-    if (isSentence && c.length >= 4) {
-      // For sentence queries with compound CJK terms (e.g. "\u771f\u7a7a\u62a5\u8b66"):
-      // prefer the subject/noun head (first bigram) for precision. If the tail bigram is
-      // a generic category word (\u62a5\u8b66/\u6545\u969c/\u2026) we skip it to avoid over-broad BM25 matches.
-      for (let i = 0; i + 2 <= c.length; i += 2) {
-        const bigram = c.slice(i, i + 2);
-        if (!GENERIC_TAIL.has(bigram)) tokens.push(bigram);
-      }
-      // Always include at least the first bigram as a fallback
-      if (tokens.length === 0 || !tokens.includes(c.slice(0, 2))) tokens.push(c.slice(0, 2));
+    if (isSentence) {
+      // Split at structural particles (\u7684/\u5730/\u5f97) so bigram strides never cross a
+      // grammatical boundary and produce nonsense like "\u7684\u62a5".
+      const parts = c.split(/[\u7684\u5730\u5f97]/).filter(p => p.length >= 2);
+      const before = tokens.length;
+      parts.forEach(part => {
+        if (part.length >= 4) {
+          for (let i = 0; i + 2 <= part.length; i += 2) {
+            const bigram = part.slice(i, i + 2);
+            if (!GENERIC_TAIL.has(bigram)) tokens.push(bigram);
+          }
+        } else if (!GENERIC_TAIL.has(part)) {
+          tokens.push(part);
+        }
+      });
+      // Fallback: always keep at least the first content bigram
+      if (tokens.length === before && c.length >= 2) tokens.push(c.slice(0, 2));
     } else if (c.length >= 2) {
       tokens.push(c);
     }
@@ -3182,8 +3488,552 @@ function parseQuery(q) {
   return { project, equipment: equip, code, type, keywords: keywords.slice(0, 5), raw: q, isSentence };
 }
 
+// Builds a follow-up clarifying question when >= 3 results are returned.
+// Uses general category language — no specific codes or DB-specific values.
+function buildClarifyQuestion(merged, hits) {
+  const tax = window.KB_TAXONOMY || {};
+  const typeDefs = window.KB_TYPE_DEFS || {};
+  const parts = [];
+  if (!merged.equipment) {
+    const equips = (tax.equipment || []).slice(0, 3);
+    parts.push(equips.length
+      ? `具体是哪类机台/设备（如 ${equips.join('、')} 等）？`
+      : '具体是哪类机台/设备？');
+  }
+  if (!merged.project && (tax.projects || []).length > 1) {
+    parts.push('是哪个项目/产线？');
+  }
+  const hitTypes = [...new Set(hits.map(h => h.doc?.type).filter(Boolean))];
+  if (hitTypes.length > 1) {
+    parts.push(`结果包含 ${hitTypes.map(t => typeDefs[t]?.zh || t).join('和')}，您需要哪一类？`);
+  } else if (!merged.type) {
+    parts.push('是报警处理、操作设置，还是设备维修经验？');
+  }
+  if (!merged.code && !merged.keywords?.length) {
+    parts.push('能否描述更具体的故障现象或报警类型（例如温度相关、真空相关、机械相关）？');
+  }
+  if (parts.length === 0) {
+    parts.push('能否进一步描述故障场景，帮助精确定位最相关的文档？');
+  }
+  return `找到 ${hits.length} 篇相关文档，为精确定位，请进一步说明：\n\n${parts.map(p => `• ${p}`).join('\n')}`;
+}
+
+// --- Chat Home Page (primary chat-first interface)
+function ChatHomePage({ taxonomy, onSwitchToSearch, onOpenDoc }) {
+  const [msgs, setMsgs]     = aUs([]);
+  const [inp, setInp]       = aUs('');
+  const [busy, setBusy]     = aUs(false);
+  const [accum, setAccum]   = aUs({ project: null, equipment: null, type: null, code: null, keywords: [] });
+  const [showHistory, setShowHistory] = aUs(false);
+  const [historyList, setHistoryList] = aUs(() => window.getRecentSearches?.() || []);
+  const [showRevise, setShowRevise]   = aUs(false);
+  const [reviseFields, setReviseFields] = aUs({ project: '', equipment: '', type: '', keywords: '' });
+  const endRef   = React.useRef(null);
+  const inputRef = React.useRef(null);
+
+  aUe(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs]);
+
+  const latestResult = aMemo(() => {
+    for (let i = msgs.length - 1; i >= 0; i--) {
+      if (msgs[i].kind === 'results') return msgs[i];
+    }
+    return null;
+  }, [msgs]);
+
+  const hasParams = !!(accum.project || accum.equipment || accum.type || accum.code || accum.keywords?.length);
+
+  const normalizeEx = (e) => {
+    if (!e || typeof e !== 'object') return null;
+    const asStr = v => (typeof v === 'string' && v.trim()) ? v.trim() : null;
+    const asArr = v => Array.isArray(v) ? v.filter(x => typeof x === 'string' && x.trim()).map(x => x.trim()) : [];
+    const kt = asStr(e.knowledge_type);
+    return {
+      project:        asStr(e.project),
+      equipment:      asStr(e.equipment),
+      knowledge_type: ['alarm','setup','experience'].includes(kt) ? kt : null,
+      error_codes:    asArr(e.error_codes),
+      keywords:       asArr(e.keywords),
+      is_sentence:    e.is_sentence === true,
+    };
+  };
+
+  const sendMsg = aCb(async (text) => {
+    if (!text || busy) return;
+    const userMsg = { role: 'user', content: text };
+    const history = [...msgs, userMsg];
+    setMsgs(history);
+    setBusy(true);
+
+    // Rule-based extraction (always available)
+    let ruleEx = null;
+    try {
+      const rb = parseQuery(text);
+      ruleEx = { project: rb.project, equipment: rb.equipment,
+                 knowledge_type: rb.type, error_codes: rb.code ? [rb.code] : [],
+                 keywords: rb.keywords || [], is_sentence: !!rb.isSentence };
+    } catch(_) {}
+
+    // LLM extraction with conversation context
+    let llmEx = null;
+    try {
+      const userTurns = history.filter(m => m.role === 'user').map((m,i) => `${i+1}. ${m.content}`).join('\n');
+      const knownStr  = JSON.stringify({ project: accum.project, equipment: accum.equipment,
+        knowledge_type: accum.type, error_codes: accum.code ? [accum.code] : [], keywords: accum.keywords });
+      const ctl = (typeof AbortController === 'function') ? new AbortController() : null;
+      const tid = ctl ? setTimeout(() => { try { ctl.abort(); } catch(_) {} }, 7000) : null;
+      let resp;
+      try {
+        resp = await fetch('/api/v1/extract', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: `对话历史：\n${userTurns}\n\n已知参数：${knownStr}\n\n请提取最新参数。` }),
+          signal: ctl ? ctl.signal : undefined,
+        });
+      } finally { if (tid) clearTimeout(tid); }
+      if (resp && resp.ok) llmEx = normalizeEx(await resp.json());
+    } catch(_) {}
+
+    const pick    = (...vs) => vs.find(v => v != null && v !== '') ?? null;
+    const pickArr = (...vs) => { for(const v of vs) if(Array.isArray(v) && v.length) return v; return []; };
+    const merged = {
+      project:    pick(llmEx?.project,        ruleEx?.project,        accum.project),
+      equipment:  pick(llmEx?.equipment,      ruleEx?.equipment,      accum.equipment),
+      type:       pick(llmEx?.knowledge_type, ruleEx?.knowledge_type, accum.type),
+      code:       pick(llmEx?.error_codes?.[0], ruleEx?.error_codes?.[0], accum.code),
+      keywords:   pickArr(llmEx?.keywords,    ruleEx?.keywords,       accum.keywords),
+      isSentence: llmEx?.is_sentence ?? ruleEx?.is_sentence ?? false,
+    };
+    setAccum(merged);
+
+    const sufficient = !!(merged.project || merged.equipment || merged.code || merged.type)
+                       || (merged.keywords && merged.keywords.length >= 2);
+
+    if (!sufficient) {
+      const missing = ['项目','机台/设备','报警代码'].filter((_,i) =>
+        [!merged.project, !merged.equipment, !merged.code][i]);
+      setMsgs(m => [...m, { role: 'assistant', kind: 'text',
+        content: `信息还不够检索，请补充：${missing.slice(0,3).join('、')}，或描述具体故障场景和关键词。` }]);
+      setBusy(false);
+      setTimeout(() => inputRef.current?.focus(), 50);
+      return;
+    }
+
+    const searchP = { ...merged, raw: text };
+
+    let res = null;
+    try { res = await window.KB_SEARCH(searchP, 'auto', 0); }
+    catch(err) {
+      setMsgs(m => [...m, { role:'assistant', kind:'text', content:`⚠ 检索失败：${err.message}` }]);
+      setBusy(false); return;
+    }
+    const hits   = Array.isArray(res?.hits) ? res.hits : [];
+    const status = res?.status || '';
+
+    if (status === 'too_many') {
+      setMsgs(m => [...m, { role:'assistant', kind:'text',
+        content: `匹配到约 ${res.total} 条结果，请进一步明确机台名、报警代码或项目。` }]);
+      setBusy(false); return;
+    }
+
+    if (hits.length > 0) {
+      const isStrict = status === 'strict_hit';
+      const banner = isStrict ? '完全匹配'
+                   : status === 'vector_only' ? '语义相关（低置信度，仅供参考）'
+                   :                            '不完全匹配，请认真鉴别';
+      setMsgs(m => [...m, { role:'assistant', kind:'results',
+        banner, bannerKind: isStrict ? 'full' : 'partial',
+        hits: hits.slice(0,5), total: res.total }]);
+      if (window.saveRecentSearch) window.saveRecentSearch(text, merged.project, merged.equipment);
+      setHistoryList(window.getRecentSearches?.() || []);
+      if (hits.length >= 3) {
+        const clarify = buildClarifyQuestion(merged, hits);
+        setMsgs(m => [...m, { role:'assistant', kind:'text', content: clarify }]);
+      }
+    } else {
+      setMsgs(m => [...m, { role:'assistant', kind:'text',
+        content: '未找到相关知识。请尝试换一种描述，或调整机台/项目/代码。' }]);
+    }
+    setBusy(false);
+    setTimeout(() => inputRef.current?.focus(), 50);
+  }, [msgs, inp, busy, accum]);
+
+  const reset = () => {
+    setMsgs([]);
+    setAccum({ project: null, equipment: null, type: null, code: null, keywords: [] });
+  };
+
+  const doSend = () => {
+    const t = inp.trim();
+    if (t && !busy) { setInp(''); sendMsg(t); }
+  };
+
+  const deleteHistoryItem = (idx) => {
+    const updated = historyList.filter((_, i) => i !== idx);
+    setHistoryList(updated);
+    try { localStorage.setItem('kb.recentSearches', JSON.stringify(updated)); } catch(e) {}
+  };
+  const clearHistory = () => {
+    setHistoryList([]);
+    try { localStorage.removeItem('kb.recentSearches'); } catch(e) {}
+  };
+  const openRevise = () => {
+    setReviseFields({
+      project:   accum.project   || '',
+      equipment: accum.equipment || '',
+      type:      accum.type      || '',
+      keywords:  (accum.keywords || []).join(', '),
+    });
+    setShowRevise(true);
+  };
+  const rerunSearchWithParams = aCb(async (sp) => {
+    if (busy) return;
+    setBusy(true);
+    const searchP = { ...sp, raw: sp.keywords?.join(' ') || sp.equipment || sp.project || '' };
+    let res = null;
+    try { res = await window.KB_SEARCH(searchP, 'auto', 0); }
+    catch(err) {
+      setMsgs(m => [...m, { role:'assistant', kind:'text', content:`⚠ 检索失败：${err.message}` }]);
+      setBusy(false); return;
+    }
+    const rHits = Array.isArray(res?.hits) ? res.hits : [];
+    const rStatus = res?.status || '';
+    if (rStatus === 'too_many') {
+      setMsgs(m => [...m, { role:'assistant', kind:'text',
+        content:`匹配到 ${res.total} 篇，请进一步缩小范围。` }]);
+    } else if (rHits.length > 0) {
+      const isStrict = rStatus === 'strict_hit';
+      setMsgs(m => [...m, { role:'assistant', kind:'results',
+        banner: isStrict ? '完全匹配' : '不完全匹配，请认真鉴别',
+        bannerKind: isStrict ? 'full' : 'partial',
+        hits: rHits.slice(0, 5), total: res.total }]);
+      if (rHits.length >= 3) {
+        setMsgs(m => [...m, { role:'assistant', kind:'text',
+          content: buildClarifyQuestion(sp, rHits) }]);
+      }
+    } else {
+      setMsgs(m => [...m, { role:'assistant', kind:'text',
+        content:'未找到匹配知识，请调整检索条件。' }]);
+    }
+    setBusy(false);
+    setTimeout(() => inputRef.current?.focus(), 50);
+  }, [busy]);
+  const applyRevise = () => {
+    const newAccum = {
+      project:   reviseFields.project   || null,
+      equipment: reviseFields.equipment || null,
+      type:      reviseFields.type      || null,
+      code:      accum.code,
+      keywords:  reviseFields.keywords
+        ? reviseFields.keywords.split(/[,，\s]+/).filter(Boolean)
+        : accum.keywords || [],
+      isSentence: false,
+    };
+    setAccum(newAccum);
+    setShowRevise(false);
+    setMsgs(m => [...m, { role:'user', content:'（修改条件后重新检索）' }]);
+    rerunSearchWithParams(newAccum);
+  };
+
+  const typeDefs = window.KB_TYPE_DEFS || {};
+
+  const starters = [
+    '温度相关的报警如何处理？',
+    '设备 setup 校准的标准步骤',
+    '真空系统异常故障排查经验',
+    '传送机构漂移或抖动问题',
+  ];
+
+  return (
+    <div className="chat-home-wrap">
+      <div className="chat-home-body">
+
+        {/* ── Left: conversation ── */}
+        <div className="chat-home-chat">
+          <div className="chat-home-messages">
+            {msgs.length === 0 ? (
+              <div className="chat-home-welcome">
+                <div className="chat-home-welcome-icon">
+                  <Icon name="sparkle" size={26} />
+                </div>
+                <h2>和我对话来检索知识库</h2>
+                <p>描述遇到的问题、设备名或报警代码 — 我会自动提取关键词并即时检索。</p>
+                <p style={{ fontSize: '12px', color: 'var(--muted-2)' }}>
+                  Describe your issue, equipment name or alarm code — keywords are extracted instantly.
+                </p>
+                <div className="chat-home-starters">
+                  {starters.map((s, i) => (
+                    <button key={i} className="chat-home-starter"
+                      onClick={() => { setInp(''); sendMsg(s); }}>
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              msgs.map((m, i) => {
+                if (m.kind === 'results') {
+                  return (
+                    <div key={i} className="ch-msg ch-msg-ai">
+                      <div className="ch-avatar"><Icon name="sparkle" size={14} /></div>
+                      <div className="ch-results-wrap">
+                        <div className={`ch-results-banner${m.bannerKind === 'partial' ? ' partial' : ''}`}>
+                          {m.banner}
+                          {typeof m.total === 'number' && m.total > m.hits.length
+                            ? `（共 ${m.total} 条，显示前 ${m.hits.length} 条）` : ''}
+                        </div>
+                        {m.hits.map((h, j) => (
+                          <div key={j} className="ch-result-card" onClick={() => onOpenDoc && onOpenDoc(h.doc)}>
+                            <div className="ch-result-title">{h.doc.title}</div>
+                            <div className="ch-result-meta">
+                              {h.doc.type      && <span>{typeDefs[h.doc.type]?.zh || h.doc.type}</span>}
+                              {h.doc.project   && <span>· {h.doc.project}</span>}
+                              {h.doc.equipment && <span>· {h.doc.equipment}</span>}
+                              {h.doc.codes?.length > 0 && <span>· {h.doc.codes.slice(0,3).join(', ')}</span>}
+                            </div>
+                          </div>
+                        ))}
+                        {typeof m.total === 'number' && m.total > m.hits.length && (
+                          <button className="chs-switch-btn"
+                            onClick={() => onSwitchToSearch && onSwitchToSearch(accum)}>
+                            <Icon name="search" size={13} />
+                            在关键词检索中查看全部 {m.total} 条结果
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
+                return (
+                  <div key={i} className={`ch-msg${m.role === 'user' ? ' ch-msg-user' : ' ch-msg-ai'}`}>
+                    {m.role === 'assistant' && <div className="ch-avatar"><Icon name="sparkle" size={14} /></div>}
+                    {m.role === 'assistant'
+                      ? <div className="ch-bubble ch-md"
+                          dangerouslySetInnerHTML={{ __html: window.marked ? window.marked.parse(m.content) : m.content }}
+                        />
+                      : <div className="ch-bubble">{m.content}</div>
+                    }
+                  </div>
+                );
+              })
+            )}
+            {busy && (
+              <div className="ch-msg ch-msg-ai">
+                <div className="ch-avatar"><Icon name="sparkle" size={14} /></div>
+                <div className="ch-bubble" style={{ padding: '12px 16px' }}>
+                  <div className="ch-dots"><span /><span /><span /></div>
+                </div>
+              </div>
+            )}
+            <div ref={endRef} />
+          </div>
+
+          <div className="chat-home-footer">
+            {showRevise && (
+              <div className="revise-bar">
+                <span style={{ fontSize:'11px', color:'var(--muted)', flexShrink:0 }}>修改条件：</span>
+                <div className="revise-field-wrap">
+                  <span className="revise-field-label">项目</span>
+                  <input className="revise-field-input" placeholder="项目名"
+                    value={reviseFields.project}
+                    onChange={e => setReviseFields(f => ({ ...f, project: e.target.value }))} />
+                </div>
+                <div className="revise-field-wrap">
+                  <span className="revise-field-label">机台</span>
+                  <input className="revise-field-input" placeholder="设备名"
+                    value={reviseFields.equipment}
+                    onChange={e => setReviseFields(f => ({ ...f, equipment: e.target.value }))} />
+                </div>
+                <select className="revise-type-select"
+                  value={reviseFields.type}
+                  onChange={e => setReviseFields(f => ({ ...f, type: e.target.value }))}>
+                  <option value="">类型（不限）</option>
+                  <option value="alarm">机台报警</option>
+                  <option value="setup">设备 Setup</option>
+                  <option value="experience">设备经验</option>
+                </select>
+                <div className="revise-field-wrap" style={{ flexGrow:1 }}>
+                  <span className="revise-field-label">关键词</span>
+                  <input className="revise-field-input" placeholder="逗号分隔" style={{ width:'120px' }}
+                    value={reviseFields.keywords}
+                    onChange={e => setReviseFields(f => ({ ...f, keywords: e.target.value }))} />
+                </div>
+                <button className="btn btn-primary btn-sm" onClick={applyRevise}>重新检索</button>
+                <button className="btn btn-sm" onClick={() => setShowRevise(false)}>取消</button>
+              </div>
+            )}
+            {hasParams && (
+              <div className="chat-home-params-bar">
+                <span style={{ color:'var(--muted)', fontSize:'11px', marginRight:4 }}>已识别：</span>
+                {accum.project   && <span className="chat-home-params-chip">项目 {accum.project}</span>}
+                {accum.equipment && <span className="chat-home-params-chip">机台 {accum.equipment}</span>}
+                {accum.type      && <span className="chat-home-params-chip">{typeDefs[accum.type]?.zh || accum.type}</span>}
+                {accum.code      && <span className="chat-home-params-chip">代码 {accum.code}</span>}
+                {accum.keywords?.length > 0 && <span className="chat-home-params-chip">词 {accum.keywords.join(' / ')}</span>}
+                <button className="btn btn-sm" style={{ marginLeft:'auto', gap:4 }} onClick={openRevise}>
+                  <Icon name="edit" size={11} /> 修改条件
+                </button>
+                <button className="btn btn-sm" onClick={reset} title="清除所有对话和参数，重新开始">
+                  重新开始
+                </button>
+              </div>
+            )}
+            <div className="chat-home-input-row">
+              <textarea
+                ref={inputRef}
+                className="chat-home-textarea"
+                placeholder="描述问题、机台名或报警代码… / Describe your issue or alarm code…"
+                value={inp}
+                rows={1}
+                onChange={e => {
+                  setInp(e.target.value);
+                  e.target.style.height = 'auto';
+                  e.target.style.height = Math.min(e.target.scrollHeight, 160) + 'px';
+                }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    doSend();
+                  }
+                }}
+                disabled={busy}
+                autoFocus
+              />
+              <button className="chat-home-send-btn" onClick={doSend}
+                disabled={!inp.trim() || busy} title="发送 Send (Enter)">
+                <Icon name="arrow-right" size={16} />
+              </button>
+            </div>
+            <div className="chat-home-hint">
+              <span><Kbd>Enter</Kbd> 发送 · <Kbd>Shift+Enter</Kbd> 换行</span>
+              <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+                <button className="chat-home-switch-btn" onClick={() => setShowHistory(true)}
+                  style={{ display:'inline-flex', alignItems:'center', gap:5 }}>
+                  <Icon name="clock" size={12} /> 历史记录
+                </button>
+                <button className="chat-home-switch-btn"
+                  onClick={() => onSwitchToSearch && onSwitchToSearch(accum)}>
+                  关键词检索 →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Right: live results side panel — params pinned, results scroll ── */}
+        <aside className="chat-home-side">
+          {!latestResult && !hasParams ? (
+            <div className="chs-empty-wrap">
+              <div className="chs-empty" style={{ paddingTop: 40 }}>
+                <div className="chs-empty-illus">
+                  <svg viewBox="0 0 64 64" width="52" height="52">
+                    <rect x="6" y="10" width="52" height="44" rx="4" fill="none" stroke="currentColor" strokeWidth="1.4" opacity=".35" />
+                    <path d="M14 22h36M14 30h22M14 38h28" stroke="currentColor" strokeWidth="1.2" opacity=".25" />
+                    <circle cx="50" cy="50" r="11" fill="none" stroke="currentColor" strokeWidth="1.6" />
+                    <path d="M57 57l6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                    <path d="M46 46l8 8M54 46l-8 8" stroke="currentColor" strokeWidth="1.3" opacity=".6" />
+                  </svg>
+                </div>
+                <p style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--ink-1)' }}>实时检索结果</p>
+                <p style={{ fontSize: 13, maxWidth: 210, lineHeight: 1.6 }}>
+                  对话后，检索结果会在这里即时出现。
+                </p>
+                <p style={{ fontSize: 11.5, color: 'var(--muted-2)', maxWidth: 210 }}>
+                  Results appear here instantly as keywords are extracted from your chat.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <>
+              {hasParams && (
+                <div className="chs-params-sticky">
+                  <div className="chs-section-label">已识别参数 · Extracted</div>
+                  <div className="chs-params-list">
+                    {accum.project   && <div className="chs-param-row"><span className="chs-param-label">项目</span><span className="chs-param-value">{accum.project}</span></div>}
+                    {accum.equipment && <div className="chs-param-row"><span className="chs-param-label">机台</span><span className="chs-param-value">{accum.equipment}</span></div>}
+                    {accum.type      && <div className="chs-param-row"><span className="chs-param-label">类型</span><span className="chs-param-value">{typeDefs[accum.type]?.zh || accum.type}</span></div>}
+                    {accum.code      && <div className="chs-param-row"><span className="chs-param-label">代码</span><span className="chs-param-value mono">{accum.code}</span></div>}
+                    {accum.keywords?.length > 0 && <div className="chs-param-row"><span className="chs-param-label">关键词</span><span className="chs-param-value">{accum.keywords.join(' / ')}</span></div>}
+                  </div>
+                </div>
+              )}
+              <div className="chs-results-scroll">
+                {latestResult && (
+                  <div>
+                    <div className="chs-section-label">
+                      {latestResult.bannerKind === 'full' ? '✓ 完全匹配' : '∼ 相关结果'}
+                      {typeof latestResult.total === 'number' ? ` · ${latestResult.total} 条` : ''}
+                    </div>
+                    {latestResult.hits.map((h, i) => (
+                      <div key={i} className="chs-result-card" onClick={() => onOpenDoc && onOpenDoc(h.doc)}>
+                        <div className="chs-result-title">{h.doc.title}</div>
+                        <div className="chs-result-meta">
+                          {h.doc.project   && <span>{h.doc.project}</span>}
+                          {h.doc.equipment && <span>· {h.doc.equipment}</span>}
+                          {h.doc.codes?.length > 0 && <span>· {h.doc.codes[0]}</span>}
+                        </div>
+                      </div>
+                    ))}
+                    <button className="chs-switch-btn"
+                      onClick={() => onSwitchToSearch && onSwitchToSearch(accum)}>
+                      <Icon name="search" size={13} />
+                      关键词检索查看全部结果
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </aside>
+      </div>
+
+      {/* ── History Panel ── */}
+      {showHistory && (
+        <div className="history-overlay" onClick={() => setShowHistory(false)}>
+          <div className="history-panel" onClick={e => e.stopPropagation()}>
+            <div className="history-head">
+              <div className="history-head-title">
+                <Icon name="clock" size={14} />
+                历史记录 · Search History
+              </div>
+              <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+                {historyList.length > 0 && (
+                  <button className="btn btn-sm" onClick={clearHistory}>全部清除</button>
+                )}
+                <button className="icon-btn" onClick={() => setShowHistory(false)}>
+                  <Icon name="x" size={16} />
+                </button>
+              </div>
+            </div>
+            <div className="history-body">
+              {historyList.length === 0 ? (
+                <div className="history-empty">暂无历史记录 · No search history yet</div>
+              ) : (
+                historyList.map((item, idx) => (
+                  <div key={idx} className="history-item">
+                    <button className="history-item-btn"
+                      onClick={() => { setShowHistory(false); sendMsg(item.q); }}>
+                      <Icon name="clock" size={13} />
+                      <span className="history-item-text">{item.q}</span>
+                    </button>
+                    <div className="history-item-meta">
+                      {item.project && <Chip tone="ghost">{item.project}</Chip>}
+                      {item.machine && <Chip tone="ghost">{item.machine}</Chip>}
+                    </div>
+                    <button className="history-item-del"
+                      onClick={() => deleteHistoryItem(idx)}
+                      title="删除此条记录">×</button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // --- Header app shell
-function AppHeader({ onHome, onLibrary, onAdmin, page }) {
+function AppHeader({ onHome, onLibrary, onAdmin, page, onChat, onSearch }) {
   return (
     <header className="app-header">
       <button className="brand" onClick={onHome}>
@@ -3202,8 +4052,13 @@ function AppHeader({ onHome, onLibrary, onAdmin, page }) {
       </button>
 
       <nav className="header-nav">
-        <button className={`nav-item ${page === "landing" ? "nav-active" : ""}`} onClick={onHome}>
-          检索 <span className="nav-en">Search</span>
+        <button className={`nav-item ${page === "chat" ? "nav-active" : ""}`} onClick={onChat}>
+          <Icon name="sparkle" size={13} />
+          对话检索 <span className="nav-en">Chat</span>
+        </button>
+        <button className={`nav-item ${page === "landing" || page === "results" ? "nav-active" : ""}`} onClick={onSearch}>
+          <Icon name="search" size={13} />
+          关键词检索 <span className="nav-en">Search</span>
         </button>
         <button className={`nav-item ${page === "library" ? "nav-active" : ""}`} onClick={onLibrary}>
           知识库 <span className="nav-en">Library</span>
@@ -3377,6 +4232,18 @@ function ResultsPage({ taxonomy, stats, params, setParams, mode, setMode, paramD
                   {searchStatus === 'too_many'   && <><b title="命中文档过多，请进一步缩小筛选范围">{total}</b> 篇匹配（过多）</>}
                   {searchStatus === 'no_hit'     && <>无匹配结果</>}
                   {!searchStatus && <>—</>}
+                  {searchStatus && searchStatus !== 'vector_only' && searchStatus !== 'no_hit' && (
+                    <span className="results-stat-sep">·</span>
+                  )}
+                  {searchStatus === 'strict_hit' || searchStatus === 'loose_hit' ? (
+                    <span className="results-stat-muted" title="两阶段检索：关键词召回 → BM25+向量混合排序 · Two-stage: keyword recall → BM25+vector ranking">
+                      关键词召回 → BM25·向量排序
+                    </span>
+                  ) : searchStatus === 'vector_only' ? (
+                    <span className="results-stat-muted" title="纯语义向量检索（无关键词匹配） · Pure semantic vector search">
+                      语义向量检索
+                    </span>
+                  ) : null}
                 </div>
                 <div className="results-mode-toggle">
                   <button className={`mode-btn ${mode === "strict" ? "mode-on" : ""}`}
@@ -3779,12 +4646,14 @@ function AdminPage({ stats, onStatsRefresh }) {
 
 // --- AI Chat panel (backend-proxied, key stays server-side)
 
-function AIChatPanel({ context, results, onClose }) {
+function AIChatPanel({ context, results, onClose, onOpenDoc }) {
   const [messages, setMessages]   = aUs([]);
   const [input, setInput]         = aUs('');
   const [loading, setLoading]     = aUs(false);
-  const [panelSize, setPanelSize] = aUs({ w: 360, h: 480 });
+  const [panelSize, setPanelSize] = aUs({ w: 420, h: 560 });
   const [showQuickshots, setShowQuickshots] = aUs(false);
+  const [chatMode, setChatMode]   = aUs('search'); // 'search' (conversational retrieval) | 'explain' (legacy assistant)
+  const [accumParams, setAccumParams] = aUs({ project: null, equipment: null, type: null, code: null, keywords: [] });
   const bottomRef = React.useRef(null);
   const inputRef  = React.useRef(null);
 
@@ -3807,7 +4676,7 @@ function AIChatPanel({ context, results, onClose }) {
     if (hits.length > 0) {
       const first = hits[0].doc;
       chips.push(`「${first.title}」的处理步骤是什么？`);
-      if (first.codes?.length) chips.push(`报警代码 ${first.codes[0]} 的根本原因？`);
+      if (first.codes?.length) chips.push(`此类报警的常见根本原因是什么？`);
       if (hits.length > 1) chips.push(`这 ${hits.length} 篇文档有什么区别？`);
       chips.push(`${first.project || '设备'} 的日常维护注意事项？`);
     } else {
@@ -3849,7 +4718,202 @@ function AIChatPanel({ context, results, onClose }) {
     setTimeout(() => inputRef.current?.focus(), 50);
   };
 
-  const send = () => sendText(input.trim());
+  // Normalize anything the extractor (or fallback parser) returns into a strict
+  // shape, so downstream code can rely on field types regardless of the LLM's
+  // creativity. Returns null when input is unusable.
+  const normalizeExtracted = (e) => {
+    if (!e || typeof e !== 'object') return null;
+    const asStr  = (v) => (typeof v === 'string' && v.trim()) ? v.trim() : null;
+    const asArr  = (v) => Array.isArray(v) ? v.filter(x => typeof x === 'string' && x.trim()).map(x => x.trim()) : [];
+    const ktype  = asStr(e.knowledge_type);
+    const validType = (ktype === 'alarm' || ktype === 'setup' || ktype === 'experience') ? ktype : null;
+    return {
+      project:        asStr(e.project),
+      equipment:      asStr(e.equipment),
+      knowledge_type: validType,
+      error_codes:    asArr(e.error_codes),
+      keywords:       asArr(e.keywords),
+      is_sentence:    e.is_sentence === true,
+    };
+  };
+
+  // Conversational-search mode: code-controlled loop per reference.txt.
+  // Each user turn: extract params (LLM preferred, rule-based fallback) →
+  // check sufficiency → strict search → fall back to loose if no hits →
+  // render result cards inline.
+  const sendSearch = async (text) => {
+    if (!text || loading) return;
+    if (typeof window.KB_SEARCH !== 'function') {
+      setMessages(m => [...m, { role: 'assistant', kind: 'text', content: '⚠ 检索服务尚未就绪，请稍候刷新页面后再试。' }]);
+      return;
+    }
+    const userMsg = { role: 'user', content: text };
+    const history = [...messages, userMsg];
+    setMessages(history);
+    setInput('');
+    setLoading(true);
+
+    // Always compute a rule-based extraction from the latest user message — used
+    // as a backstop when the LLM extractor is unavailable or returns garbage.
+    let ruleExtracted = null;
+    try {
+      const r = window.parseQuery || parseQuery; // parseQuery is defined globally in this file
+      const rb = r(text);
+      ruleExtracted = {
+        project:        rb.project || null,
+        equipment:      rb.equipment || null,
+        knowledge_type: rb.type || null,
+        error_codes:    rb.code ? [rb.code] : [],
+        keywords:       Array.isArray(rb.keywords) ? rb.keywords : [],
+        is_sentence:    !!rb.isSentence,
+      };
+    } catch (_) { ruleExtracted = null; }
+
+    // 1) Try LLM extraction with full conversation context. /api/v1/extract takes
+    //    a single `query` string, so we synthesize one that carries prior turns
+    //    plus the currently-known params so the model can refine across turns.
+    let llmExtracted = null;
+    let extractFailureReason = null; // null | 'unavailable' | 'parse' | 'network' | 'http'
+    try {
+      const userTurns = history.filter(m => m.role === 'user').map((m, i) => `${i + 1}. ${m.content}`).join('\n');
+      const knownStr = JSON.stringify({
+        project: accumParams.project, equipment: accumParams.equipment,
+        knowledge_type: accumParams.type, error_codes: accumParams.code ? [accumParams.code] : [],
+        keywords: accumParams.keywords,
+      });
+      const extractQuery = `用户的多轮对话（按时间顺序）：\n${userTurns}\n\n已识别的参数：${knownStr}\n\n请基于全部上下文（最新一轮为主、之前轮次为补充），提取最新的参数。`;
+      const ctl = (typeof AbortController === 'function') ? new AbortController() : null;
+      const t = ctl ? setTimeout(() => { try { ctl.abort(); } catch (_) {} }, 8000) : null;
+      let resp;
+      try {
+        resp = await fetch('/api/v1/extract', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: extractQuery }),
+          signal: ctl ? ctl.signal : undefined,
+        });
+      } finally { if (t) clearTimeout(t); }
+      if (resp.status === 503) {
+        extractFailureReason = 'unavailable';
+      } else if (!resp.ok) {
+        extractFailureReason = 'http';
+      } else {
+        let data = null;
+        try { data = await resp.json(); } catch (_) { data = null; }
+        llmExtracted = normalizeExtracted(data);
+        if (!llmExtracted) extractFailureReason = 'parse';
+      }
+    } catch (_) {
+      extractFailureReason = 'network';
+    }
+
+    // 2) Merge order: prefer LLM extraction, then rule-based, then previously-known params.
+    const pick = (...vals) => vals.find(v => v != null && v !== '') ?? null;
+    const pickArr = (...vals) => {
+      for (const v of vals) if (Array.isArray(v) && v.length > 0) return v;
+      return [];
+    };
+    const merged = {
+      project:    pick(llmExtracted?.project,        ruleExtracted?.project,        accumParams.project),
+      equipment:  pick(llmExtracted?.equipment,      ruleExtracted?.equipment,      accumParams.equipment),
+      type:       pick(llmExtracted?.knowledge_type, ruleExtracted?.knowledge_type, accumParams.type),
+      code:       pick(llmExtracted?.error_codes?.[0], ruleExtracted?.error_codes?.[0], accumParams.code),
+      keywords:   pickArr(llmExtracted?.keywords,    ruleExtracted?.keywords,       accumParams.keywords),
+      isSentence: llmExtracted?.is_sentence ?? ruleExtracted?.is_sentence ?? false,
+    };
+    setAccumParams(merged);
+
+    // 3) check_param_for_search: at least one structured field OR enough keywords.
+    const sufficient = !!(merged.project || merged.equipment || merged.code || merged.type)
+                        || (merged.keywords && merged.keywords.length >= 2);
+
+    if (!sufficient) {
+      const missing = [];
+      if (!merged.project)   missing.push('项目');
+      if (!merged.equipment) missing.push('机台/设备');
+      if (!merged.code)      missing.push('报警代码');
+      const hint = extractFailureReason === 'unavailable'
+        ? '（提示：AI 参数提取暂不可用，正在使用规则匹配，请尽量包含明确的机台/项目名）'
+        : '';
+      const ask = `信息还不够检索，请补充：${missing.slice(0, 3).join('、')}，或者告诉我您要查的具体场景关键词。${hint}`;
+      setMessages(m => [...m, { role: 'assistant', kind: 'text', content: ask }]);
+      setLoading(false);
+      setTimeout(() => inputRef.current?.focus(), 50);
+      return;
+    }
+
+    // 4) Strict search. Wrap each call individually so we can distinguish which one failed.
+    const searchParams = { ...merged, raw: text };
+    let strictRes = null;
+    try {
+      strictRes = await window.KB_SEARCH(searchParams, 'strict', 0);
+    } catch (err) {
+      setMessages(m => [...m, { role: 'assistant', kind: 'text', content: `⚠ 严格检索失败：${err && err.message ? err.message : err}` }]);
+      setLoading(false);
+      setTimeout(() => inputRef.current?.focus(), 50);
+      return;
+    }
+    // Defensive: ensure the shape we expect even if the API contract drifts.
+    const safeHits = Array.isArray(strictRes?.hits) ? strictRes.hits : [];
+    const status   = typeof strictRes?.status === 'string' ? strictRes.status : '';
+    const totalN   = typeof strictRes?.total === 'number' ? strictRes.total : safeHits.length;
+
+    if (status === 'strict_hit' && safeHits.length > 0) {
+      setMessages(m => [...m, {
+        role: 'assistant', kind: 'results',
+        banner: '完全匹配', bannerKind: 'full',
+        hits: safeHits.slice(0, 3), total: totalN,
+      }]);
+      setLoading(false);
+      setTimeout(() => inputRef.current?.focus(), 50);
+      return;
+    }
+    if (status === 'too_many') {
+      setMessages(m => [...m, {
+        role: 'assistant', kind: 'text',
+        content: `匹配到较多结果（约 ${totalN} 条），请进一步明确：例如告诉我具体的机台名、报警代码，或更精确的故障描述。`,
+      }]);
+      setLoading(false);
+      setTimeout(() => inputRef.current?.focus(), 50);
+      return;
+    }
+
+    // 5) Strict had no hit → fall back to loose.
+    let looseRes = null;
+    try {
+      looseRes = await window.KB_SEARCH(searchParams, 'loose', 0);
+    } catch (err) {
+      setMessages(m => [...m, { role: 'assistant', kind: 'text', content: `⚠ 宽松检索失败：${err && err.message ? err.message : err}` }]);
+      setLoading(false);
+      setTimeout(() => inputRef.current?.focus(), 50);
+      return;
+    }
+    const looseHits = Array.isArray(looseRes?.hits) ? looseRes.hits : [];
+    if (looseHits.length > 0) {
+      setMessages(m => [...m, {
+        role: 'assistant', kind: 'results',
+        banner: '不完全匹配，请认真鉴别', bannerKind: 'partial',
+        hits: looseHits.slice(0, 3),
+        total: typeof looseRes?.total === 'number' ? looseRes.total : looseHits.length,
+      }]);
+    } else {
+      setMessages(m => [...m, {
+        role: 'assistant', kind: 'text',
+        content: '未找到相关知识。请尝试换一种描述，或调整机台/项目/代码。',
+      }]);
+    }
+    setLoading(false);
+    setTimeout(() => inputRef.current?.focus(), 50);
+  };
+
+  const resetSearch = () => {
+    setAccumParams({ project: null, equipment: null, type: null, code: null, keywords: [] });
+    setMessages([]);
+  };
+
+  const send = () => {
+    const t = input.trim();
+    if (chatMode === 'search') sendSearch(t); else sendText(t);
+  };
 
   // Drag-to-resize from the top-left handle
   const onResizeStart = (e) => {
@@ -3876,15 +4940,53 @@ function AIChatPanel({ context, results, onClose }) {
       <div className="chat-head">
         <span className="chat-head-title">
           <Icon name="sparkle" size={14} />
-          AI 助手 · DeepSeek
+          {chatMode === 'search' ? '侧边检索 · Side Search' : 'AI 助手 · Assistant'}
         </span>
+        <div className="chat-mode-toggle" role="tablist" aria-label="chat mode">
+          <button
+            className={`chat-mode-btn${chatMode === 'search' ? ' active' : ''}`}
+            onClick={() => setChatMode('search')}
+            title="对话式检索：由代码控制流程，多轮收集参数后命中知识"
+          >检索</button>
+          <button
+            className={`chat-mode-btn${chatMode === 'explain' ? ' active' : ''}`}
+            onClick={() => setChatMode('explain')}
+            title="AI 助手：基于当前结果回答自由提问"
+          >解释</button>
+        </div>
         <button className="icon-btn" onClick={onClose} aria-label="close chat">
           <Icon name="x" size={16} />
         </button>
       </div>
 
+      {chatMode === 'search' && (
+        <div className="chat-params-bar">
+          <span style={{ color: 'var(--ink-2)' }}>已识别参数：</span>
+          {accumParams.project   && <span className="chat-params-chip">项目 {accumParams.project}</span>}
+          {accumParams.equipment && <span className="chat-params-chip">机台 {accumParams.equipment}</span>}
+          {accumParams.type      && <span className="chat-params-chip">类型 {accumParams.type}</span>}
+          {accumParams.code      && <span className="chat-params-chip">代码 {accumParams.code}</span>}
+          {accumParams.keywords && accumParams.keywords.length > 0
+            && <span className="chat-params-chip">关键词 {accumParams.keywords.join(' / ')}</span>}
+          {!accumParams.project && !accumParams.equipment && !accumParams.type && !accumParams.code
+            && (!accumParams.keywords || accumParams.keywords.length === 0)
+            && <span style={{ color: 'var(--muted)' }}>（暂无）</span>}
+          <button className="chat-params-reset" onClick={resetSearch} title="清空参数并重新开始">重置</button>
+        </div>
+      )}
+
       <div className="chat-messages">
-        {messages.length === 0 && (
+        {messages.length === 0 && chatMode === 'search' && (
+          <div className="chat-empty">
+            <Icon name="sparkle" size={22} />
+            <p>您好，我会通过对话帮您检索知识库。</p>
+            <p style={{ opacity: .7, fontSize: '11.5px' }}>
+              告诉我设备/机台、项目或报警代码，例如：<br/>
+              「FTU 的 125002 报警怎么处理」或「LCD setup」
+            </p>
+          </div>
+        )}
+        {messages.length === 0 && chatMode === 'explain' && (
           <>
             <div className="chat-empty">
               <Icon name="sparkle" size={22} />
@@ -3902,14 +5004,38 @@ function AIChatPanel({ context, results, onClose }) {
             </div>
           </>
         )}
-        {messages.map((m, i) => (
-          <div key={i} className={`chat-msg chat-msg-${m.role}`}>
-            {m.role === 'assistant'
-              ? <div className="chat-msg-content chat-md" dangerouslySetInnerHTML={{ __html: window.marked ? window.marked.parse(m.content) : m.content }} />
-              : <div className="chat-msg-content">{m.content}</div>
-            }
-          </div>
-        ))}
+        {messages.map((m, i) => {
+          if (m.kind === 'results') {
+            return (
+              <div key={i} className="chat-msg chat-msg-assistant" style={{ maxWidth: '96%' }}>
+                <div className="chat-msg-content" style={{ background: 'transparent', padding: 0, border: 'none' }}>
+                  <div className={`chat-result-banner${m.bannerKind === 'partial' ? ' partial' : ''}`}>
+                    {m.banner}{typeof m.total === 'number' && m.total > m.hits.length ? `（共 ${m.total} 条，显示前 ${m.hits.length} 条）` : ''}
+                  </div>
+                  {m.hits.map((h, j) => (
+                    <div key={j} className="chat-result-card" onClick={() => onOpenDoc && onOpenDoc(h.doc)}>
+                      <div className="chat-result-title">{h.doc.title}</div>
+                      <div className="chat-result-meta">
+                        {h.doc.type      && <span>{h.doc.type}</span>}
+                        {h.doc.project   && <span>· {h.doc.project}</span>}
+                        {h.doc.equipment && <span>· {h.doc.equipment}</span>}
+                        {h.doc.codes && h.doc.codes.length > 0 && <span>· {h.doc.codes.slice(0, 3).join(', ')}</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          }
+          return (
+            <div key={i} className={`chat-msg chat-msg-${m.role}`}>
+              {m.role === 'assistant'
+                ? <div className="chat-msg-content chat-md" dangerouslySetInnerHTML={{ __html: window.marked ? window.marked.parse(m.content) : m.content }} />
+                : <div className="chat-msg-content">{m.content}</div>
+              }
+            </div>
+          );
+        })}
         {loading && (
           <div className="chat-msg chat-msg-assistant">
             <div className="chat-msg-content chat-loading">
@@ -3969,7 +5095,7 @@ function App() {
     "paramDisplay": "chips"
   }/*EDITMODE-END*/);
 
-  const [page, setPage]         = aUs("landing");
+  const [page, setPage]         = aUs("chat"); // chat-first by default
   const [params, setParams]     = aUs(null);
   const [openDoc, setOpenDoc]   = aUs(null);
   const [taxonomy, setTax]      = aUs(null);
@@ -4006,7 +5132,6 @@ function App() {
   const submitQuery = async (q) => {
     const rulesBased = parseQuery(q);
     if (window.saveRecentSearch) window.saveRecentSearch(q, rulesBased.project, rulesBased.equipment);
-    // Navigate immediately with rule-based params; LLM extraction refines asynchronously.
     setParams(rulesBased);
     setPage("results");
     setOpenDoc(null);
@@ -4029,8 +5154,32 @@ function App() {
           isSentence: llm.is_sentence ?? rulesBased.isSentence,
         });
       }
-    } catch (_) { /* rule-based params already set; LLM extraction optional */ }
+    } catch (_) {}
   };
+
+  // Called by ChatHomePage when user wants to see all results in keyword search
+  const switchToSearch = (chatAccum) => {
+    if (chatAccum && (chatAccum.project || chatAccum.equipment || chatAccum.code ||
+        chatAccum.type || chatAccum.keywords?.length)) {
+      const p = {
+        project:   chatAccum.project   || null,
+        equipment: chatAccum.equipment || null,
+        code:      chatAccum.code      || null,
+        type:      chatAccum.type      || null,
+        keywords:  chatAccum.keywords  || [],
+        raw:       chatAccum.keywords?.join(' ') || chatAccum.equipment || chatAccum.project || '',
+        isSentence: false,
+      };
+      setParams(p);
+      setPage("results");
+    } else {
+      setPage("landing");
+    }
+    setOpenDoc(null);
+  };
+
+  // Side-panel chat is only for non-chat pages (results, library, admin)
+  const showChatFab = page !== "chat";
 
   return (
     <div className="app">
@@ -4038,11 +5187,19 @@ function App() {
         onHome={() => { setPage("landing"); setParams(null); setOpenDoc(null); }}
         onLibrary={() => { setPage("library"); setOpenDoc(null); }}
         onAdmin={() => { setPage("admin"); setOpenDoc(null); }}
+        onChat={() => { setPage("chat"); setOpenDoc(null); setChatOpen(false); }}
+        onSearch={() => { setPage("landing"); setParams(null); setOpenDoc(null); }}
         page={page}
       />
 
       <div className="app-body">
-        {page === "landing" ? (
+        {page === "chat" ? (
+          <ChatHomePage
+            taxonomy={taxonomy}
+            onSwitchToSearch={switchToSearch}
+            onOpenDoc={(d) => setOpenDoc(d)}
+          />
+        ) : page === "landing" ? (
           <Landing
             taxonomy={taxonomy}
             stats={stats}
@@ -4081,16 +5238,18 @@ function App() {
         />
       ) : null}
 
-      {/* AI Chat FAB + Panel */}
-      <button
-        className="chat-fab"
-        title="AI 助手 · Chat"
-        onClick={() => setChatOpen(o => !o)}
-        aria-label={chatOpen ? "Close AI chat" : "Open AI chat"}
-      >
-        {chatOpen ? <Icon name="x" size={20} /> : <Icon name="sparkle" size={20} />}
-      </button>
-      {chatOpen && (
+      {/* Side-questions Chat FAB — only shown on non-chat pages */}
+      {showChatFab && (
+        <button
+          className="chat-fab"
+          title="问侧边问题 · Side questions"
+          onClick={() => setChatOpen(o => !o)}
+          aria-label={chatOpen ? "Close side chat" : "Open side chat"}
+        >
+          {chatOpen ? <Icon name="x" size={20} /> : <Icon name="sparkle" size={20} />}
+        </button>
+      )}
+      {showChatFab && chatOpen && (
         <AIChatPanel
           context={
             page === 'results' && params
@@ -4099,6 +5258,7 @@ function App() {
           }
           results={chatResults}
           onClose={() => setChatOpen(false)}
+          onOpenDoc={(d) => setOpenDoc(d)}
         />
       )}
 

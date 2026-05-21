@@ -43,16 +43,21 @@ def _base_mapping(dims: int, index_analyzer: str, query_analyzer: str) -> dict[s
     return {
         "dynamic": "strict",
         "properties": {
-            # Part 1 — filter only, exact match
+            # Part 1 — keyword fields: participate in filter (bool/term) and
+            #   exact-string matching; NOT tokenised; do NOT affect BM25 scoring.
             "knowledge_type": {"type": "keyword"},
             "project": {"type": "keyword"},
             "equipment": {"type": "keyword"},
             "error_codes": {"type": "keyword"},
-            # Part 2 — display only, not indexed for search
+            # Part 2 — display-only: stored but NOT indexed (index: False / enabled: False).
+            #   Retrieved verbatim for rendering; never used in queries or scoring.
             "source_file": {"type": "keyword", "index": False},
             "source_pages": {"type": "keyword", "index": False},
             "sections": {"type": "object", "enabled": False},
-            # Part 3 — search + relevance
+            # summary: ≤50-char human digest, display-only, prevents context overflow.
+            "summary": {"type": "keyword", "index": False},
+            # Part 3 — full-text fields: tokenised with the configured analyzer;
+            #   participate in BM25 keyword recall AND vector rescoring.
             "title": {
                 "type": "text",
                 "analyzer": index_analyzer,

@@ -25,9 +25,11 @@ search:
   strict_max_hits: 8
   # Title field weight in BM25 (vs body at 1.0).
   title_boost: 3.0
-  # Rank-window for RRF.
+  # Number of top keyword-recall candidates that get BM25+vector re-ranking (rescore window).
   rrf_window: 50
-  rrf_rank_constant: 60
+  # Vector score weight in the ranking blend.
+  # final_score = (1 - vector_weight) * BM25 + vector_weight * (cosine_sim + 1)
+  vector_weight: 0.5
 
 taxonomy:
   path: "config/taxonomy.yaml"

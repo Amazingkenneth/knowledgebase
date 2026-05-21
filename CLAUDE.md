@@ -49,7 +49,7 @@ Without it, `/api/v1/chat` and `/api/v1/extract` return HTTP 503; all search/ind
 | `src/kb/api/chat.py` | LLM proxy endpoints (`/chat`, `/extract`) |
 | `src/kb/api/search.py` | `POST /api/v1/search` handler |
 | `src/kb/services/search.py` | Hybrid search pipeline: strict → loose → vector (RRF) |
-| `src/kb/services/seed.py` | Idempotent CSV → ES seeder (skips if index already populated) |
+| `src/kb/services/seed.py` | CSV → ES seeder — clears and reloads all indices on every startup |
 | `src/kb/es/body_builder.py` | Builds the ES `body` text field from document sections |
 | `src/kb/es/mappings.py` | Index mappings (dense_vector, keyword, text) |
 | `config/settings.yaml` | Runtime defaults (ES URL, embedding, search tuning) |
@@ -62,7 +62,7 @@ Without it, `/api/v1/chat` and `/api/v1/extract` return HTTP 503; all search/ind
 
 - **No hallucination**: never add LLM-generated text to search responses. Results are verbatim documents or nothing.
 - **Taxonomy enforcement**: `project` and `equipment` values are validated against `taxonomy.yaml` at index time. New values require a taxonomy update + re-seed.
-- **Idempotent seeding**: `seed_if_empty` only seeds when the index is empty; it uses a content hash to deduplicate rows.
+- **Always-reseed on startup**: `seed` clears all documents from every index and reloads from the CSV files on every server start. Additions, edits, and row deletions in the CSVs all take effect automatically on the next restart.
 - **BM25-only fallback**: the embedding service is optional. If it's unreachable, the server continues with keyword-only search (no kNN).
 
 ---

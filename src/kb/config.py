@@ -36,8 +36,11 @@ class EmbeddingConfig(BaseModel):
 class SearchConfig(BaseModel):
     strict_max_hits: int = Field(default=8, ge=1, le=50)
     title_boost: float = Field(default=3.0, ge=1.0, le=10.0)
+    # rescore_window: how many top keyword-recall hits get BM25+vector re-ranking.
     rrf_window: int = Field(default=50, ge=10, le=500)
-    rrf_rank_constant: int = Field(default=60, ge=1, le=200)
+    # Weight of the vector (cosine) score in the BM25+vector ranking blend.
+    # Final score = (1 - vector_weight) * BM25 + vector_weight * (cosine_sim + 1)
+    vector_weight: float = Field(default=0.5, ge=0.0, le=1.0)
 
 
 class TaxonomyConfig(BaseModel):

@@ -1,301 +1,211 @@
 项目,机台,代码,英文标题,中文标题,内容,解除流程,注意事项,ppt文件,ppt页面
-Kinneret,Loader,120001,Alignment Drift,对位漂移,Alignment Drift detected on Loader; code 120001.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_Loader_1.pptx,2
-MEM,Pump,120002,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on Pump; code 120002.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_Pump_2.pptx,28
-所有项目,SensorModule,120003,Alignment Drift,对位漂移,Alignment Drift detected on SensorModule; code 120003.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_SensorModule_3.pptx,1
-MEM,Stage,120004,Sensor Timeout,传感器超时,Sensor Timeout detected on Stage; code 120004.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_Stage_4.pptx,3
-所有项目,Heater,120005,Low Pressure,压力过低,Low Pressure detected on Heater; code 120005.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_Heater_5.pptx,20
-Kinneret,SensorModule,120006,Low Pressure,压力过低,Low Pressure detected on SensorModule; code 120006.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_SensorModule_6.pptx,28
-Kinneret,Pump,120007,Alignment Drift,对位漂移,Alignment Drift detected on Pump; code 120007.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_Pump_7.pptx,28
-MHK,SensorModule,120008,Belt Slip,皮带打滑,Belt Slip detected on SensorModule; code 120008.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_SensorModule_8.pptx,21
-Sonora,Conveyor,120009,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on Conveyor; code 120009.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Conveyor_9.pptx,14
-PDX,SensorModule,120010,Alignment Drift,对位漂移,Alignment Drift detected on SensorModule; code 120010.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_PDX_SensorModule_10.pptx,6
-Sonora,FTU,120011,Vacuum Failure,穿梭真空感应失败,Vacuum Failure detected on FTU; code 120011.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_FTU_11.pptx,11
-MHK,Heater,120012,Low Pressure,压力过低,Low Pressure detected on Heater; code 120012.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_Heater_12.pptx,12
-Kinneret,Loader,120013,Belt Slip,皮带打滑,Belt Slip detected on Loader; code 120013.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_Loader_13.pptx,17
-Kinneret,Loader,120014,Sensor Timeout,传感器超时,Sensor Timeout detected on Loader; code 120014.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_Loader_14.pptx,6
-PDX,Stage,120015,Belt Slip,皮带打滑,Belt Slip detected on Stage; code 120015.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_PDX_Stage_15.pptx,16
-MEM,Conveyor,120016,Alignment Drift,对位漂移,Alignment Drift detected on Conveyor; code 120016.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_Conveyor_16.pptx,21
-Sonora,Aligner,120017,Over Temperature,过温报警,Over Temperature detected on Aligner; code 120017.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Aligner_17.pptx,22
-MHK,Aligner,120018,Over Temperature,过温报警,Over Temperature detected on Aligner; code 120018.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_Aligner_18.pptx,22
-MEM,SensorModule,120019,Alignment Drift,对位漂移,Alignment Drift detected on SensorModule; code 120019.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_SensorModule_19.pptx,12
-Sonora,Stage,120020,Over Temperature,过温报警,Over Temperature detected on Stage; code 120020.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Stage_20.pptx,15
-Sonora,Conveyor,120021,Position Error,定位错误,Position Error detected on Conveyor; code 120021.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Conveyor_21.pptx,28
-所有项目,SensorModule,120022,Belt Slip,皮带打滑,Belt Slip detected on SensorModule; code 120022.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_SensorModule_22.pptx,13
-Yucatan,Heater,120023,Over Temperature,过温报警,Over Temperature detected on Heater; code 120023.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Yucatan_Heater_23.pptx,1
-Kinneret,Heater,120024,Vacuum Failure,穿梭真空感应失败,Vacuum Failure detected on Heater; code 120024.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_Heater_24.pptx,19
-MHK,Aligner,120025,Over Temperature,过温报警,Over Temperature detected on Aligner; code 120025.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_Aligner_25.pptx,25
-Boston,Pump,120026,Belt Slip,皮带打滑,Belt Slip detected on Pump; code 120026.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Boston_Pump_26.pptx,21
-Boston,Heater,120027,Sensor Timeout,传感器超时,Sensor Timeout detected on Heater; code 120027.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Boston_Heater_27.pptx,21
-PDX,FTU,120028,Over Temperature,过温报警,Over Temperature detected on FTU; code 120028.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_PDX_FTU_28.pptx,26
-所有项目,FTU,120029,Low Pressure,压力过低,Low Pressure detected on FTU; code 120029.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_FTU_29.pptx,24
-MEM,SensorModule,120030,Over Temperature,过温报警,Over Temperature detected on SensorModule; code 120030.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_SensorModule_30.pptx,11
-Kinneret,Loader,120031,Belt Slip,皮带打滑,Belt Slip detected on Loader; code 120031.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_Loader_31.pptx,5
-Yucatan,Heater,120032,Sensor Timeout,传感器超时,Sensor Timeout detected on Heater; code 120032.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Yucatan_Heater_32.pptx,9
-所有项目,Heater,120033,Low Pressure,压力过低,Low Pressure detected on Heater; code 120033.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_Heater_33.pptx,26
-PDX,Aligner,120034,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on Aligner; code 120034.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_PDX_Aligner_34.pptx,5
-Boston,Stage,120035,Low Pressure,压力过低,Low Pressure detected on Stage; code 120035.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Boston_Stage_35.pptx,3
-Kinneret,FTU,120036,Over Temperature,过温报警,Over Temperature detected on FTU; code 120036.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_FTU_36.pptx,18
-PDX,Aligner,120037,Low Pressure,压力过低,Low Pressure detected on Aligner; code 120037.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_PDX_Aligner_37.pptx,22
-Sonora,Stage,120038,Low Pressure,压力过低,Low Pressure detected on Stage; code 120038.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Stage_38.pptx,4
-Boston,Aligner,120039,Vacuum Failure,穿梭真空感应失败,Vacuum Failure detected on Aligner; code 120039.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Boston_Aligner_39.pptx,20
-Yucatan,Conveyor,120040,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on Conveyor; code 120040.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Yucatan_Conveyor_40.pptx,21
-所有项目,Heater,120041,Position Error,定位错误,Position Error detected on Heater; code 120041.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_Heater_41.pptx,4
-MEM,FTU,120042,Vacuum Failure,穿梭真空感应失败,Vacuum Failure detected on FTU; code 120042.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_FTU_42.pptx,10
-所有项目,SensorModule,120043,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on SensorModule; code 120043.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_SensorModule_43.pptx,8
-MEM,Stage,120044,Alignment Drift,对位漂移,Alignment Drift detected on Stage; code 120044.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_Stage_44.pptx,12
-Kinneret,Loader,120045,Position Error,定位错误,Position Error detected on Loader; code 120045.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_Loader_45.pptx,21
-PDX,Aligner,120046,Position Error,定位错误,Position Error detected on Aligner; code 120046.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_PDX_Aligner_46.pptx,9
-MHK,Pump,120047,Belt Slip,皮带打滑,Belt Slip detected on Pump; code 120047.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_Pump_47.pptx,15
-所有项目,Conveyor,120048,Low Pressure,压力过低,Low Pressure detected on Conveyor; code 120048.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_Conveyor_48.pptx,4
-Yucatan,Pump,120049,Vacuum Failure,穿梭真空感应失败,Vacuum Failure detected on Pump; code 120049.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Yucatan_Pump_49.pptx,13
-Sonora,Conveyor,120050,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on Conveyor; code 120050.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Conveyor_50.pptx,28
-所有项目,SensorModule,120051,Belt Slip,皮带打滑,Belt Slip detected on SensorModule; code 120051.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_SensorModule_51.pptx,21
-MHK,FTU,120052,Low Pressure,压力过低,Low Pressure detected on FTU; code 120052.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_FTU_52.pptx,8
-MEM,Conveyor,120053,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on Conveyor; code 120053.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_Conveyor_53.pptx,27
-Boston,Conveyor,120054,Belt Slip,皮带打滑,Belt Slip detected on Conveyor; code 120054.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Boston_Conveyor_54.pptx,11
-MEM,FTU,120055,Over Temperature,过温报警,Over Temperature detected on FTU; code 120055.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_FTU_55.pptx,28
-MEM,Loader,120056,Over Temperature,过温报警,Over Temperature detected on Loader; code 120056.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_Loader_56.pptx,26
-MEM,SensorModule,120057,Vacuum Failure,穿梭真空感应失败,Vacuum Failure detected on SensorModule; code 120057.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_SensorModule_57.pptx,5
-MHK,Pump,120058,Belt Slip,皮带打滑,Belt Slip detected on Pump; code 120058.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_Pump_58.pptx,19
-Yucatan,FTU,120059,Sensor Timeout,传感器超时,Sensor Timeout detected on FTU; code 120059.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Yucatan_FTU_59.pptx,9
-MHK,Loader,120060,Position Error,定位错误,Position Error detected on Loader; code 120060.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_Loader_60.pptx,17
-PDX,SensorModule,120061,Alignment Drift,对位漂移,Alignment Drift detected on SensorModule; code 120061.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_PDX_SensorModule_61.pptx,15
-Yucatan,SensorModule,120062,Alignment Drift,对位漂移,Alignment Drift detected on SensorModule; code 120062.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Yucatan_SensorModule_62.pptx,17
-Boston,FTU,120063,Over Temperature,过温报警,Over Temperature detected on FTU; code 120063.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Boston_FTU_63.pptx,15
-MHK,FTU,120064,Alignment Drift,对位漂移,Alignment Drift detected on FTU; code 120064.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_FTU_64.pptx,28
-Kinneret,Stage,120065,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on Stage; code 120065.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_Stage_65.pptx,16
-所有项目,SensorModule,120066,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on SensorModule; code 120066.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_SensorModule_66.pptx,11
-MEM,SensorModule,120067,Sensor Timeout,传感器超时,Sensor Timeout detected on SensorModule; code 120067.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MEM_SensorModule_67.pptx,9
-Yucatan,Stage,120068,Over Temperature,过温报警,Over Temperature detected on Stage; code 120068.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Yucatan_Stage_68.pptx,15
-Kinneret,SensorModule,120069,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on SensorModule; code 120069.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_SensorModule_69.pptx,28
-Boston,Stage,120070,Alignment Drift,对位漂移,Alignment Drift detected on Stage; code 120070.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Boston_Stage_70.pptx,29
-Boston,Stage,120071,Low Pressure,压力过低,Low Pressure detected on Stage; code 120071.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Boston_Stage_71.pptx,27
-所有项目,Stage,120072,Position Error,定位错误,Position Error detected on Stage; code 120072.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_Stage_72.pptx,24
-PDX,Pump,120073,Position Error,定位错误,Position Error detected on Pump; code 120073.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_PDX_Pump_73.pptx,11
-Sonora,Pump,120074,Sensor Timeout,传感器超时,Sensor Timeout detected on Pump; code 120074.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Pump_74.pptx,22
-所有项目,SensorModule,120075,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on SensorModule; code 120075.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_SensorModule_75.pptx,27
-PDX,SensorModule,120076,Position Error,定位错误,Position Error detected on SensorModule; code 120076.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_PDX_SensorModule_76.pptx,4
-Yucatan,Loader,120077,Vacuum Failure,穿梭真空感应失败,Vacuum Failure detected on Loader; code 120077.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Yucatan_Loader_77.pptx,19
-Yucatan,SensorModule,120078,Position Error,定位错误,Position Error detected on SensorModule; code 120078.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Yucatan_SensorModule_78.pptx,12
-Kinneret,FTU,120079,Over Temperature,过温报警,Over Temperature detected on FTU; code 120079.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_FTU_79.pptx,20
-Sonora,Pump,120080,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on Pump; code 120080.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Pump_80.pptx,19
-Boston,Loader,120081,Alignment Drift,对位漂移,Alignment Drift detected on Loader; code 120081.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Boston_Loader_81.pptx,8
-PDX,Pump,120082,Low Pressure,压力过低,Low Pressure detected on Pump; code 120082.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_PDX_Pump_82.pptx,4
-Sonora,Conveyor,120083,Position Error,定位错误,Position Error detected on Conveyor; code 120083.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Conveyor_83.pptx,28
-MHK,Heater,120084,Vacuum Failure,穿梭真空感应失败,Vacuum Failure detected on Heater; code 120084.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_Heater_84.pptx,6
-Sonora,Heater,120085,Low Pressure,压力过低,Low Pressure detected on Heater; code 120085.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Heater_85.pptx,12
-MHK,Loader,120086,Sensor Timeout,传感器超时,Sensor Timeout detected on Loader; code 120086.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_Loader_86.pptx,19
-Kinneret,SensorModule,120087,Sensor Timeout,传感器超时,Sensor Timeout detected on SensorModule; code 120087.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_SensorModule_87.pptx,24
-MHK,SensorModule,120088,Belt Slip,皮带打滑,Belt Slip detected on SensorModule; code 120088.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_SensorModule_88.pptx,13
-Kinneret,Aligner,120089,Low Pressure,压力过低,Low Pressure detected on Aligner; code 120089.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_Aligner_89.pptx,6
-Yucatan,Heater,120090,Low Pressure,压力过低,Low Pressure detected on Heater; code 120090.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Yucatan_Heater_90.pptx,25
-PDX,FTU,120091,Sensor Timeout,传感器超时,Sensor Timeout detected on FTU; code 120091.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_PDX_FTU_91.pptx,6
-MHK,SensorModule,120092,Over Temperature,过温报警,Over Temperature detected on SensorModule; code 120092.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_SensorModule_92.pptx,15
-Kinneret,Aligner,120093,Alignment Drift,对位漂移,Alignment Drift detected on Aligner; code 120093.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_Aligner_93.pptx,14
-Sonora,Conveyor,120094,Hydraulic Overload,液压泵过载,Hydraulic Overload detected on Conveyor; code 120094.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Conveyor_94.pptx,12
-Kinneret,SensorModule,120095,Over Temperature,过温报警,Over Temperature detected on SensorModule; code 120095.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_SensorModule_95.pptx,22
-所有项目,Heater,120096,Vacuum Failure,穿梭真空感应失败,Vacuum Failure detected on Heater; code 120096.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_所有项目_Heater_96.pptx,8
-Kinneret,FTU,120097,Vacuum Failure,穿梭真空感应失败,Vacuum Failure detected on FTU; code 120097.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Kinneret_FTU_97.pptx,7
-Sonora,Conveyor,120098,Sensor Timeout,传感器超时,Sensor Timeout detected on Conveyor; code 120098.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Conveyor_98.pptx,25
-Sonora,Heater,120099,Low Pressure,压力过低,Low Pressure detected on Heater; code 120099.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_Sonora_Heater_99.pptx,4
-MHK,Aligner,120100,Position Error,定位错误,Position Error detected on Aligner; code 120100.,"1. 停机
-2. 检查相关部件
-3. 恢复运行前验证",记录详细日志以便追溯,alarms_MHK_Aligner_100.pptx,6
+Kinneret,Loader,E1001,Vacuum Loss on End-Effector,末端吸盘真空丢失,末端吸盘真空压力低于 -70 kPa 持续 200 ms，系统判定吸附失效并立即停止机械手运动。常见于吸盘磨损、O-ring 老化、真空管路接头松动、真空泵性能下降等场景。设备会在屏幕弹窗并把当前晶圆 SN 写入异常隔离队列。,"1. 进入安全模式，确认晶圆未掉落到机内。
+2. 目视检查吸盘表面有无划痕、异物。
+3. 用真空表实测吸附负压；< -70 kPa 进入维修流程。
+4. 更换吸盘或 O-ring（参考 setup_Loader_vacuum）。
+5. 重做 10 次抓放测试无掉片，按 reset 解除报警。
+6. 在 MES 把隔离队列里的晶圆放行或报废。",若已发生掉片，必须按 IPQC 流程评估损伤；切勿直接抓回继续生产。,alarm_Loader_E1001.pptx,4
+MEM,Pump,E1002,Pump Overload Current,泵浦过载电流,干泵电流超过额定值 110%（典型 5.5 A），持续 5 s 触发保护停机。原因包括：吸入端堵塞、转子摩擦增大、电压异常、轴承失效。继续运行将损坏定子绕组。,"1. 立即断开主电源开关。
+2. 等待泵冷却（至少 30 min）。
+3. 检查进气过滤器 ΔP，清洁或更换。
+4. 测量泵电源电压 380V ±5%。
+5. 手动盘车应轻松（手柄可转动 ≥ 1 圈无卡滞）。
+6. 故障排除后试运行 10 min，电流回到额定值 ≤ 90% 才放行。",热保护跳闸后必须等待至完全冷却再启动，否则二次跳闸将损坏电机；连续两次过载必须停线深查。,alarm_Pump_E1002.pptx,2
+PDX,Heater,E1003,Thermocouple Open Circuit,热电偶断路,PID 控制器检测到热电偶回路开路（输入电压 > 25 mV 浮动）。一旦该报警出现，加热回路立即被切断防止失控升温。,"1. 关闭加热电源，等待温度下降到 < 50 °C。
+2. 检查热电偶接线端子是否松动、氧化。
+3. 用万用表测热电偶两端阻值（K 型应 < 20 Ω）。
+4. 阻值无穷大说明热电偶已断，更换新件 P/N: TC-K-1.5。
+5. 装好后做温度上升测试到工艺温度。
+6. 解除报警。",热电偶断路时切勿短路 PV 端模拟温度，会导致加热失控；务必先排除故障再恢复加热。,alarm_Heater_E1003.pptx,3
+Boston,Aligner,E1004,Pattern Match Score Low,图形匹配分值过低,VisionPro 模板匹配分值低于 acceptance（0.6），系统认定无法可靠对位。可能原因：产品脏污、光源亮度下降、镜头污染、模板与产品差异（来料变更）。,"1. 暂停设备，取下待测产品检查表面。
+2. 拍取实际图像与模板对比，确认差异类型。
+3. 若是光源/镜头问题：清洁后复测，分值应 ≥ 0.7。
+4. 若是来料变更：联系工艺工程师评估是否需要重做模板。
+5. 解除报警前必须连续 20 件无 NG。",不可在生产中随意降低 acceptance；模板调整必须经 ECN 审批。,alarm_Aligner_E1004.pptx,6
+Sonora,Conveyor,E1005,Emergency Stop Pressed,急停按钮被按下,任一急停按钮被按下，整线立即停机并切断所有运动电源。HMI 显示被按下的按钮编号。,"1. 确认安全状况（人员、产品、设备）。
+2. 找到亮起红灯的急停按钮，旋转拔出。
+3. 按双手 reset 按键 1 s。
+4. 等待系统自检通过，HMI 报警消失。
+5. 验证未发生设备误动作。",急停拔出前必须确认按下原因已消除；不可绕过任何 reset 步骤。,alarm_Conveyor_E1005.pptx,1
+Yucatan,Stage,E1006,Servo Position Error,伺服位置误差超差,伺服跟随误差超过设定阈值（典型 50 μm），驱动器报警停车。常见原因：负载突变、机械碰撞、参数失调、丝杆/导轨润滑不良。,"1. 不要立即按 reset；先观察设备是否处于异常位置。
+2. 检查工作台是否撞到障碍物或异物。
+3. 移除障碍后手动 jog 验证轴可移动。
+4. 查驱动器历史报警记录定位首次故障时刻。
+5. 检查机械结构（丝杆螺母、联轴器、限位）。
+6. 故障排除后清除报警，做轴 Cpk 验证。",位置误差报警常常是机械问题预兆；连续出现必须深查丝杆/导轨状态。,alarm_Stage_E1006.pptx,5
+MHK,FTU,E1007,Test Yield Below Threshold,测试良率低于阈值,连续 50 片 yield < 85%，系统弹出预警提醒工程师介入。可能原因：探针卡老化、产品来料异常、ATE 校准漂移。,"1. 暂停批次，隔离最近 50 片产品。
+2. 调出测试 log，按失败 bin 分布定位主要不良类型。
+3. 若失败集中在某些 pin → 检查探针接触电阻（参考 setup_FTU_probe_cres）。
+4. 若失败均匀分布 → 检查产品批次（来料追溯）。
+5. 找到根因后做首件 OK 才放行批次。",良率报警不是单纯设备故障；务必联合工艺、来料、测试三方共同分析。,alarm_FTU_E1007.pptx,7
+Kinneret,SensorModule,E1008,Sensor Out of Range,传感器超量程,激光位移传感器读数超出量程（典型 ±5 mm），软件无法生成可靠测量值。可能原因：工件缺失、工件型号变更、传感器探头被污染或撞击位移。,"1. 检查工位是否有工件；缺失 → 检查上料环节。
+2. 工件存在但读数仍超量程 → 检查传感器对准方向。
+3. 清洁传感器探头窗口（无尘布 + IPA）。
+4. 必要时重新做 Teaching Origin。
+5. 解除报警，连续 10 件无异常方可放行。",切勿直接修改量程参数掩盖问题，会导致后续质量问题；超量程必须找出原因。,alarm_SensorModule_E1008.pptx,3
+MEM,Loader,E1009,FOUP Not Closed Properly,FOUP 未正确关闭,FOUP 门传感器检测到关门状态异常，开门器无法完成 latch 动作。常见原因：FOUP 内晶圆突出、定位销磨损、FOUP 损坏。,"1. 安全模式下手动取出 FOUP 检查内部。
+2. 确认晶圆是否正确插在槽内（无突出）。
+3. 检查 FOUP 门密封圈是否完好。
+4. 损坏 FOUP 立即报废，不可继续使用。
+5. 更换新 FOUP 重新上料。",FOUP 损坏会造成晶圆污染；不可勉强使用密封不良的 FOUP。,alarm_Loader_E1009.pptx,8
+PDX,Aligner,E1010,Calibration Expired,校准已过期,设备运行天数超过校准周期（90 天），软件强制提示重新校准。在校准完成前禁止生产。,"1. 安排 PM 人员按 setup_Aligner_camera 重做校准。
+2. 校准合格后在 maintenance UI 重置校准日期。
+3. 校准 report 上传 QMS 系统。",校准过期是合规要求，不可旁路；客户审计会查校准记录。,alarm_Aligner_E1010.pptx,2
+Boston,Conveyor,E1011,Jam Detected at Station 5,Station 5 卡料,Station 5 入口光电传感器检测到产品停留时间 > 30 s，判定为卡料。设备停止上下游线段。,"1. 取出卡住的产品检查是否变形损坏。
+2. 检查 Station 5 内部有无机械干涉。
+3. 清理可能的碎屑或异物。
+4. 手动单步运行 Station 5 verify 顺畅。
+5. 解除报警，先放行 5 件试运行无卡料才正式生产。",卡料常为机械磨损征兆；连续卡料需安排深度检修。,alarm_Conveyor_E1011.pptx,4
+Sonora,Heater,E1012,Over-temperature Trip,超温联锁,温度超过硬联锁阈值（典型 115 °C），SSR 主回路被切断。需 EHS 钥匙才能 reset。,"1. 立即检查产品状态，决定是否报废。
+2. 联系 EHS 到场。
+3. 找出超温原因：PID 失控、SSR 短路、热电偶位置错误。
+4. 修复后 EHS 钥匙 reset，重新做 PID 验证（参考 setup_Heater_pid）。
+5. 写入安全事故记录。",超温事件必须按 EHS 流程上报；任何尝试旁路联锁的行为属重大违规。,alarm_Heater_E1012.pptx,1
+Yucatan,Pump,E1013,Low Oil Level,油位过低,真空机械泵油位低于视窗下限。继续运行将导致泵磨损或抱死。,"1. 关泵静置 10 min。
+2. 按 setup_Pump_oil 补油至 3/4。
+3. 检查泵体或管路是否漏油。
+4. 解除报警后跑 30 min 复测油位无下降。",频繁补油说明存在泄漏，必须找出泄漏源；不可一味补油掩盖问题。,alarm_Pump_E1013.pptx,3
+MHK,Stage,E1014,Air Pressure Low,气源压力过低,气浮平台供气压力 < 0.5 MPa，软件保护性停机以防气膜失效导致工件碰撞导轨。,"1. 检查厂房气源主阀是否打开。
+2. 调节 FRL 调压阀至 0.55 MPa。
+3. 若调压无效，检查空压机房状态。
+4. 气压恢复后等待 2 min 再 reset。
+5. 若反复出现，需评估气源容量是否足够。",气浮失效时绝不可强制运行，否则工件与导轨碰撞造成永久损坏。,alarm_Stage_E1014.pptx,9
+Kinneret,FTU,E1015,Probe Card Lifetime Exceeded,探针卡寿命到期,探针卡接触次数超过 50 万次，软件强制要求更换或重新评估。,"1. 暂停生产。
+2. 评估当前 yield 与初始 yield 差异；< 5% 可申请延期 10 万次。
+3. 申请通过须工艺工程师签字。
+4. 否则更换新卡，counter 清零。",探针卡寿命管理对一致性测试至关重要；超期未换会逐步劣化 yield。,alarm_FTU_E1015.pptx,13
+MEM,Aligner,E1016,Light Source Aging,光源老化预警,上视相机 LED 亮度衰减至基线 92%，距 90% 报废线尚有余量。提醒 PM 排程更换。,"1. 记录当前亮度数据。
+2. 排定 PM 计划在 30 天内完成更换。
+3. 期间生产可继续，但需每周复测亮度。
+4. 更换后必须重做 setup_Aligner_led 校准。",光源衰减早预警有助于避免突发停机；忽略预警容易陷入被动。,alarm_Aligner_E1016.pptx,5
+PDX,Loader,E1017,Wafer Misalignment in Cassette,盒内晶圆错位,Mapping 阶段检测到晶圆位置异常（cross-slot 或 double-slot），整盒禁止上料。,"1. 取下卡匣检查每个槽位状态。
+2. 移除异常晶圆放入维修盒。
+3. 卡匣重新装入，重做 mapping。
+4. mapping pass 后恢复生产。",强制上料 cross-slot 晶圆会折断晶圆造成大事故；必须严格按报警提示处理。,alarm_Loader_E1017.pptx,4
+Boston,SensorModule,E1018,Calibration Drift Detected,校准漂移检测,传感器在自检中与标准件差 > 2 μm，疑似漂移。建议立即重新校准。,"1. 暂停涉及该传感器的测试。
+2. 按 setup_SensorModule_laser 重做校准。
+3. 若校准后仍漂移，检查环境温湿度。
+4. 必要时换件并送计量院核查。",校准漂移可能是温度变化引起的可逆现象，也可能是元件老化；必须辨明再处理。,alarm_SensorModule_E1018.pptx,6
+Sonora,Conveyor,E1019,Belt Slip Detected,皮带打滑,驱动轮与皮带速度差 > 5%，编码器与电机速度对比报警。可能是皮带松弛或异物。,"1. 停机检查皮带表面有无油污。
+2. 用张力计复测张力（参考 setup_Conveyor_belt_tension）。
+3. 张力符合但仍打滑：考虑驱动轮表面磨损或皮带变形，必要时更换。
+4. 修复后试运行验证无打滑。",皮带油污可能源自上方设备渗油，需顺藤摸瓜找源头。,alarm_Conveyor_E1019.pptx,11
+Yucatan,Heater,E1020,Heating Slow,升温速率过慢,从 25 → 120 °C 用时 > 150 s（标准 < 90 s）。原因可能是加热膜局部失效、SSR 误触发、电源电压低。,"1. 检查电源电压 380V ±5%。
+2. 测加热膜电阻（参考 setup_Heater_film）。
+3. 查 SSR 输入信号波形（应为 PWM）。
+4. 必要时更换加热膜或 SSR。
+5. PID 重做整定。",升温慢期间产品在低温段停留过久可能影响工艺；务必尽快修复。,alarm_Heater_E1020.pptx,2
+MHK,FTU,E1021,DUT Contact Force Out,DUT 下压力超差,测力传感器读数超出 25–35 N 区间。可能气压波动或测力片故障。,"1. 复测气压，调整调压阀。
+2. 若气压稳定，校准测力传感器或更换。
+3. 重做 setup_FTU_jig_force 流程。
+4. 解除报警。",下压力不当影响接触电阻，进而影响测试结果；不可忽视。,alarm_FTU_E1021.pptx,4
+Kinneret,Stage,E1022,Encoder Signal Lost,编码器信号丢失,Servo 驱动器报编码器通讯异常，轴无法定位。,"1. 检查编码器线缆接头是否松动或破损。
+2. 检查屏蔽地是否良好接触。
+3. 必要时更换编码器线缆或编码器本体。
+4. 修复后必须重做 home 与精度验证。",编码器问题易被误判为电机故障；先排查线缆再换核心件。,alarm_Stage_E1022.pptx,6
+MEM,Pump,E1023,Cooling Water Flow Low,冷却水流量低,冷却水流量 < 3 L/min，泵将在 5 s 内停机。,"1. 检查冷却水进水阀是否全开。
+2. 检查滤网是否堵塞，清洁。
+3. 流量恢复 ≥ 4 L/min 后 reset。
+4. 反复出现需评估冷却水系统压力是否足够。",无冷却水运行泵会快速过热；任何流量报警必须严肃处理。,alarm_Pump_E1023.pptx,7
+PDX,Heater,E1024,SSR Short Circuit,SSR 短路,硬联锁回路检测到加热电流持续存在但 PID 已要求关闭，判定 SSR 短路。立即切断主接触器。,"1. 立即切断设备主电源。
+2. 等待温度降到安全范围（< 50 °C）。
+3. 拆下 SSR 用万用表测，导通即短路必换。
+4. 安装新 SSR 并涂导热硅脂。
+5. 验证 PID 控制可正常开关加热回路。",SSR 短路会引起失控升温，依赖硬联锁保护；联锁失效后果严重。,alarm_Heater_E1024.pptx,10
+Boston,Loader,E1025,Cassette ID Mismatch,卡匣 ID 不匹配,扫码读取的卡匣 ID 与 MES 工单不符，禁止上料。,"1. 复核工单号与卡匣 ID。
+2. 若操作员选错工单，切换正确工单后重新扫码。
+3. 若卡匣标签损坏，按 MES 流程换标签。
+4. 解除报警。",ID 不匹配是追溯防呆的关键环节；不可在 MES 录入错误数据掩盖。,alarm_Loader_E1025.pptx,2
+Sonora,Aligner,E1026,Auto Focus Failed,自动对焦失败,对焦行程内未找到对比度峰值。可能镜头脏污、光源故障、被测件特征对比度过低。,"1. 清洁镜头与照明窗口。
+2. 检查光源强度是否正常。
+3. 若来料特征确无对比度，需调用专用 recipe 或更换光源类型。
+4. 校准后重新运行。",强行降低对焦阈值会引入虚假对位结果；务必先排查物理原因。,alarm_Aligner_E1026.pptx,8
+Yucatan,SensorModule,E1027,Temperature Sensor Disconnected,温度传感器断线,PT100 输入回路开路，读数无效。,"1. 检查 PT100 线缆与接线端子。
+2. 用万用表测电阻；PT100 在室温约 110 Ω。
+3. 必要时换传感器。
+4. 重做零位校准。",温度传感器故障会让设备无法监控关键温度；务必快速恢复。,alarm_SensorModule_E1027.pptx,1
+MHK,Conveyor,E1028,Motor Overcurrent,电机过流,驱动电机电流超过额定 130%，软启保护跳闸。,"1. 检查机械负载是否异常（堵转、卡死）。
+2. 排除机械原因后 reset 启动测试。
+3. 若反复出现需测电机绝缘电阻 ≥ 100 MΩ。
+4. 必要时换电机或驱动器。",过流可能是机械故障的早期信号；不可简单 reset 继续运行。,alarm_Conveyor_E1028.pptx,5
+Kinneret,FTU,E1029,ATE Self-Test Failed,ATE 自检失败,每日开机自检发现校准源、信号源或测量通道异常。,"1. 查自检日志定位失败通道。
+2. 失败通道单独跑诊断脚本。
+3. 联系 ATE 厂商或自检后续保养计划。
+4. 自检通过前禁止上线。",ATE 自检是测试数据可信度的基础；忽视将引发后续大批量误判。,alarm_FTU_E1029.pptx,12
+MEM,Stage,E1030,Vibration High,振动过大,振动传感器检测 RMS > 7 mm/s，超过 ISO 10816 警告值。,"1. 暂停精密工艺。
+2. 振动分析仪做频谱（参考 setup_Pump_vibration 思路）。
+3. 根据频谱定位轴承/丝杆故障。
+4. 维修后复测振动至 ≤ 4.5 mm/s。",振动会污染测量数据；先停机再分析，禁止带病作业。,alarm_Stage_E1030.pptx,6
+PDX,SensorModule,E1031,Sensor Communication Timeout,传感器通讯超时,EtherCAT 总线对该传感器节点请求超时 > 100 ms，节点掉线。,"1. 检查 EtherCAT 网线接头是否松动。
+2. 检查传感器电源 24V ± 5%。
+3. 必要时用主站工具重新扫描节点。
+4. 节点恢复后做 setup_SensorModule_pressure 验证。",EtherCAT 拓扑顺序敏感；单节点故障可能影响下游节点。,alarm_SensorModule_E1031.pptx,4
+Boston,Heater,E1032,PID Setpoint Out of Range,PID 设定值超范围,工艺 recipe 中设定温度超过 controller 允许范围（5–135 °C），加载失败。,"1. 复核 recipe 中温度设定。
+2. 若工艺确需高温，须工艺工程师评估并升级硬件。
+3. 修改 recipe 后重新加载。",recipe 上限是硬性安全边界；不可临时调高 controller 限制掩盖问题。,alarm_Heater_E1032.pptx,7
+Sonora,Pump,E1033,High Outlet Pressure,排气压力高,干泵排气端压力 > 1.2 bar，可能排气过滤器堵塞或排气管路阻塞。,"1. 检查排气管路是否被阻挡。
+2. 测排气过滤器压差（参考 setup_Pump_filter）。
+3. 必要时清洁或更换滤芯。
+4. 排查中央排气系统是否风量正常。",排气憋压会推高泵腔温度甚至损坏密封；要尽快处理。,alarm_Pump_E1033.pptx,9
+Yucatan,Loader,E1034,Robot Singularity,机械手奇异点,机械手轨迹规划进入奇异点附近，求解失败。,"1. 通过软件回退到上一安全点。
+2. 重新规划路径绕开奇异点。
+3. 若是 recipe 设计问题，反馈给上位机工程师修改。",奇异点是机械手运动学固有特性；recipe 设计阶段就应避免。,alarm_Loader_E1034.pptx,3
+MHK,Aligner,E1035,Image Saturated,图像饱和,相机图像中超过 5% 像素饱和（值 255），影响特征识别。,"1. 减小光源强度或曝光时间。
+2. 必要时启用 HDR 模式。
+3. 重新评估对比度后保存新 recipe。",饱和图像丢失细节，无法可靠对位；不可在饱和条件下放行。,alarm_Aligner_E1035.pptx,10
+Kinneret,Heater,E1036,Fan Failure,散热风扇失效,SSR 散热风扇 RPM < 1000，热保护即将动作。,"1. 立即停机检查风扇。
+2. 测风扇电源 24V ± 5%。
+3. 必要时更换风扇（参考 setup_Heater_ssr_fan）。
+4. 复机前清洁散热器。",风扇失效会快速升温击穿 SSR；不可忽视任何风扇报警。,alarm_Heater_E1036.pptx,1
+MEM,FTU,E1037,Burn-in Chamber Door Open,老化炉门未关,炉门传感器检测到门未完全关闭，停止升温。,"1. 关好炉门，注意密封条对位。
+2. 若密封条损坏更换。
+3. 检查门传感器是否误触发。",炉门未关时升温会引起人身烫伤；务必保持联锁有效。,alarm_FTU_E1037.pptx,11
+PDX,Conveyor,E1038,Photo Sensor Dirty,光电传感器污染,光电传感器接收光强 < 30%，可能镜头脏污或对位偏移。,"1. 清洁发射/接收窗口。
+2. 检查对位是否偏移。
+3. 必要时重新做 Teaching。",光电传感器误判导致卡料或漏检；定期清洁是必要日常工作。,alarm_Conveyor_E1038.pptx,2
+Boston,SensorModule,E1039,Sensor Saturation,传感器饱和,激光传感器接收光强超过 ADC 上限，无法准确测量。,"1. 调低激光功率或检查工件反光。
+2. 调整对工件入射角，避免镜面反射。
+3. 必要时换防反射涂层。",镜面工件常引发饱和；可启用传感器内部 mirror 模式。,alarm_SensorModule_E1039.pptx,4
+Sonora,Stage,E1040,Home Sequence Failed,回零失败,Home 命令执行后限位开关未按预期顺序触发。可能限位开关故障或机械卡阻。,"1. 手动慢速 jog 检查轴是否能移动至 home。
+2. 检查 home 开关信号。
+3. 排除机械干涉。
+4. Home 成功后做位置精度验证。",回零失败影响后续所有运动精度；务必查明原因再恢复。,alarm_Stage_E1040.pptx,5
+Yucatan,Aligner,E1041,Theta Axis Out of Limit,θ 轴超极限,θ 轴运动超出软件限位 ±180°，停车保护。,"1. 手动反向回到合法范围。
+2. 检查 recipe 是否要求过大旋转。
+3. 必要时增加多圈策略避免越限。",无限旋转的 θ 轴需注意电缆缠绕；超限报警是保护电缆的关键。,alarm_Aligner_E1041.pptx,6
+MHK,Pump,E1042,Oil Mist Filter Saturated,油雾过滤器饱和,油雾过滤器压差超 25 kPa，需要更换。,"1. PM 安排更换油雾分离器（防护装备：手套、口罩）。
+2. 旧件按危废处理。
+3. 更新维护记录。",油雾过滤器堵塞会让油雾进入排气系统污染环境。,alarm_Pump_E1042.pptx,8
+Kinneret,Loader,E1043,Robot Collision Detected,机械手碰撞检测,扭矩传感器检测到末端突变力，疑似碰撞，立即停车并锁定。,"1. 不要立即按 reset；保留现场拍照。
+2. 评估末端工具与产品损伤。
+3. 上报工程，分析碰撞原因（路径规划/障碍物）。
+4. 修复后做 TCP 重新校准（参考 setup_Loader_robot_tcp）。",碰撞事件必须留下完整记录用于改进；任何 “直接 reset 继续” 行为属违规。,alarm_Loader_E1043.pptx,4
+MEM,Conveyor,E1044,Bearing Temperature High,轴承温度过高,皮带驱动轴承温度超 80 °C，可能润滑不良或轴承劣化。,"1. 停机让轴承冷却。
+2. 补充润滑脂或更换。
+3. 若反复出现需更换轴承。
+4. 复机后温度应稳定 < 60 °C。",高温轴承可能突然抱死，引发连锁损伤；务必及时处理。,alarm_Conveyor_E1044.pptx,13
+PDX,Stage,E1045,Air Bearing Touchdown,气浮接触底,气浮平台气膜失效，工作台与导轨发生接触。,"1. 立即停机，断气源。
+2. 检查节流孔是否堵塞，气源压力是否突然下降。
+3. 修复后做 setup_Stage_air 验证。
+4. 评估导轨与平台底面是否损伤；轻微划痕可继续，严重需返厂修复。",气浮接触是严重故障，可能造成不可逆机械损伤；优先级最高。,alarm_Stage_E1045.pptx,2
+Boston,FTU,E1046,Test Time Excessive,测试时间过长,单件测试时间超过 recipe 设定 1.5 倍，可能软件死锁或硬件故障。,"1. 检查 ATE 是否卡在某个 step。
+2. 重启测试软件。
+3. 若反复出现需深入排查通讯或硬件。",测试时间异常会拖累整线节拍；早期发现并修复影响最小。,alarm_FTU_E1046.pptx,6
+Sonora,Heater,E1047,Power Phase Loss,电源缺相,三相电源监测发现缺相，加热回路立即停机。,"1. 检查厂房供电是否正常。
+2. 检查设备进线断路器与接触器。
+3. 缺相会损坏三相电机，必须恢复正常后再启动。",缺相是供电问题，必要时通知厂务部门排查。,alarm_Heater_E1047.pptx,3
+Yucatan,SensorModule,E1048,Sensor Recalibration Required,传感器需重校,运行时间或抓拍次数到达预设周期，软件提示重校。,"1. 安排 PM 重做校准。
+2. 校准合格后软件 reset counter。
+3. 未校准前禁止用作工艺判定。",周期性强制校准是质量管理体系要求；不可豁免。,alarm_SensorModule_E1048.pptx,1
+MHK,Loader,E1049,FOUP Load Time Exceeded,FOUP 装载超时,FOUP 上料动作超过 60 s 未完成。可能机械异常或传感器误触发。,"1. 手动检查装载机构。
+2. 排除卡阻后重做装载。
+3. 若反复出现需检修装载机构。",装载超时常为机械磨损或对位漂移征兆。,alarm_Loader_E1049.pptx,10
+Kinneret,Aligner,E1050,Recipe Load Failed,recipe 加载失败,recipe 文件损坏或字段缺失，加载失败。,"1. 从备份服务器恢复 recipe。
+2. 用 recipe 编辑器检查字段完整性。
+3. 不可强行加载损坏文件。",recipe 损坏可能引起工艺漂移；务必从可信备份恢复。,alarm_Aligner_E1050.pptx,11
+所有项目,Pump,E1051,Scheduled PM Due,计划保养到期,泵累计运行 2000h 或 6 个月，必须进行计划保养。,"1. 排定 PM 时间窗口。
+2. 按 PM checklist 执行（换油、滤芯、O-ring 等）。
+3. PM 完成后软件 reset counter。",PM 是预防性维护，按时执行能显著降低突发故障率。,alarm_Pump_E1051.pptx,4
+所有项目,Heater,E1052,Sensor Mismatch,双传感器不一致,工艺热电偶与监控热电偶读数差 > 2 °C，无法判定真实温度。,"1. 用便携标准源 Fluke 754 同时校验两支热电偶。
+2. 找出偏移大的传感器更换。
+3. 重新做工艺验证。",双传感器冗余的目的是发现单点故障；不可忽视差异，需找出真因。,alarm_Heater_E1052.pptx,5

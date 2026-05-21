@@ -1,18 +1,17 @@
 """Search service — the strict → loose → vector_only pipeline.
 
-This is the heart of the system. Read this with the plan's "Retrieval pipeline"
-diagram open.
-
-Decisions encoded here:
-  - Filtering is exact-match on keyword fields (Part 1). Filters never affect
-    relevance, only inclusion.
-  - Keyword query runs against `body` (which already includes Part-1 metadata
-    via body_builder) with `title^N` boost where N comes from config.
-  - Vector kNN runs on `body_vec` (the long-form representation). title_vec is
-    kept for future fan-out but not used by default — keeps the kNN call cheap
-    and ranks by content overlap.
-  - Hybrid ranking uses RRF when both BM25 and kNN are in play (ES 8.x retriever
-    syntax). RRF is rank-based so no score calibration is needed.
+Two-stage retrieval design:
+  - Recall stage  : keyword query (AND for strict, OR for loose) over `body`
+                    with `title^N` boost. Filters are exact-match on keyword
+                    fields; they never affect relevance, only inclusion.
+  - Ranking stage : top `rrf_window` recall hits are rescored by blending the
+                    BM25 score with cosine vector similarity on `body_vec`.
+                    final_score = (1-vector_weight)*BM25 + vector_weight*(cos+1)
+                    When the embedding service is unavailable the ranking stage
+                    degrades gracefully to BM25-only (no rescore).
+  - vector_only   : pure kNN (semantic-only, no keyword recall). Used as the
+                    last fallback in the auto pipeline when keyword recall
+                    returns nothing.
 """
 
 from __future__ import annotations
@@ -77,31 +76,50 @@ def _knn_clause(query_vec: list[float], k: int) -> dict[str, Any]:
 
 def _bm25_query(
     req: SearchRequest, kw_operator: str, title_boost: float,
-    query_text: str | None = None,
 ) -> dict[str, Any]:
-    """Build the `query` clause for the standard /_search body.
+    """Build the keyword recall `query` clause.
 
-    - `filter` for Part-1 (exact, no scoring)
-    - `must` for keyword multi_match in the requested operator
-    - If no keywords, only filters apply (match_all under filter).
-    - `query_text` adds a `should` match for the raw sentence when kNN is absent.
+    - `filter` for Part-1 fields (exact, no scoring impact)
+    - `must`   for keyword multi_match in the requested operator (AND / OR)
+    - No keywords → match_all under filter (returns all docs for that scope)
     """
     bool_body: dict[str, Any] = {"filter": _filters(req)}
     if req.keywords:
         bool_body["must"] = [_kw_multi_match(req.keywords, kw_operator, title_boost)]
     else:
         bool_body["must"] = [{"match_all": {}}]
-    # Boost documents matching the raw sentence (helps when kNN/embedding is down)
-    if query_text:
-        bool_body["should"] = [
-            {"multi_match": {
-                "query": query_text,
-                "fields": [f"title^{title_boost}", "body"],
-                "type": "best_fields",
-                "boost": 0.5,
-            }}
-        ]
     return {"bool": bool_body}
+
+
+def _rescore_clause(query_vec: list[float], window: int, vector_weight: float) -> dict[str, Any]:
+    """Ranking-stage rescore: blend BM25 recall score with cosine vector similarity.
+
+    Rescores only the top `window` keyword-recall hits.
+    final_score = (1-vector_weight) * BM25 + vector_weight * (cosine_sim + 1)
+    cosine_sim+1 maps [-1,1] → [0,2] so it is always non-negative.
+    """
+    kw_weight = 1.0 - vector_weight
+    return {
+        "window_size": window,
+        "query": {
+            "rescore_query": {
+                "script_score": {
+                    "query": {"match_all": {}},
+                    "script": {
+                        # Guard against docs that lack a body_vec (e.g. seeded without embeddings).
+                        "source": (
+                            "doc['body_vec'].size() == 0 ? 0 : "
+                            "cosineSimilarity(params.qv, 'body_vec') + 1.0"
+                        ),
+                        "params": {"qv": query_vec},
+                    },
+                }
+            },
+            "query_weight": kw_weight,
+            "rescore_query_weight": vector_weight,
+            "score_mode": "total",
+        },
+    }
 
 
 def _hit_to_doc(h: dict[str, Any]) -> DocHit:
@@ -116,6 +134,7 @@ def _hit_to_doc(h: dict[str, Any]) -> DocHit:
         title=src["title"],
         source_file=src.get("source_file"),
         source_pages=src.get("source_pages", []),
+        summary=src.get("summary"),
         sections=src.get("sections", {}),
     )
 
@@ -185,28 +204,21 @@ class SearchService:
     async def _strict(self, req: SearchRequest) -> SearchResponse:
         cfg = self._settings.search
         index = _index_for(req, self._settings.es.index_prefix)
-        knn_ok = False
-        if req.query_text:
-            try:
-                qvec = (await self._embedder.embed([req.query_text]))[0]
-                knn_ok = True
-            except (EmbeddingError, httpx.HTTPError):
-                qvec = None
-        else:
-            qvec = None
+
+        # Recall: AND-keyword BM25 query
         body: dict[str, Any] = {
             "size": max(req.size, cfg.strict_max_hits + 1),
             "from": req.from_,
-            "query": _bm25_query(
-                req, "and", cfg.title_boost,
-                query_text=None if knn_ok else req.query_text,
-            ),
+            "query": _bm25_query(req, "and", cfg.title_boost),
         }
-        if knn_ok and qvec is not None:
-            body["knn"] = {
-                **_knn_clause(qvec, k=cfg.rrf_window),
-                "filter": _filters(req),
-            }
+
+        # Ranking: rescore top candidates with BM25 + vector (when embedder is up)
+        if req.query_text:
+            try:
+                qvec = (await self._embedder.embed([req.query_text]))[0]
+                body["rescore"] = _rescore_clause(qvec, cfg.rrf_window, cfg.vector_weight)
+            except (EmbeddingError, httpx.HTTPError):
+                pass
 
         resp = await self._es.search(index=index, body=body)
         total = int(resp["hits"]["total"]["value"])
@@ -242,30 +254,22 @@ class SearchService:
     async def _loose(self, req: SearchRequest) -> SearchResponse:
         cfg = self._settings.search
         index = _index_for(req, self._settings.es.index_prefix)
-        knn_ok = False
-        if req.query_text:
-            try:
-                qvec = (await self._embedder.embed([req.query_text]))[0]
-                knn_ok = True
-            except (EmbeddingError, httpx.HTTPError):
-                qvec = None
-        else:
-            qvec = None
-        # When kNN is available skip the query_text BM25 boost (RRF handles ranking).
-        # When kNN is down, inject query_text as a BM25 should-clause for better sentence recall.
+
+        # Recall: OR-keyword BM25 query (any keyword match qualifies)
         body: dict[str, Any] = {
             "size": req.size,
             "from": req.from_,
-            "query": _bm25_query(
-                req, "or", cfg.title_boost,
-                query_text=None if knn_ok else req.query_text,
-            ),
+            "query": _bm25_query(req, "or", cfg.title_boost),
         }
-        if knn_ok and qvec is not None:
-            body["knn"] = {
-                **_knn_clause(qvec, k=cfg.rrf_window),
-                "filter": _filters(req),
-            }
+
+        # Ranking: rescore top candidates with BM25 + vector (when embedder is up)
+        if req.query_text:
+            try:
+                qvec = (await self._embedder.embed([req.query_text]))[0]
+                body["rescore"] = _rescore_clause(qvec, cfg.rrf_window, cfg.vector_weight)
+            except (EmbeddingError, httpx.HTTPError):
+                pass
+
         resp = await self._es.search(index=index, body=body)
         total = int(resp["hits"]["total"]["value"])
         if total == 0:

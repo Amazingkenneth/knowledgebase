@@ -57,6 +57,8 @@ class DocHit(BaseModel):
     title: str
     source_file: str | None = None
     source_pages: list[str] = Field(default_factory=list)
+    # ≤50-char digest for result list display; avoids sending full sections to LLM context.
+    summary: str | None = None
     # Original content sections from the source doc — verbatim, never AI-rewritten.
     sections: dict[str, str] = Field(default_factory=dict)
 

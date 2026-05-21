@@ -1,301 +1,311 @@
 项目,设备,工站/部件/站位,规格/要求,调试步骤,调试工具,注意事项,ppt文件,PPT页面
-PDX,FTU,加热单元,2.456mm±0.371,"1. 检查
-2. 调整
-3. 验证",对位夹具;万用表,遵循SOP；避免非必要拆卸,setup_PDX_FTU_1.pptx,14
-MHK,FTU,光学模块,2.194N±0.305,"1. 检查
-2. 调整
-3. 验证",张力计;温度记录仪,遵循SOP；避免非必要拆卸,setup_MHK_FTU_2.pptx,18
-Kinneret,Conveyor,对位模块,5.897mm±0.382,"1. 检查
-2. 调整
-3. 验证",游标卡尺;温度记录仪,遵循SOP；避免非必要拆卸,setup_Kinneret_Conveyor_3.pptx,14
-Yucatan,Heater,A位,2.161°C±0.060,"1. 检查
-2. 调整
-3. 验证",激光位移传感器;千分尺,遵循SOP；避免非必要拆卸,setup_Yucatan_Heater_4.pptx,12
-Yucatan,Heater,加载站,7.300N±0.071,"1. 检查
-2. 调整
-3. 验证",激光位移传感器;千分尺,遵循SOP；避免非必要拆卸,setup_Yucatan_Heater_5.pptx,18
-Sonora,Pump,传送带,7.049mm±0.334,"1. 检查
-2. 调整
-3. 验证",万用表;千分尺,遵循SOP；避免非必要拆卸,setup_Sonora_Pump_6.pptx,8
-PDX,Stage,加热单元,4.540°C±0.090,"1. 检查
-2. 调整
-3. 验证",温度记录仪;对位夹具,遵循SOP；避免非必要拆卸,setup_PDX_Stage_7.pptx,9
-PDX,Loader,传送带,1.642bar±0.142,"1. 检查
-2. 调整
-3. 验证",张力计;温度记录仪,遵循SOP；避免非必要拆卸,setup_PDX_Loader_8.pptx,11
-MHK,Conveyor,加载站,8.052bar±0.141,"1. 检查
-2. 调整
-3. 验证",张力计;万用表,遵循SOP；避免非必要拆卸,setup_MHK_Conveyor_9.pptx,11
-Boston,Aligner,运动平台,8.848bar±0.080,"1. 检查
-2. 调整
-3. 验证",游标卡尺;对位夹具,遵循SOP；避免非必要拆卸,setup_Boston_Aligner_10.pptx,18
-Sonora,Stage,运动平台,3.626mm±0.260,"1. 检查
-2. 调整
-3. 验证",对位夹具;激光位移传感器,遵循SOP；避免非必要拆卸,setup_Sonora_Stage_11.pptx,2
-PDX,Loader,A位,7.923bar±0.302,"1. 检查
-2. 调整
-3. 验证",激光位移传感器;张力计,遵循SOP；避免非必要拆卸,setup_PDX_Loader_12.pptx,20
-所有项目,Heater,加载站,6.806mm±0.344,"1. 检查
-2. 调整
-3. 验证",万用表;激光位移传感器,遵循SOP；避免非必要拆卸,setup_所有项目_Heater_13.pptx,11
-PDX,Heater,运动平台,1.590mm±0.477,"1. 检查
-2. 调整
-3. 验证",万用表;显微镜,遵循SOP；避免非必要拆卸,setup_PDX_Heater_14.pptx,6
-PDX,Heater,传送带,1.537mm±0.274,"1. 检查
-2. 调整
-3. 验证",千分尺;万用表,遵循SOP；避免非必要拆卸,setup_PDX_Heater_15.pptx,11
-所有项目,FTU,光学模块,9.292°C±0.127,"1. 检查
-2. 调整
-3. 验证",张力计;万用表,遵循SOP；避免非必要拆卸,setup_所有项目_FTU_16.pptx,3
-PDX,Aligner,光学模块,9.780N±0.385,"1. 检查
-2. 调整
-3. 验证",游标卡尺;温度记录仪,遵循SOP；避免非必要拆卸,setup_PDX_Aligner_17.pptx,16
-MEM,Heater,运动平台,9.644N±0.380,"1. 检查
-2. 调整
-3. 验证",张力计;温度记录仪,遵循SOP；避免非必要拆卸,setup_MEM_Heater_18.pptx,10
-Kinneret,Pump,对位模块,8.997bar±0.069,"1. 检查
-2. 调整
-3. 验证",张力计;千分尺,遵循SOP；避免非必要拆卸,setup_Kinneret_Pump_19.pptx,11
-MHK,Conveyor,传送带,0.082mm±0.122,"1. 检查
-2. 调整
-3. 验证",千分尺;激光位移传感器,遵循SOP；避免非必要拆卸,setup_MHK_Conveyor_20.pptx,11
-PDX,Conveyor,加热单元,6.693mm±0.274,"1. 检查
-2. 调整
-3. 验证",显微镜;对位夹具,遵循SOP；避免非必要拆卸,setup_PDX_Conveyor_21.pptx,16
-Kinneret,Conveyor,光学模块,0.978bar±0.184,"1. 检查
-2. 调整
-3. 验证",激光位移传感器;张力计,遵循SOP；避免非必要拆卸,setup_Kinneret_Conveyor_22.pptx,2
-PDX,FTU,运动平台,7.285mm±0.132,"1. 检查
-2. 调整
-3. 验证",张力计;万用表,遵循SOP；避免非必要拆卸,setup_PDX_FTU_23.pptx,15
-MEM,Stage,A位,2.793mm±0.438,"1. 检查
-2. 调整
-3. 验证",对位夹具;张力计,遵循SOP；避免非必要拆卸,setup_MEM_Stage_24.pptx,18
-PDX,FTU,加载站,9.690mm±0.091,"1. 检查
-2. 调整
-3. 验证",显微镜;张力计,遵循SOP；避免非必要拆卸,setup_PDX_FTU_25.pptx,7
-Kinneret,FTU,A位,3.796bar±0.140,"1. 检查
-2. 调整
-3. 验证",显微镜;游标卡尺,遵循SOP；避免非必要拆卸,setup_Kinneret_FTU_26.pptx,14
-所有项目,Loader,传送带,2.974mm±0.294,"1. 检查
-2. 调整
-3. 验证",千分尺;温度记录仪,遵循SOP；避免非必要拆卸,setup_所有项目_Loader_27.pptx,11
-MHK,FTU,对位模块,5.033N±0.087,"1. 检查
-2. 调整
-3. 验证",对位夹具;激光位移传感器,遵循SOP；避免非必要拆卸,setup_MHK_FTU_28.pptx,6
-PDX,SensorModule,传送带,4.044N±0.131,"1. 检查
-2. 调整
-3. 验证",千分尺;万用表,遵循SOP；避免非必要拆卸,setup_PDX_SensorModule_29.pptx,3
-Kinneret,Pump,加热单元,2.051°C±0.127,"1. 检查
-2. 调整
-3. 验证",激光位移传感器;对位夹具,遵循SOP；避免非必要拆卸,setup_Kinneret_Pump_30.pptx,10
-所有项目,Pump,光学模块,0.103N±0.499,"1. 检查
-2. 调整
-3. 验证",对位夹具;千分尺,遵循SOP；避免非必要拆卸,setup_所有项目_Pump_31.pptx,18
-Boston,Heater,A位,9.333mm±0.441,"1. 检查
-2. 调整
-3. 验证",温度记录仪;游标卡尺,遵循SOP；避免非必要拆卸,setup_Boston_Heater_32.pptx,6
-所有项目,Heater,加载站,6.682N±0.157,"1. 检查
-2. 调整
-3. 验证",对位夹具;显微镜,遵循SOP；避免非必要拆卸,setup_所有项目_Heater_33.pptx,9
-PDX,SensorModule,A位,2.731N±0.113,"1. 检查
-2. 调整
-3. 验证",温度记录仪;对位夹具,遵循SOP；避免非必要拆卸,setup_PDX_SensorModule_34.pptx,9
-所有项目,Heater,加载站,0.932bar±0.416,"1. 检查
-2. 调整
-3. 验证",千分尺;显微镜,遵循SOP；避免非必要拆卸,setup_所有项目_Heater_35.pptx,11
-MEM,Heater,A位,7.415N±0.356,"1. 检查
-2. 调整
-3. 验证",千分尺;显微镜,遵循SOP；避免非必要拆卸,setup_MEM_Heater_36.pptx,3
-MEM,FTU,液压泵,5.829mm±0.221,"1. 检查
-2. 调整
-3. 验证",千分尺;游标卡尺,遵循SOP；避免非必要拆卸,setup_MEM_FTU_37.pptx,12
-MHK,Pump,传送带,6.824mm±0.183,"1. 检查
-2. 调整
-3. 验证",激光位移传感器;万用表,遵循SOP；避免非必要拆卸,setup_MHK_Pump_38.pptx,5
-Boston,Loader,A位,8.815mm±0.098,"1. 检查
-2. 调整
-3. 验证",温度记录仪;激光位移传感器,遵循SOP；避免非必要拆卸,setup_Boston_Loader_39.pptx,14
-Boston,Heater,A位,7.876mm±0.197,"1. 检查
-2. 调整
-3. 验证",千分尺;激光位移传感器,遵循SOP；避免非必要拆卸,setup_Boston_Heater_40.pptx,16
-Boston,Conveyor,对位模块,3.503mm±0.119,"1. 检查
-2. 调整
-3. 验证",张力计;显微镜,遵循SOP；避免非必要拆卸,setup_Boston_Conveyor_41.pptx,11
-Sonora,SensorModule,加热单元,3.518N±0.206,"1. 检查
-2. 调整
-3. 验证",温度记录仪;千分尺,遵循SOP；避免非必要拆卸,setup_Sonora_SensorModule_42.pptx,4
-Sonora,Loader,加热单元,0.392N±0.223,"1. 检查
-2. 调整
-3. 验证",温度记录仪;张力计,遵循SOP；避免非必要拆卸,setup_Sonora_Loader_43.pptx,20
-PDX,Stage,传送带,2.555bar±0.011,"1. 检查
-2. 调整
-3. 验证",张力计;游标卡尺,遵循SOP；避免非必要拆卸,setup_PDX_Stage_44.pptx,14
-PDX,Pump,液压泵,6.637mm±0.363,"1. 检查
-2. 调整
-3. 验证",万用表;显微镜,遵循SOP；避免非必要拆卸,setup_PDX_Pump_45.pptx,10
-Kinneret,Pump,运动平台,6.975N±0.072,"1. 检查
-2. 调整
-3. 验证",激光位移传感器;温度记录仪,遵循SOP；避免非必要拆卸,setup_Kinneret_Pump_46.pptx,13
-MEM,Heater,运动平台,5.484mm±0.159,"1. 检查
-2. 调整
-3. 验证",张力计;显微镜,遵循SOP；避免非必要拆卸,setup_MEM_Heater_47.pptx,19
-Yucatan,Aligner,对位模块,4.427mm±0.260,"1. 检查
-2. 调整
-3. 验证",游标卡尺;温度记录仪,遵循SOP；避免非必要拆卸,setup_Yucatan_Aligner_48.pptx,3
-Sonora,Pump,光学模块,8.186mm±0.340,"1. 检查
-2. 调整
-3. 验证",张力计;激光位移传感器,遵循SOP；避免非必要拆卸,setup_Sonora_Pump_49.pptx,7
-MEM,FTU,加载站,2.456bar±0.310,"1. 检查
-2. 调整
-3. 验证",对位夹具;张力计,遵循SOP；避免非必要拆卸,setup_MEM_FTU_50.pptx,14
-Boston,Stage,对位模块,4.003mm±0.331,"1. 检查
-2. 调整
-3. 验证",千分尺;激光位移传感器,遵循SOP；避免非必要拆卸,setup_Boston_Stage_51.pptx,4
-Kinneret,Conveyor,A位,8.043N±0.238,"1. 检查
-2. 调整
-3. 验证",张力计;激光位移传感器,遵循SOP；避免非必要拆卸,setup_Kinneret_Conveyor_52.pptx,4
-所有项目,Loader,对位模块,6.679N±0.302,"1. 检查
-2. 调整
-3. 验证",显微镜;万用表,遵循SOP；避免非必要拆卸,setup_所有项目_Loader_53.pptx,17
-Kinneret,Aligner,A位,7.439bar±0.231,"1. 检查
-2. 调整
-3. 验证",张力计;激光位移传感器,遵循SOP；避免非必要拆卸,setup_Kinneret_Aligner_54.pptx,9
-所有项目,Conveyor,加热单元,4.404°C±0.125,"1. 检查
-2. 调整
-3. 验证",温度记录仪;游标卡尺,遵循SOP；避免非必要拆卸,setup_所有项目_Conveyor_55.pptx,18
-PDX,Loader,A位,2.320mm±0.356,"1. 检查
-2. 调整
-3. 验证",对位夹具;张力计,遵循SOP；避免非必要拆卸,setup_PDX_Loader_56.pptx,14
-Yucatan,Aligner,运动平台,0.632bar±0.201,"1. 检查
-2. 调整
-3. 验证",千分尺;激光位移传感器,遵循SOP；避免非必要拆卸,setup_Yucatan_Aligner_57.pptx,19
-Kinneret,Aligner,加载站,9.428°C±0.379,"1. 检查
-2. 调整
-3. 验证",激光位移传感器;万用表,遵循SOP；避免非必要拆卸,setup_Kinneret_Aligner_58.pptx,18
-Boston,Aligner,传送带,2.737bar±0.024,"1. 检查
-2. 调整
-3. 验证",温度记录仪;显微镜,遵循SOP；避免非必要拆卸,setup_Boston_Aligner_59.pptx,13
-MEM,Aligner,A位,9.807N±0.023,"1. 检查
-2. 调整
-3. 验证",激光位移传感器;万用表,遵循SOP；避免非必要拆卸,setup_MEM_Aligner_60.pptx,19
-MHK,SensorModule,运动平台,1.366bar±0.099,"1. 检查
-2. 调整
-3. 验证",万用表;张力计,遵循SOP；避免非必要拆卸,setup_MHK_SensorModule_61.pptx,11
-Boston,Aligner,液压泵,3.382bar±0.146,"1. 检查
-2. 调整
-3. 验证",激光位移传感器;游标卡尺,遵循SOP；避免非必要拆卸,setup_Boston_Aligner_62.pptx,3
-所有项目,FTU,加载站,9.999°C±0.120,"1. 检查
-2. 调整
-3. 验证",对位夹具;激光位移传感器,遵循SOP；避免非必要拆卸,setup_所有项目_FTU_63.pptx,2
-MHK,Conveyor,传送带,8.394N±0.085,"1. 检查
-2. 调整
-3. 验证",游标卡尺;张力计,遵循SOP；避免非必要拆卸,setup_MHK_Conveyor_64.pptx,4
-Boston,Aligner,加热单元,7.671mm±0.307,"1. 检查
-2. 调整
-3. 验证",对位夹具;激光位移传感器,遵循SOP；避免非必要拆卸,setup_Boston_Aligner_65.pptx,6
-Sonora,SensorModule,加载站,9.290N±0.342,"1. 检查
-2. 调整
-3. 验证",激光位移传感器;张力计,遵循SOP；避免非必要拆卸,setup_Sonora_SensorModule_66.pptx,7
-PDX,Conveyor,光学模块,6.975°C±0.427,"1. 检查
-2. 调整
-3. 验证",对位夹具;激光位移传感器,遵循SOP；避免非必要拆卸,setup_PDX_Conveyor_67.pptx,19
-MHK,Pump,运动平台,6.619mm±0.258,"1. 检查
-2. 调整
-3. 验证",温度记录仪;千分尺,遵循SOP；避免非必要拆卸,setup_MHK_Pump_68.pptx,14
-所有项目,SensorModule,运动平台,9.608bar±0.357,"1. 检查
-2. 调整
-3. 验证",激光位移传感器;对位夹具,遵循SOP；避免非必要拆卸,setup_所有项目_SensorModule_69.pptx,17
-Sonora,Aligner,对位模块,4.361N±0.142,"1. 检查
-2. 调整
-3. 验证",张力计;激光位移传感器,遵循SOP；避免非必要拆卸,setup_Sonora_Aligner_70.pptx,3
-Sonora,Aligner,传送带,7.507N±0.309,"1. 检查
-2. 调整
-3. 验证",激光位移传感器;游标卡尺,遵循SOP；避免非必要拆卸,setup_Sonora_Aligner_71.pptx,1
-所有项目,Pump,A位,4.881°C±0.401,"1. 检查
-2. 调整
-3. 验证",温度记录仪;游标卡尺,遵循SOP；避免非必要拆卸,setup_所有项目_Pump_72.pptx,20
-Sonora,FTU,传送带,0.865bar±0.249,"1. 检查
-2. 调整
-3. 验证",张力计;温度记录仪,遵循SOP；避免非必要拆卸,setup_Sonora_FTU_73.pptx,16
-所有项目,Aligner,加载站,0.940mm±0.208,"1. 检查
-2. 调整
-3. 验证",张力计;游标卡尺,遵循SOP；避免非必要拆卸,setup_所有项目_Aligner_74.pptx,19
-Yucatan,Aligner,液压泵,4.261N±0.172,"1. 检查
-2. 调整
-3. 验证",显微镜;游标卡尺,遵循SOP；避免非必要拆卸,setup_Yucatan_Aligner_75.pptx,10
-Sonora,Conveyor,光学模块,7.216°C±0.069,"1. 检查
-2. 调整
-3. 验证",游标卡尺;对位夹具,遵循SOP；避免非必要拆卸,setup_Sonora_Conveyor_76.pptx,7
-所有项目,Heater,加热单元,9.805mm±0.155,"1. 检查
-2. 调整
-3. 验证",温度记录仪;对位夹具,遵循SOP；避免非必要拆卸,setup_所有项目_Heater_77.pptx,10
-MHK,Loader,加热单元,0.465mm±0.281,"1. 检查
-2. 调整
-3. 验证",游标卡尺;温度记录仪,遵循SOP；避免非必要拆卸,setup_MHK_Loader_78.pptx,16
-PDX,FTU,加热单元,4.699bar±0.177,"1. 检查
-2. 调整
-3. 验证",千分尺;游标卡尺,遵循SOP；避免非必要拆卸,setup_PDX_FTU_79.pptx,16
-PDX,SensorModule,运动平台,4.923N±0.318,"1. 检查
-2. 调整
-3. 验证",千分尺;对位夹具,遵循SOP；避免非必要拆卸,setup_PDX_SensorModule_80.pptx,5
-Sonora,SensorModule,传送带,1.193bar±0.307,"1. 检查
-2. 调整
-3. 验证",张力计;激光位移传感器,遵循SOP；避免非必要拆卸,setup_Sonora_SensorModule_81.pptx,17
-Kinneret,Aligner,对位模块,2.981N±0.495,"1. 检查
-2. 调整
-3. 验证",万用表;显微镜,遵循SOP；避免非必要拆卸,setup_Kinneret_Aligner_82.pptx,20
-MHK,SensorModule,传送带,6.259°C±0.334,"1. 检查
-2. 调整
-3. 验证",游标卡尺;对位夹具,遵循SOP；避免非必要拆卸,setup_MHK_SensorModule_83.pptx,6
-PDX,Loader,加载站,4.091N±0.240,"1. 检查
-2. 调整
-3. 验证",千分尺;对位夹具,遵循SOP；避免非必要拆卸,setup_PDX_Loader_84.pptx,10
-Sonora,Aligner,光学模块,6.877°C±0.396,"1. 检查
-2. 调整
-3. 验证",张力计;显微镜,遵循SOP；避免非必要拆卸,setup_Sonora_Aligner_85.pptx,4
-Boston,Loader,加热单元,8.268mm±0.039,"1. 检查
-2. 调整
-3. 验证",万用表;显微镜,遵循SOP；避免非必要拆卸,setup_Boston_Loader_86.pptx,19
-Sonora,Aligner,光学模块,4.692°C±0.353,"1. 检查
-2. 调整
-3. 验证",万用表;显微镜,遵循SOP；避免非必要拆卸,setup_Sonora_Aligner_87.pptx,18
-所有项目,Aligner,光学模块,5.984bar±0.370,"1. 检查
-2. 调整
-3. 验证",万用表;千分尺,遵循SOP；避免非必要拆卸,setup_所有项目_Aligner_88.pptx,3
-Boston,FTU,加热单元,5.767mm±0.241,"1. 检查
-2. 调整
-3. 验证",显微镜;游标卡尺,遵循SOP；避免非必要拆卸,setup_Boston_FTU_89.pptx,6
-Kinneret,Aligner,光学模块,4.705bar±0.173,"1. 检查
-2. 调整
-3. 验证",对位夹具;激光位移传感器,遵循SOP；避免非必要拆卸,setup_Kinneret_Aligner_90.pptx,6
-Yucatan,Stage,对位模块,2.889bar±0.409,"1. 检查
-2. 调整
-3. 验证",千分尺;张力计,遵循SOP；避免非必要拆卸,setup_Yucatan_Stage_91.pptx,3
-Yucatan,Heater,液压泵,1.168bar±0.434,"1. 检查
-2. 调整
-3. 验证",千分尺;温度记录仪,遵循SOP；避免非必要拆卸,setup_Yucatan_Heater_92.pptx,18
-所有项目,Stage,加载站,1.884°C±0.315,"1. 检查
-2. 调整
-3. 验证",显微镜;温度记录仪,遵循SOP；避免非必要拆卸,setup_所有项目_Stage_93.pptx,15
-MHK,Conveyor,加热单元,5.497°C±0.225,"1. 检查
-2. 调整
-3. 验证",显微镜;千分尺,遵循SOP；避免非必要拆卸,setup_MHK_Conveyor_94.pptx,1
-Boston,Loader,加热单元,5.513N±0.210,"1. 检查
-2. 调整
-3. 验证",张力计;激光位移传感器,遵循SOP；避免非必要拆卸,setup_Boston_Loader_95.pptx,4
-所有项目,SensorModule,A位,4.989°C±0.259,"1. 检查
-2. 调整
-3. 验证",万用表;张力计,遵循SOP；避免非必要拆卸,setup_所有项目_SensorModule_96.pptx,16
-所有项目,Conveyor,对位模块,5.517bar±0.103,"1. 检查
-2. 调整
-3. 验证",游标卡尺;激光位移传感器,遵循SOP；避免非必要拆卸,setup_所有项目_Conveyor_97.pptx,3
-Sonora,Stage,液压泵,9.343N±0.141,"1. 检查
-2. 调整
-3. 验证",千分尺;游标卡尺,遵循SOP；避免非必要拆卸,setup_Sonora_Stage_98.pptx,10
-所有项目,Loader,对位模块,5.390°C±0.173,"1. 检查
-2. 调整
-3. 验证",激光位移传感器;张力计,遵循SOP；避免非必要拆卸,setup_所有项目_Loader_99.pptx,11
-Boston,Conveyor,运动平台,2.343bar±0.031,"1. 检查
-2. 调整
-3. 验证",显微镜;温度记录仪,遵循SOP；避免非必要拆卸,setup_Boston_Conveyor_100.pptx,13
+Kinneret,Aligner,上视CCD相机模组,视场中心偏移 ≤ ±5 μm；放大倍率 4.0× ±0.02；像素分辨率 1.25 μm/px,"1. 装入标准玻璃十字标定片（P/N: CAL-X100），将其放置在卡盘中心。
+2. 进入工程模式 → Camera → Calibration，运行 Auto Focus 使对比度峰值出现于行程 50%±10% 区间。
+3. 采集 5×5 棋盘格图像，调用 OpenCV calibrateCamera 计算 K 矩阵与畸变系数；记录 reprojection error，需 ≤ 0.15 px。
+4. 微调相机底座 X/Y 螺钉使标定片十字中心落于视场中心 ±5 μm（监控 live crosshair）。
+5. 锁紧四枚 M3 锁付螺钉，扭矩 0.8 N·m；重新跑一次 Auto Focus 验证未发生位移。
+6. 保存 calibration.json 并在 MES 上传，附件命名 <equipID>_camTop_<YYYYMMDD>.json。",标定片 CAL-X100；扭矩起子 0.4–1.2 N·m；OpenCV 4.8；MES 上传脚本,切勿用棉签触碰镜头镀膜面；调整螺钉前断开真空，防止吸盘吸附晶圆受撞；reprojection error > 0.2 必须重新拍片，不允许手动放行。,setup_Aligner_camera.pptx,3
+MEM,Aligner,θ 旋转轴零点,机械零点与光学零点偏差 ≤ 0.005°；重复定位精度 ≤ 0.002°（3σ）,"1. 取下吸盘，安装 θ 标定治具（带四个 fiducial 点）。
+2. Home 全部轴；执行 jog 至 0°；用上视相机抓取 fiducial 1、3 计算理论连线角度。
+3. 若偏差 > 0.005°，在 servo 参数页面修改 ZERO_OFFSET_THETA（单位 0.001°），保存并断电重启。
+4. 重复 5 次 0°→90°→180°→270°→0° 循环，记录每次回零误差，3σ ≤ 0.002° 通过。
+5. 出具 Cpk 报告，附原始数据 CSV 提交 QA。",θ 标定治具 JIG-TH-02；伺服调试软件 ServoStudio v4.2,Home 之前必须确认 Z 轴在安全位（> 25 mm），否则旋转中可能与上视相机干涉。,setup_Aligner_theta.pptx,7
+PDX,Aligner,Fiducial 识别参数,Match score ≥ 0.85；假阳性率 ≤ 0.5%（基于 200 片样本）,"1. 收集 50 片代表性产品（含 OK 与 NG），用图像采集工具保存 BMP 原图。
+2. 在 VisionPro 中新建 PatMax 模型，从 OK 图截取 fiducial 区域，搜索范围 ±2 mm，角度 ±5°。
+3. Coarse acceptance 0.5；Fine acceptance 0.75；启用 ignore polarity = false。
+4. 用 200 片样本批量跑分，导出 score 分布直方图；调整 contrast threshold 直到 OK 与 NG 拉开 ≥ 0.15 间距。
+5. 锁定模型，导出 .vpp 文件并写入 recipe；recipe 命名规则 product_<pn>_v<rev>.vpp。",Cognex VisionPro 9.6；统计脚本 score_hist.py；样本盒 200pcs,切勿在生产线现场直接修改 acceptance 阈值；任何阈值变更须经过 200 片回归并由工艺工程师签字。,setup_Aligner_pattern.pptx,12
+Boston,Aligner,Z 轴回零传感器,回零重复性 ≤ ±2 μm；触发延迟 < 5 ms,"1. 拆下 Z 轴防尘罩，露出原点光电开关 OMRON EE-SX672。
+2. 用 0.05 mm 塞尺塞入挡片与开关之间，检查间隙；标准 0.5±0.1 mm。
+3. 上电，慢速 jog 至触发位，记录编码器读数 P1；抬升 1 mm 再回零，读数 P2；|P1-P2| ≤ 2 μm。
+4. 若失败，检查挡片是否松动、光电开关污染；用无水乙醇清洁发射/接收窗口。
+5. 回零 10 次取 max-min，写入测试报告 ZHomingTest_<date>.xlsx。",塞尺；无水乙醇；棉签；编码器读数工具,清洁光电开关时不可使用丙酮，会腐蚀塑料外壳；调整完成必须装回防尘罩，防止粉尘积累引起误触发。,setup_Aligner_zhome.pptx,4
+Sonora,Conveyor,主皮带张力,张力 25±3 N；张紧轮挠度 1.5 mm 处对应力值,"1. 关停设备并锁定急停。
+2. 使用张力计 SKF TKBA-50 测量主皮带中段，按住 1.5 mm 挠度键，读数应在 22–28 N。
+3. 偏低：松开张紧轮固定螺母 M8，顺时针旋转调节螺杆 1/4 圈复测；每次仅调节 1/4 圈。
+4. 偏高：逆时针，注意不可使皮带产生横向扭曲（用直尺检查皮带边沿平行度）。
+5. 调整后空载运行 30 min，复测张力（皮带预热后会略松）。
+6. 填写《皮带张力点检表》并贴标签注明下次到期日（90 天）。",SKF TKBA-50 张力计；M8 套筒扳手；直尺 500 mm,调整时手指不可进入皮带与张紧轮夹角；皮带温度高于 50°C 时禁止测量（读数失准）。,setup_Conveyor_belt_tension.pptx,2
+Yucatan,Conveyor,编码器对中,编码器轴与电机轴同轴度 ≤ 0.05 mm；联轴器间隙 1±0.2 mm,"1. 拆下编码器防护罩，目视检查联轴器是否有裂纹。
+2. 旋松编码器安装座四枚 M4 螺钉至可微动状态。
+3. 使用百分表吸附在电机端面，表头顶住编码器轴端面，慢速旋转电机 360°，读出最大-最小值。
+4. 调整编码器位置使径向跳动 ≤ 0.05 mm；轴向间隙用塞尺测量为 1±0.2 mm。
+5. 按对角顺序拧紧螺钉，扭矩 2.5 N·m；复测同轴度。
+6. 上电执行 1 m 走带测试，编码器读数与皮带刻度尺误差 ≤ 0.1%。",百分表 0.01 mm；塞尺；扭矩起子；皮带刻度尺,联轴器若有裂纹必须更换，不可继续使用；编码器拆装时严禁敲击轴端，会损伤光栅码盘。,setup_Conveyor_encoder.pptx,6
+MHK,Conveyor,入口光幕安装,光幕保护高度 ≥ 600 mm；光轴间距 ≤ 14 mm（手指检测）；响应时间 ≤ 20 ms,"1. 按图纸确认光幕 Sick C4000 安装位置距危险点 ≥ 安全距离 S = K×T+C（K=2000, T=0.04s, C=8d=112mm）= 192 mm。
+2. 用激光对中器对齐发射端与接收端，确保 4 角光斑都落在接收窗内。
+3. 上电后观察光幕 OK 指示灯应常亮；逐根光轴用遮挡棒（φ14 mm）测试，每根均能停机。
+4. 测量响应时间：示波器接 OSSD 输出与遮挡触发，响应 ≤ 20 ms。
+5. 在 PLC 安全程序中确认 reset 必须为双手操作；模拟急停后须人工 reset 才可恢复。
+6. 填写 PSDI 测试报告，由 EHS 工程师签字。",Sick C4000；激光对中器；φ14 mm 检测棒；示波器；安全 PLC 编程器,光幕调试期间整线必须挂牌上锁（LOTO）；测试棒不可用手指代替；任何旁路接线属违规，立即停线。,setup_Conveyor_lightcurtain.pptx,1
+PDX,FTU,探针卡接触电阻,Cres ≤ 50 mΩ/pin；接触次数 < 50 万次时不退化超过 20%,"1. 装入探针卡，闭合压板，按下 contact check 按键。
+2. 系统对每根 pin 施加 100 mA，测量四线电阻；导出 ftu_cres_<sn>.csv。
+3. 若有 pin > 50 mΩ：取下卡片，目视检查是否有脏污或针尖磨平。
+4. 用 polishing pad（3M 261X-A30）轻轻擦拭针尖 5 次（圆周方向）。
+5. 复测；若仍 > 50 mΩ，记录 pin 编号并标记为 BAD_PIN，需联系探针厂换针。
+6. 完成后更新探针卡寿命计数器（设备 UI → Maintenance → Card Counter）。",Polishing pad 3M 261X-A30；四线电阻表 Keithley 2400；放大镜 ×20,polishing pad 每次只用一面；过度抛光会缩短探针寿命；针尖凹陷 > 5 μm 必须直接换针。,setup_FTU_probe_cres.pptx,9
+MEM,FTU,加热单元温度校准,设定 85.0 °C 时实测 85.0±0.3 °C；均匀度 ≤ 0.5 °C（5 点）,"1. 取下 DUT 治具，安装 5 通道铂电阻温度采集板 PT100-5CH，5 点分布在加热板四角与中心。
+2. 设定 25 → 60 → 85 → 105 °C 阶梯，每段保温 10 min 后采样 1 min。
+3. 计算每个设定点 5 个测点的均值与极差；85 °C 均值偏差 ≤ 0.3，极差 ≤ 0.5。
+4. 偏差超标：在 PID 设定页 → Calibration → Offset 输入校正量（正负皆可），重新跑一遍。
+5. 极差超标：检查加热膜是否局部失效；用红外热像仪复查温度分布。
+6. 校准合格后贴 Calibration Sticker，写明下次校准日期（6 个月后）。",PT100-5CH 采集板；标准源 Fluke 9118A；FLIR E8 红外热像仪,PT100 接线必须使用屏蔽线并单点接地，否则现场变频器会引入数 °C 的干扰；高温段操作戴隔热手套。,setup_FTU_heater_cal.pptx,5
+Kinneret,FTU,DUT 治具下压力,下压力 30±2 N；行程到位检测信号 < 50 ms,"1. 在治具压头与底板之间夹入测力片 Tekscan FlexiForce A201。
+2. 手动触发下压，记录力值；连续 10 次取平均。
+3. 平均值 < 28 N：旋紧气缸调压阀（顺时针 1/8 圈），气压增加约 0.02 MPa。
+4. 平均值 > 32 N：松调压阀；同时检查气缸活塞是否泄漏（涂肥皂水观察气泡）。
+5. 行程信号检测：示波器测下压触发到 in-position 信号，应 < 50 ms。
+6. 校准后清理测力片占用空间，确认 DUT 装夹不受影响。",Tekscan FlexiForce A201；示波器；调压阀；肥皂水,测力片单次使用后精度下降，校准用专用件；气压调整后必须让气路稳压 2 min 再读数。,setup_FTU_jig_force.pptx,10
+Boston,Heater,PID 自整定,稳态误差 ≤ ±0.2 °C；上升时间 < 90 s（25 → 120 °C）；超调 < 2 °C,"1. 加热腔体清洁、热电偶 K 型已正确插入中心位置。
+2. 在控制器 RKC FB400 → AT 模式选择 “PID Auto-Tuning - Standard”。
+3. 设定 SP = 120 °C，按下 AT 启动；控制器将产生 3 次振荡。
+4. 整定完成约 8 min，记录 P / I / D 参数；典型值 P=8.5, I=120, D=30。
+5. 跑温度阶梯曲线 25→60→90→120→90→25，导出趋势图存档。
+6. 若超调 > 2 °C，手动将 P 增大 20%，I 减小 10% 再验证。",RKC FB400 控制器；K 型热电偶 ϕ1.5；趋势记录软件 PCRecorder,自整定期间禁止开门或扰动负载；不同负载（空腔 vs 满载）参数差异显著，必须以实际工况整定。,setup_Heater_pid.pptx,8
+Sonora,Heater,SSR 散热器风扇,风扇转速 ≥ 3500 rpm；SSR 散热器表面温度 ≤ 65 °C,"1. 启动设备并以最大负载（全部加热段开启）运行 30 min。
+2. 用转速表测量风扇 RPM；< 3500 表示风扇老化或灰尘阻塞。
+3. 拆下风扇，用压缩空气（< 0.3 MPa）吹净叶片与防尘网。
+4. 用红外测温枪测散热器中心温度；> 65 °C 需更换散热硅脂或加大风量。
+5. 换风扇时注意进风方向（标签朝向 SSR 散热器）。
+6. 风扇运行电流应在 0.15–0.25 A，超出范围更换。",数字转速表；FLIR 测温枪；压缩空气；散热硅脂 Arctic MX-4,SSR 长期超温会引起短路，进而烧加热回路，必须严格管控温度。,setup_Heater_ssr_fan.pptx,3
+MHK,Loader,真空吸盘,吸附压力 -85 ± 5 kPa；漏率 < 0.5 kPa/s（关闭真空源后）,"1. 启动真空泵，待真空表稳定后读数 -85 ± 5 kPa。
+2. 关闭真空源截止阀，启动秒表记录 10 s 内真空衰减。
+3. 漏率 > 0.5 kPa/s：用肥皂水沿吸盘 O-ring 涂抹查找泄漏点。
+4. 常见原因：吸盘表面划伤（更换吸盘）、O-ring 老化（更换）、快插接头松动（拧紧或换接头）。
+5. 维修后必须重新做 10 次抓放测试，无掉片即为合格。
+6. 在维护卡上签字并更新 PM 计数。",真空表；肥皂水；扭矩扳手；备件吸盘 P/N: VAC-P50,拆装吸盘时必须断开真空与气源；O-ring 安装前涂少量真空脂（Apiezon L），不可过量。,setup_Loader_vacuum.pptx,4
+Yucatan,Loader,机械手抓取速度,X 轴速度 800 mm/s；Y 轴 600 mm/s；加加速度 jerk ≤ 50 m/s³,"1. 进入 Service Mode → Motion → Velocity Profile。
+2. 速度由 200 mm/s 阶梯递增至目标值，每档跑 20 次 pick-place 循环。
+3. 用高速相机（≥ 1000 fps）记录抓取瞬间的晶圆抖动幅度；幅度 > 5 μm 表示速度过快。
+4. 若抖动超标，降速 10% 或减小 jerk 至 30 m/s³。
+5. 调试完成把参数写入 recipe；备份原 recipe 至 \\backup\loader_recipes\<date>。
+6. 提交 24 h 老化测试报告。",Photron FASTCAM Mini；Motion Studio 软件；recipe 备份脚本,首次调试新产品时务必从低速开始；jerk 参数对掉片影响远大于 max speed，先调 jerk 再调速度。,setup_Loader_speed.pptx,11
+PDX,Loader,载具识别传感器,对位精度 ≤ ±0.3 mm；识别成功率 ≥ 99.9%（1000 次盲测）,"1. 把标准载具放置到入料位（位置 P0）。
+2. 启动 Teach 模式，让光电传感器 OMRON E3Z-D81 学习 P0 位置反射光强（建议 70–80% 满量程）。
+3. 设定上下限阈值 ±15%。
+4. 取出载具，用空位 + 异形载具各跑 100 次，检查是否误报。
+5. 完整 1000 次抓放盲测，记录失败次数；≤ 1 次为通过。
+6. 在维护册中记录传感器序列号、阈值与测试结果。",E3Z-D81 调试线；标准载具 1pcs；异形对照件,环境光强变化大的工位（靠近窗户）应增加遮光罩；传感器表面切勿粘贴标签。,setup_Loader_carrier.pptx,6
+MEM,Pump,真空机械泵油位,油位在视窗 1/2–3/4 之间；新泵 6 个月或 2000h 强制换油,"1. 关停泵 10 min 让油冷却。
+2. 观察油镜，油液应澄清淡黄；若发黑或乳化必须换油。
+3. 油位低于 1/2：从加油口缓慢添加 Edwards Ultragrade 19，加至 3/4 上限。
+4. 油位高于 3/4：从放油口排出多余油，避免飞溅。
+5. 换油：彻底放尽旧油 → 加入新油至 1/4 运行 5 min → 放尽 → 再加至正常位。
+6. 更新 PM 卡，贴下次维护标签。",Edwards Ultragrade 19；接油盘；漏斗；扭矩扳手 19 mm,废油按危废处理，不可直排；换油时不可让油接触加热表面，蒸汽具刺激性，须在通风下操作。,setup_Pump_oil.pptx,2
+Kinneret,Pump,干泵排气过滤器,压差 ΔP < 30 kPa；满载流量下温升 ≤ 15 °C,"1. 在过滤器进出口接压差表 Setra Model 264。
+2. 开启泵满负荷运行 30 min，读取 ΔP；> 30 kPa 表示堵塞。
+3. 关泵泄压，戴防毒面具拆下过滤器（介质可能含有腐蚀性副产物）。
+4. 更换新滤芯（P/N: PFE-DRY-200），密封圈每次必换。
+5. 重新装好，做 N2 泄漏测试，10 min 压降 ≤ 5 mbar。
+6. 开泵复测压差并记录。",Setra 264 压差表；防毒面具 3M 6800；扭矩扳手；备件滤芯,干泵排气含工艺尾气，禁止徒手操作；废滤芯按工艺危废入袋封存。,setup_Pump_filter.pptx,7
+Boston,SensorModule,激光位移传感器零点,零点偏差 ≤ ±1 μm；线性度 ≤ 0.05% F.S.,"1. 将基准块放置在测量位（高度公差 ±0.5 μm）。
+2. 进入 sensor controller Keyence LK-G5000，选择 Teaching Origin。
+3. 多次（10 次）读取基准位读数，取平均设为新零点。
+4. 用千分尺工件法验证 0, 50, 100, 150, 200 μm 五点，记录传感器示值。
+5. 拟合直线求线性度，应 ≤ 0.05% × 量程。
+6. 备份传感器参数至 SD 卡，并打印校准报告。",基准块 2 级；Keyence LK-G5000 控制器；标准千分尺；SD 卡,镜面工件易引起激光多重反射造成误读，需启用 mirror surface 模式或加防反射涂层。,setup_SensorModule_laser.pptx,3
+Sonora,SensorModule,压力传感器零位,零点漂移 ≤ 0.1% FS / 24 h；满度误差 ≤ 0.25% FS,"1. 通气路三通阀切到“零位”（与大气相通）。
+2. 进入仪表 Zero 菜单，按 Auto Zero 按钮，等待 5 s。
+3. 切换至“标准源”位置，输入参考压力 100 kPa（标准源 Druck DPI 610）。
+4. 仪表读数与参考差 ≤ 0.25 kPa；超差则在 Span 菜单调整增益。
+5. 静置 24 h 后重测零位，漂移 ≤ 0.1 kPa。
+6. 完成后封贴铅封并在 GMP 设备档案签字。",Druck DPI 610 压力标准源；三通阀；铅封钳,校准时必须断开生产气源，防止误送压力；标准源每年送计量院校准并保存证书。,setup_SensorModule_pressure.pptx,4
+PDX,Stage,X-Y 轴正交度,正交误差 ≤ 10 arcsec；行程 0–300 mm 全程一致,"1. 装上花岗岩直角尺，吸附在工作台中央。
+2. 在 X 轴正方向 50 mm 处用激光干涉仪 Renishaw XL-80 测量 Y 偏差。
+3. 走 X 轴 0 → 300 mm，每 50 mm 记录 Y 偏移。
+4. 调换轴向重复一次（Y 轴走，X 测）。
+5. 由两组数据合成计算正交误差；> 10 arcsec 需在伺服参数中调整 cross-axis compensation。
+6. 完成校准后必须重新做 grid mapping，并生成 .map 文件加载到 controller。",Renishaw XL-80 激光干涉仪；花岗岩直角尺；XL Compensator 软件,干涉仪测量期间空气温湿度变化需 ≤ 1 °C / 1 h，否则补偿失效；地基振动应 < VC-D 等级。,setup_Stage_orthogonality.pptx,6
+MHK,Stage,Z 轴回程间隙,Backlash ≤ 3 μm；空回补偿后定位误差 ≤ 2 μm,"1. 在 Z 轴末端固定光学测头。
+2. Z 上行至 50 mm 处停止；记录读数 A。
+3. 下行 5 mm 再上行回 50 mm 处停止，记录读数 B。
+4. Backlash = |A - B|；若 > 3 μm，启用 controller 中 backlash compensation 字段。
+5. 加补偿后再次重复测试至 ≤ 2 μm；保存参数。
+6. 若多次调整无效，需拆检丝杆/螺母组件磨损情况。",光学测头；编码器读数工具；丝杆维护手册,丝杆磨损需整体更换，禁止现场抛光修复；调整后需做温升试验，连续运行 1 h 复测。,setup_Stage_backlash.pptx,5
+Yucatan,Stage,水平度,XY 平台水平度 ≤ 0.02 mm/m；地脚螺栓预紧 30 N·m,"1. 把电子水平仪放置在工作台中心 X 方向，读数 R1。
+2. 旋转 90° 测 Y 方向 R2。
+3. 若 R1 或 R2 > 0.02 mm/m：调整对应方向地脚螺栓（升高一侧顺时针 1/8 圈）。
+4. 调整后等机器静置 5 min 再复测；水平稳定后用扭矩扳手按 30 N·m 锁紧所有地脚。
+5. 在《设备水平度记录表》签字并贴标识。",电子水平仪 0.001 mm/m；M16 扭矩扳手；地脚螺栓垫片,调整完成后需要重新做 stage mapping；机器搬动或地基沉降后必须重新校水平。,setup_Stage_level.pptx,9
+所有项目,Aligner,年度 PM 全检,对位精度 ≤ ±2 μm；光源亮度 ≥ 出厂值 90%；所有轴 Cpk ≥ 1.67,"1. 备齐 PM 工具箱（含标定片、塞尺、扭矩起子、清洁剂）。
+2. 按 Annual PM Checklist 共 32 项依次执行，每项打钩并填写实测值。
+3. 关键项目（精度、光源、轴 Cpk）必须有量化数据，仅打钩不接受。
+4. 任一项不合格立即开 NCR 单，安排专修。
+5. PM 完成后整机跑 8 h burn-in，无报警即可放行。
+6. 将报告归档至 \\qms\PM\Aligner\<year>\。",Annual PM Toolkit；Cpk 计算器；burn-in 测试脚本,PM 期间禁止任何生产作业；旧零件需在《报废件登记本》登记并按价值分类回收。,setup_Aligner_annualPM.pptx,1
+所有项目,Conveyor,紧急停止按钮巡检,拍下后必须双手 reset；reset 时间 ≤ 2 s；电气触点电阻 < 0.5 Ω,"1. 列出所有 E-stop 数量与位置（参照机械图 EE-0103）。
+2. 逐个拍下，确认整线停机且报警 “E-STOP Pressed” 显示按钮编号。
+3. 拔出按钮后启动 reset 程序（绿色双键按 1 s），系统恢复时间 < 2 s。
+4. 用万用表测每个 E-stop 触点闭合电阻 < 0.5 Ω。
+5. 记录《安全装置月度点检表》并由 EHS 经理签字。",万用表；安全装置点检表；机械图纸,巡检前必须告知操作工避免误停产；任何 reset 异常须立即开工单，严禁旁路。,setup_Conveyor_estop.pptx,10
+Kinneret,FTU,软件 recipe 版本管理,recipe 文件名包含 product+rev+date；变更必须经 ECN 审批,"1. 新建 recipe：在测试软件中另存为命名 <PN>_<rev>_<YYYYMMDD>.rcp。
+2. 提交 ECN（工程变更通知），附前后差异对比文件。
+3. ECN 审批通过后才能在生产机加载新 recipe；旧 recipe 保留 2 年。
+4. 现场切换 recipe 时操作工必须双签确认；首件 5 pcs 全测合格才能批量。
+5. recipe 每周自动备份至服务器 \\fs\ftu_recipes\backup\。
+6. 半年做一次 recipe 一致性审计。",ECN 系统；recipe 编辑器 FTU Studio 2.3；备份脚本,禁止任何人在生产中私自修改 recipe；修改后无法追溯将影响产品质量追溯。,setup_FTU_recipe.pptx,13
+MEM,Heater,升温曲线安全联锁,105 °C 软联锁；115 °C 硬联锁；超温后必须人工 reset,"1. 模拟温度上升：将 PID 设定调至 105 °C，确认软联锁报警弹出。
+2. 继续手动注入加热电流让温度上升至 115 °C；硬联锁应通过 SSR 切断接触器主回路。
+3. 验证只有 EHS 钥匙旋转 reset 后才能复位（普通操作员无权）。
+4. 联锁验证每季度一次，记录入安全档案。
+5. 任意一次联锁失效必须立刻停线维修。",PID 模拟测试器；安全 PLC；EHS 钥匙,联锁是最后一道保护，禁止旁路；硬联锁断电点必须独立于软件控制回路。,setup_Heater_interlock.pptx,2
+Sonora,Loader,ESD 接地点检,机架对地阻抗 ≤ 1 Ω；操作工腕带 750 kΩ ± 10%,"1. 在每个 ESD 接地端子用 Fluke 1623-2 测对地电阻；记录值。
+2. 任何点 > 1 Ω：检查接地线接触面是否氧化，用砂纸打磨后重涂导电脂复测。
+3. 操作工腕带测试盒每日上班自检；显示绿灯方可工作。
+4. 工作台离子风机离子平衡 ≤ ±35 V；用 ME 268A 测试。
+5. 记录《ESD 月度点检表》。",Fluke 1623-2 接地电阻表；ME 268A 离子平衡表；腕带自检盒,"ESD 防护对静电敏感器件（CMOS, MEMS）至关重要，超标必须停机；离子风机滤网 3 个月换一次。",setup_Loader_esd.pptx,8
+Boston,Pump,泵浦联锁与冷却水流量,冷却水流量 ≥ 4 L/min；流量 < 3 L/min 触发停泵,"1. 打开冷却水阀，记录初始流量计读数。
+2. 缓慢关闭进水阀模拟流量下降；< 3 L/min 时设备应在 5 s 内停泵并报警 “Low Cooling Flow”。
+3. 复位后水阀全开，流量恢复 ≥ 4 L/min。
+4. 每季度演习一次，并记录响应时间。
+5. 流量计每年送计量院校准。",可调球阀；流量计 GEMS RFA-2510；秒表,泵无冷却水运行 10 s 即可能严重过热损坏定子；任何联锁失效必须立刻封机。,setup_Pump_cooling.pptx,5
+PDX,SensorModule,温湿度传感器年度校准,温度 ±0.3 °C；湿度 ±2% RH；偏差超出送计量院,"1. 把传感器与标准源 Vaisala HMK15 放入校准箱共置 1 h。
+2. 三点校准：25 °C/50% RH、25 °C/75% RH、40 °C/50% RH。
+3. 每点稳定 30 min 取读数；偏差超标在传感器自带软件中调零或换件。
+4. 校准合格者贴检定合格证；超差者退送计量院。
+5. 上传校准报告 PDF 至设备档案系统。",Vaisala HMK15 校准箱；标准证书；校准软件,校准期间禁止开门；标准源每年由计量院送检，禁止现场使用过期标准。,setup_SensorModule_thrh.pptx,7
+MHK,Stage,气浮平台供气,供气压力 0.55 MPa ± 0.02；含水量 ≤ 1.0 ppm（露点 ≤ -40 °C）,"1. 检查气源 FRL 组件，确认过滤器无水珠，调压稳定 0.55 MPa。
+2. 用露点仪 Vaisala DMT143 测量管路下游露点 ≤ -40 °C；超标更换干燥剂或检查冷干机。
+3. 气浮启动后用塞尺测平台四角气膜厚度，每角 10±2 μm。
+4. 任一角厚度异常：检查节流孔是否堵塞，用 100 μm 探针通孔。
+5. 完成后记录《气浮供气点检表》。",Vaisala DMT143 露点仪；FRL 组件；塞尺；100 μm 探针,气浮平台对气源洁净度要求极高，颗粒 > 0.3 μm 会刮伤导轨；管路压缩空气必须三级过滤。,setup_Stage_air.pptx,4
+Yucatan,FTU,老化炉温场均匀度,±2 °C @ 85 °C；±3 °C @ 125 °C；测点 9 点（3×3 网格）,"1. 取空炉，9 点放置标定 K 型热电偶；线缆走出炉门用密封胶泥封堵。
+2. 设定 85 °C 保温 4 h，记录 9 点稳态值；极差 ≤ 4 °C 通过。
+3. 升至 125 °C 保温 4 h，极差 ≤ 6 °C 通过。
+4. 不通过：调整循环风扇风量平衡，或检查加热管局部失效。
+5. 每年完成 IQ/OQ 报告，提交客户审计。",K 型热电偶 ×9；高温密封胶泥；多通道温度记录仪 GL840,老化炉关门密封条老化会导致下半部温差大，每年更换一次密封条。,setup_FTU_burnin.pptx,11
+Kinneret,Loader,防呆 SOP 验证,错装载具不可启动；MES 工单号与产品 SN 必须匹配,"1. 用 NG 载具（少一个定位销）尝试上料，系统应报警 “Carrier Mismatch”。
+2. 故意输入错误工单号扫码，系统应阻止并提示工单不匹配。
+3. 验证 MES 与设备的双向握手日志（每条记录含时间、SN、工单）。
+4. 防呆失效需立即开 Quality Alert 通报全厂。
+5. 每月做一次防呆失效演练。",NG 载具 1pcs；MES 工单测试号；扫码枪,防呆功能是产品追溯的最后一道关，绝不可关闭；任何禁用必须有总工签字。,setup_Loader_poka_yoke.pptx,1
+Boston,Aligner,上视光源 LED 寿命,出厂亮度 100%；20000 h 后 ≥ 90%；6 个月点检一次,"1. 设定光源亮度 100%，用照度计 Konica T-10A 在固定距离测照度。
+2. 将测值与基线（出厂调试时记录）比较；保留 6 位小数。
+3. < 90% 基线：考虑更换 LED 模块或恢复至 100% 后再延后 3 个月评估。
+4. 更换 LED 后必须重新做曝光 recipe 校准。
+5. 记录《光源寿命跟踪表》。",Konica T-10A 照度计；LED 备件 P/N: LED-WHT-12V；记录表,LED 老化呈非线性，达到 90% 后衰减加速；及时更换避免成像质量影响识别率。,setup_Aligner_led.pptx,3
+Sonora,Stage,直线电机磁条清洁,磁条无金属碎屑；定位精度 Cpk ≥ 1.67,"1. 关停设备，断电至少 5 min（释放残余电场）。
+2. 用木质或塑料工具（禁用金属）轻刮磁条表面碎屑。
+3. 用无尘布蘸异丙醇擦拭，单方向擦拭 3 次。
+4. 通电做 50 次重复定位测试，计算 Cpk ≥ 1.67。
+5. 维护周期 3 个月或每运行 1500 h，取先到。",无尘布；异丙醇 IPA；非金属刮刀；Cpk 计算软件,磁条具有强磁场，电子设备、手表、磁卡须远离 30 cm 以上；不可用压缩空气直吹（会把碎屑吹入导轨）。,setup_Stage_magnet.pptx,6
+MEM,Pump,氮气吹扫流量,正常吹扫 5 slm；待机 1 slm；停机 0 slm,"1. 进入 PM 模式，逐档切换吹扫流量并用 MKS 1179B 标准流量计验证。
+2. 误差 ±5% 以内为合格。
+3. 通过 SCADA 触发不同状态信号（运行/待机/停机），观察吹扫自动切换。
+4. 任一档失效：检查 MFC 是否堵塞或电控信号断线。
+5. 测试期间排尾气至中央洗涤塔，禁止直排室内。",MKS 1179B MFC；SCADA 测试工具；尾气接管,停机仍有微量吹扫的工艺禁止把流量调至 0，否则反吸将污染干泵。,setup_Pump_n2.pptx,9
+Yucatan,Heater,热电偶冷端补偿,Tj 偏差 ≤ 0.2 °C；冷端补偿器每年校准,"1. 拆下控制器后盖，找到冷端补偿器（一般为 PT100 + 运放电路）。
+2. 把校准源 Fluke 754 切换到 J/K 型热电偶模拟模式，输出 0 mV，读控制器示值。
+3. 示值应 = 室温（± 0.2 °C），否则在 controller 校准菜单输入修正量。
+4. 输出 4.096 mV（K 型对应 100 °C）复核，读数 ≈ 室温 + 100 °C。
+5. 校准完成密封后盖。",Fluke 754；多功能源；记录表,冷端补偿误差直接乘以工艺温度，被忽视常导致系统性 0.5–1 °C 偏移；务必每年校准。,setup_Heater_cold_junction.pptx,4
+PDX,Conveyor,拐弯段速度匹配,主线与拐弯段速度比 1:1 ± 2%；过渡平台无堆积,"1. 在主线和拐弯段各贴反光标识。
+2. 用激光转速表测线速度，记录主线 v1、拐弯段 v2。
+3. v2/v1 应在 0.98–1.02。若超差，调整变频器参数 P0-12 (output freq scaling)。
+4. 实际上料 30 pcs 观察过渡处有无堆积或翻倒。
+5. 完成后填《拐弯段速度匹配表》。",反光贴；激光转速表；变频器编程器,速度不匹配最早表现是堆积导致下游误判空料；调整时一次仅调一档变频器参数。,setup_Conveyor_curve.pptx,13
+MHK,SensorModule,视觉光源照度,环形光照度 12000 ± 500 lx；同心度 ≤ ±1 mm,"1. 把照度计探头放在工件位中心。
+2. 打开环形光至 80% 占空比，记录读数 12000 lx 左右。
+3. 旋转探头 0°/90°/180°/270° 各读一次，最大-最小 ≤ 1000 lx。
+4. 同心度：取下探头，目视光源对工件中心；偏差用激光对中器测。
+5. 失败：松开光源支架重新对中，重新固定。",Konica T-10A；激光对中器；环形光控制器,光源占空比频繁满负荷会缩短寿命，建议保持 ≤ 80%；维持目标照度通过曝光时间补偿。,setup_SensorModule_ringlight.pptx,2
+Boston,Loader,FOUP 开门器对接,开门器开启时间 ≤ 8 s；门密封间隙 ≤ 0.3 mm,"1. 装载标准 FOUP（300mm 晶圆载具），运行 “Open Door” 命令。
+2. 用秒表记录开门时间 ≤ 8 s。
+3. 关门后用塞尺检查门与盒体密封间隙，应 ≤ 0.3 mm。
+4. 若密封超差，调整开门器 latch 钩位置（前后各 ±0.5 mm 微调）。
+5. 真空度测试：抽到 -50 kPa 维持 2 min，压降 ≤ 5 kPa。",标准 FOUP；秒表；塞尺；真空表,FOUP 内部气氛对晶圆良率影响大；密封性差会引入水汽与颗粒，必须严格控制。,setup_Loader_foup.pptx,7
+Kinneret,Aligner,UV 固化光源能量,370 nm 波段 ≥ 80 mW/cm²；20 s 内累计能量 ≥ 1500 mJ/cm²,"1. 把 UV 能量计 EIT UVICURE Plus II 放在固化位中心。
+2. 启动单次固化程序，记录峰值功率与累计能量。
+3. 峰值 < 80 mW/cm²：清洁 UV 灯罩玻璃（无尘布 + IPA），或更换灯管。
+4. 灯管寿命 ≥ 1000 h 强制更换，无论性能。
+5. 记录《UV 灯使用小时表》。",EIT UVICURE Plus II；无尘布；IPA；备件灯管,UV 灯启动后 5 min 内能量不稳定，需预热再测；操作必须戴 UV 防护镜。,setup_Aligner_uv.pptx,10
+Sonora,FTU,ATE 校准源稳定性,参考电压 5.0000 V ± 0.0005；漂移 ≤ 5 ppm / 8 h,"1. 把 ATE 校准源连接 Keysight 3458A 8.5 位万用表。
+2. 每 5 min 记录一次电压，连续 8 h。
+3. 绘制趋势图，计算漂移 = (max-min)/标称值。
+4. > 5 ppm 需更换基准芯片或送修。
+5. 同步检查环境温度波动 ≤ ±1 °C。",Keysight 3458A 万用表；环境温湿度记录仪,基准源是 ATE 所有测量的根基，超标直接影响 ppm 级测试精度，必须严格管控。,setup_FTU_ref_voltage.pptx,6
+MEM,Stage,平台运动噪声,X/Y 轴 80% 速度下 LpA ≤ 70 dB(A)；> 75 dB 需检修,"1. 在距设备 1 m 处放置声级计 B&K 2250 ，麦克风朝向设备。
+2. 设备运行 X 轴往返 10 次，记录峰值与等效声级。
+3. > 70 dB：检查丝杆润滑、轴承磨损、导轨清洁。
+4. 加注润滑脂或更换轴承后复测。
+5. 噪声异常通常是轴承失效早期征兆，应同步分析振动。",B&K 2250 声级计；振动分析仪 SKF CMVA75；润滑脂,设备噪声超标可能是故障早期信号，不可仅以人耳判断；噪声测试应在生产间静音段进行。,setup_Stage_noise.pptx,5
+PDX,Heater,加热膜电阻,冷态电阻 50 ± 2 Ω；绝缘电阻 ≥ 100 MΩ @ 500 V DC,"1. 断电至少 30 min，确保加热膜冷却至室温。
+2. 用四线万用表测加热膜电阻，记录 R 值。
+3. 用 500V 兆欧表测加热膜对地绝缘电阻 ≥ 100 MΩ。
+4. 阻值偏离 ±2 Ω 或绝缘 < 100 MΩ 必须更换加热膜。
+5. 更换后必须做 hi-pot 测试，1500 V AC 1 min 不击穿。",Fluke 1587 兆欧表；四线万用表；hi-pot 测试仪,加热膜击穿后泄漏电流大，存在触电风险；测试必须断电并挂牌操作。,setup_Heater_film.pptx,2
+所有项目,SensorModule,软件 zero offset 备份,每台机的 offset 文件须备份至中央服务器；丢失影响产品报废,"1. 在传感器控制软件 → Setting → Export Offset → 选择保存路径 \\fs\sensor_backup\。
+2. 文件命名 <equipID>_offset_<YYYYMMDD>.bin。
+3. 每季度做一次差异比对，发现异常立即追溯。
+4. 服务器自动按月归档保留 3 年。
+5. 设备大修或更换主板后必须重新导入并验证。",传感器配套软件；中央备份系统；diff 比对工具,offset 文件丢失须重新做整套校准，耗时长；务必每次维护后立即备份。,setup_SensorModule_backup.pptx,1
+Yucatan,Aligner,下视相机背光均匀度,背光均匀度 ≥ 95%；中心-边缘差 ≤ 5%,"1. 把空白白色测试片放置在工作位。
+2. 启用最大背光强度，相机抓图保存为 BMP。
+3. 用 MATLAB 脚本 brightness_uniformity.m 计算 9 区域亮度。
+4. 均匀度 = 1 - (max-min)/max；≥ 95% 合格。
+5. 不合格：清洁导光板、扩散膜，必要时更换 LED 阵列。",MATLAB；测试白片；备件扩散膜,导光板易划伤，清洁仅可用气吹与无尘布湿擦；划痕会形成永久亮斑。,setup_Aligner_backlight.pptx,8
+MHK,Pump,干泵振动监测,RMS 速度 ≤ 4.5 mm/s；峭度因子 < 5,"1. 把振动传感器 SKF CMSS 2200 吸附在泵外壳侧面。
+2. 在满负荷下采集 60 s 数据，导出至 SKF Aptitude Analyst。
+3. 计算 RMS 速度与峭度；超标按 ISO 10816-7 判定。
+4. 趋势记录至 6 个月以上可预测轴承故障。
+5. > 7 mm/s 立即停机检修。",SKF CMSS 2200；Aptitude Analyst 软件,振动数据需在稳定工况下采集，启动/停机过程不算；建立基线后做趋势监测更有价值。,setup_Pump_vibration.pptx,11
+Boston,Conveyor,防卡滚轴润滑,滚轴回转扭矩 ≤ 0.05 N·m；润滑周期 6 个月,"1. 关停设备并锁定。
+2. 拆下滚轴防护盖，目视检查是否积尘。
+3. 在轴端轴承位注入锂基脂 SKF LGEP 2，每点 1–2 mL。
+4. 用扭力扳手测试滚轴回转扭矩，应 ≤ 0.05 N·m。
+5. 多余润滑脂用无尘布擦净避免污染产品。",SKF LGEP 2 锂基脂；注脂枪；扭力扳手 0–0.5 N·m,过度润滑反而吸附粉尘加速磨损；坚持 “少量多次” 原则。,setup_Conveyor_lube.pptx,12
+PDX,Loader,机械限位间隙,硬限位距软限位 ≥ 2 mm；硬限位距机械极限 ≥ 5 mm,"1. 用塞尺测各轴软限位至硬限位距离。
+2. 测硬限位至机械极限距离。
+3. 若 < 标准，调整限位开关或硬挡块位置。
+4. 验证：手动触发硬限位，软件应停机；强制超越硬限位需机械挡块阻挡。
+5. 记录入档案。",塞尺；六角扳手；限位开关备件,限位间隙不足易导致机械撞击；过大易冲过软限位。,setup_Loader_limit.pptx,4
+Kinneret,Stage,直驱电机温升,满载 1 h 温升 ≤ 40 °C；表面温度 ≤ 65 °C,"1. 满载运行 1 h，用 PT100 贴片测电机壳体温度。
+2. 记录 0/10/20/30/40/50/60 min 温度曲线。
+3. 温升 > 40 °C：检查冷却风扇/水路、电流偏置、负载惯量比。
+4. 调整 servo current limit 或加强冷却。
+5. 验证：复测温升达到标准。",PT100 贴片；多通道温度计；散热风扇备件,电机超温会缩短永磁体寿命，损失推力；务必维持温度在合理范围。,setup_Stage_motor_temp.pptx,3
+Sonora,Heater,氮气吹扫密封性,加热腔正压 50 Pa；漏率 ≤ 5 Pa/min,"1. 关闭排气口，开氮气流量 10 slm 建立正压。
+2. 用微压表测腔内压力达到 50 Pa 后关闭氮气。
+3. 计时观察压力衰减速率；> 5 Pa/min 检漏。
+4. 用泡沫剂涂抹门密封、管路接头查漏点。
+5. 更换密封圈或紧固接头后复测。",Setra 264 微压表；泡沫剂；密封圈备件,加热腔无氮气保护时产品易氧化变色；密封性是工艺质量关键。,setup_Heater_n2_purge.pptx,6
+MEM,FTU,HSS 高速串行接口眼图,眼图开度 > 0.4 UI；jitter (pp) < 0.3 UI,"1. 把示波器 Tek MSO64B 通过 SMA 接 DUT TX 输出。
+2. 加载 PCIe Gen3 8GT/s 标准模板。
+3. 运行 eye diagram 测试 1 min；测眼高、眼宽、TJ、RJ。
+4. 不合格：检查 PCB 阻抗、连接器氧化、电源纹波。
+5. 记录测试报告并贴在设备档案。",Tek MSO64B；SMA 线；PCIe 模板,高速信号测试线缆质量极关键；不同长度/厂家线缆显著影响读数。,setup_FTU_eye_diagram.pptx,8
+Yucatan,SensorModule,距离传感器 noise floor,"噪声底 ≤ 0.5 μm (1σ, 1 ms 采样)","1. 把传感器对准固定平面，静置 10 min 待温度稳定。
+2. 以 1 ms 采样率采集 10000 个点。
+3. 计算 1σ 标准差，应 ≤ 0.5 μm。
+4. 超标：检查接地、屏蔽、电源纹波；启用传感器内部 averaging。
+5. 记录至 sensor performance log。",数据采集卡 NI-9215；MATLAB 噪声分析脚本,测试期间须避免人员走动和空气流扰，否则测得的更多是环境而非传感器噪声。,setup_SensorModule_noise.pptx,5
+MHK,Aligner,拼接图像偏移,拼接接缝偏差 ≤ 2 px；亮度跳变 ≤ 3 ADU,"1. 让相机扫描标准网格板，软件自动拼接。
+2. 用 ImageJ 测拼接处行列偏差；> 2 px 在 stitching 参数中增大 overlap 区域。
+3. 亮度跳变 > 3 ADU：启用 flat-field correction（FFC）。
+4. 更新 FFC 文件并验证拼接一致。
+5. 重做整片扫描验证。",ImageJ；标准网格板；FFC 软件模块,拼接质量直接影响大视场缺陷检出率；建议固定光源条件后再做 FFC。,setup_Aligner_stitch.pptx,14
+Boston,Pump,泵进气过滤器维护,积尘量记录；ΔP 上升 30% 即换,"1. 测当前 ΔP 与上次 PM 时的基线对比。
+2. 若上升 > 30%，更换 HEPA H13 滤芯。
+3. 换芯过程戴 N95 口罩与手套，旧芯入危废袋封口。
+4. 装新芯后做 PAO 检漏 ≤ 0.01% 通过。
+5. 记录新基线 ΔP。",差压计；HEPA H13 滤芯；PAO 检漏仪；N95 口罩,过滤器跨级维护会让脏物进入泵腔加速磨损；PAO 检漏不通过严禁恢复使用。,setup_Pump_intake.pptx,10
+所有项目,Heater,PM 后空载烧机,空载 8 h 无报警；最高温度漂移 ≤ ±1 °C,"1. PM 完成后启动空载烧机程序，温度设至工艺常用点。
+2. 每 30 min 自动记录温度与报警。
+3. 8 h 完成后导出 CSV 趋势图，检查温度漂移。
+4. 任何报警 → 暂停放行，查根因。
+5. 烧机合格后提交 release certificate。",烧机程序；数据采集脚本；放行单,未经烧机直接上线可能出现间歇性故障；时间不可压缩。,setup_Heater_burnin.pptx,13
+PDX,FTU,继电器寿命管理,机械寿命 100 万次；接触寿命由 ATE 累计；70% 寿命预警,"1. ATE 软件实时累计每个继电器动作次数。
+2. 达到 70 万次系统自动弹出 PM 提示。
+3. 更换继电器后软件 reset 该通道计数。
+4. 每次更换记录批号与日期。
+5. 失效继电器入故障池分析。",ATE 软件；继电器备件 OMRON G6K-2F；故障分析池,继电器疲劳失效会引起间歇性测试不良，提前更换比追故障更经济。,setup_FTU_relay.pptx,15
+Kinneret,Conveyor,上料推杆气缸,推力 50 ± 3 N；伸出速度 200 ± 20 mm/s,"1. 测力片夹在推杆与挡板之间，启动气缸，读推力。
+2. 推力偏差大调节调压阀；速度偏差大调速度调节阀。
+3. 反复 50 次循环，无卡滞、无漏气。
+4. 气缸密封圈每 2 年更换一次。
+5. 维护后做 100 件试运行无 NG 即放行。",测力片；秒表；调压/调速阀；气缸密封圈,气缸调试时手指远离运动路径；推力过大易压坏产品，过小易掉料。,setup_Conveyor_cylinder.pptx,2
+MEM,Loader,机械手末端校准,TCP 重复定位 ≤ ±0.1 mm；姿态偏差 ≤ ±0.5°,"1. 安装标定针（尖锥φ1mm），与基准针对针。
+2. 4 点示教法标 TCP；软件自动计算。
+3. 跑 10 次回零检验重复性。
+4. 失败：松开末端法兰螺钉重新装夹，确认无松动。
+5. 校准结果备份至 robot.cfg。",标定针组；机械手控制器；备份脚本,TCP 不准会导致全部 pick/place 偏移；任何末端更换后必须重做。,setup_Loader_robot_tcp.pptx,9
