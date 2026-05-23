@@ -22,24 +22,5 @@ services:
   #     https://release.infinilabs.com/analysis-ik/stable/elasticsearch-analysis-ik-8.15.3.zip
   #   docker restart kb-es
 
-  embedding:
-    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.5
-    container_name: kb-embed
-    command:
-      - --model-id=BAAI/bge-m3
-      - --port=8080
-    ports:
-      - "8080:8080"
-    volumes:
-      - embed-cache:/data
-    environment:
-      - HF_HUB_ENABLE_HF_TRANSFER=1
-    healthcheck:
-      test: ["CMD-SHELL", "curl -fs http://localhost:8080/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 30
-
 volumes:
   es-data:
-  embed-cache:

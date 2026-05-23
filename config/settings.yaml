@@ -13,10 +13,10 @@ es:
   # password: ""          # override via KB_ES__PASSWORD env var
 
 embedding:
-  url: "http://localhost:8080"
-  model: "BAAI/bge-m3"
+  url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+  model: "text-embedding-v3"
   dims: 1024
-  batch_size: 32
+  batch_size: 10  # DashScope's hard limit is 10 per request
   timeout_s: 30
 
 search:

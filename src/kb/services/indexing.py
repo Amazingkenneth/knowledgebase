@@ -79,6 +79,7 @@ def _to_es_source(
         "source_file": doc.source_file,
         "source_pages": doc.source_pages,
         "sections": dict(doc.content_sections()),
+        "summary": doc.summary,
         "created_at": (doc.created_at or now).isoformat(),
         "updated_at": now.isoformat(),
     }

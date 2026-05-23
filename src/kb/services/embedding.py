@@ -1,9 +1,7 @@
-"""Thin HTTP client for the text-embeddings-inference (TEI) server.
+"""HTTP client for OpenAI-compatible text-embeddings APIs (e.g. DashScope).
 
-Swapping to another provider (Qwen-Embedding, self-hosted vLLM with an OpenAI
-shim, etc.) means rewriting only this file. Search/index code calls
-embed(texts) and gets back list[list[float]] — no model-specific knowledge
-leaks upstream.
+Swapping providers means updating EmbeddingConfig only — no code changes here.
+Search/index code calls embed(texts) and gets back list[list[float]].
 """
 
 from __future__ import annotations
@@ -21,7 +19,16 @@ class EmbeddingError(RuntimeError):
 class EmbeddingClient:
     def __init__(self, cfg: EmbeddingConfig):
         self._cfg = cfg
-        self._http = httpx.AsyncClient(base_url=cfg.url, timeout=cfg.timeout_s)
+        headers = {"Authorization": f"Bearer {cfg.api_key}"} if cfg.api_key else {}
+        # httpx joins base_url + path like urljoin: a leading "/" on the request
+        # path replaces the base path, so we normalize by ensuring a trailing
+        # slash on base_url and using a relative request path below.
+        base = cfg.url if cfg.url.endswith("/") else cfg.url + "/"
+        self._http = httpx.AsyncClient(
+            base_url=base,
+            headers=headers,
+            timeout=cfg.timeout_s,
+        )
 
     async def aclose(self) -> None:
         await self._http.aclose()
@@ -33,22 +40,30 @@ class EmbeddingClient:
         reraise=True,
     )
     async def _embed_batch(self, batch: list[str]) -> list[list[float]]:
-        # TEI /embed protocol: POST {"inputs": [str, ...]} -> [[float, ...], ...]
-        resp = await self._http.post("/embed", json={"inputs": batch})
+        # OpenAI-compatible embeddings protocol:
+        # POST /embeddings  {"model": "...", "input": [...]}
+        # -> {"data": [{"index": i, "embedding": [float, ...]}, ...]}
+        resp = await self._http.post(
+            "embeddings",
+            json={"model": self._cfg.model, "input": batch},
+        )
         if resp.status_code >= 500:
             raise EmbeddingError(f"embedding server {resp.status_code}: {resp.text[:200]}")
         if resp.status_code != 200:
-            # 4xx — bad input, no retry value. Surface immediately as a permanent failure.
             raise EmbeddingError(f"embedding bad request {resp.status_code}: {resp.text[:200]}")
         data = resp.json()
-        if not isinstance(data, list) or any(not isinstance(v, list) for v in data):
-            raise EmbeddingError(f"embedding response shape invalid: {type(data).__name__}")
-        for i, vec in enumerate(data):
+        try:
+            # Sort by index to guarantee input order is preserved
+            items = sorted(data["data"], key=lambda x: x["index"])
+            vectors = [item["embedding"] for item in items]
+        except (KeyError, TypeError) as exc:
+            raise EmbeddingError(f"embedding response shape invalid: {exc}") from exc
+        for i, vec in enumerate(vectors):
             if len(vec) != self._cfg.dims:
                 raise EmbeddingError(
                     f"embedding dim mismatch at row {i}: got {len(vec)}, expected {self._cfg.dims}"
                 )
-        return data
+        return vectors
 
     async def embed(self, texts: list[str]) -> list[list[float]]:
         """Embed `texts` in deterministic input order. Empty list returns [].

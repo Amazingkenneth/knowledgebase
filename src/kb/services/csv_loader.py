@@ -59,6 +59,15 @@ def _pages(raw: str) -> list[str]:
     return [p.strip() for p in raw.split(",") if p.strip()] if raw.strip() else []
 
 
+def _make_summary(text: str, max_len: int = 50) -> str | None:
+    """First non-empty line of text, truncated to max_len chars with ellipsis."""
+    for line in text.split("\n"):
+        line = line.strip()
+        if line:
+            return line if len(line) <= max_len else line[: max_len - 1] + "…"
+    return None
+
+
 def _read_csv(path: Path) -> list[dict[str, str]]:
     with open(path, encoding="utf-8-sig", newline="") as f:
         return list(csv.DictReader(f))
@@ -76,17 +85,19 @@ def _load_alarms(path: Path) -> list[AlarmDoc]:
         error_codes = [c for c in re.split(r"[\s,，;&、]+", code_raw) if c] if code_raw else []
 
         try:
+            content = row["内容"].strip() or "—"
             docs.append(AlarmDoc(
                 knowledge_type="alarm",
                 project=row["项目"].strip(),
                 equipment=row["机台"].strip(),
                 error_codes=error_codes,
                 title=title,
-                content=row["内容"].strip() or "—",
+                content=content,
                 resolution=row["解除流程"].strip() or "—",
                 notes=row.get("注意事项", "").strip(),
                 source_file=row.get("ppt文件", "").strip() or None,
                 source_pages=_pages(row.get("ppt页面", "")),
+                summary=_make_summary(content),
             ))
         except Exception as exc:
             log.warning("csv_loader: skipping alarm row %d — %s", i, exc)
@@ -111,16 +122,18 @@ def _load_setups(path: Path) -> list[SetupDoc]:
         prerequisites = "\n".join(prerequisites_parts)
 
         try:
+            procedure = row["调试步骤"].strip() or "—"
             docs.append(SetupDoc(
                 knowledge_type="setup",
                 project=row["项目"].strip(),
                 equipment=equipment,
                 title=title,
-                procedure=row["调试步骤"].strip() or "—",
+                procedure=procedure,
                 prerequisites=prerequisites,
                 notes=row.get("注意事项", "").strip(),
                 source_file=row.get("ppt文件", "").strip() or None,
                 source_pages=_pages(row.get("PPT页面", "")),
+                summary=_make_summary(procedure),
             ))
         except Exception as exc:
             log.warning("csv_loader: skipping setup row %d — %s", i, exc)
@@ -153,6 +166,7 @@ def _load_experiences(path: Path) -> list[ExperienceDoc]:
                 procedure=row.get("纠正步骤", "").strip(),
                 source_file=row.get("PPT文件", "").strip() or None,
                 source_pages=_pages(row.get("PPT页面", "")),
+                summary=_make_summary(desc) if desc else _make_summary(title),
             ))
         except Exception as exc:
             log.warning("csv_loader: skipping experience row %d — %s", i, exc)

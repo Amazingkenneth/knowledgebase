@@ -27,9 +27,11 @@ class ESConfig(BaseModel):
 
 class EmbeddingConfig(BaseModel):
     url: str = "http://localhost:8080"
+    api_key: str = ""
     model: str = "BAAI/bge-m3"
     dims: int = 1024
-    batch_size: int = Field(default=32, ge=1, le=128)
+    # DashScope's OpenAI-compatible embeddings endpoint rejects batches >10.
+    batch_size: int = Field(default=10, ge=1, le=128)
     timeout_s: int = 30
 
 

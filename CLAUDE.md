@@ -9,7 +9,7 @@
 
 A **zero-fabrication manufacturing knowledge-base API**. Documents are retrieved verbatim from Elasticsearch — the system never generates text. The LLM is used only as a query-understanding proxy (`/api/v1/extract`) and a chat relay (`/api/v1/chat`).
 
-Stack: FastAPI · Elasticsearch 8.x · pydantic-settings · httpx · HuggingFace TEI (optional).
+Stack: FastAPI · Elasticsearch 8.x · pydantic-settings · httpx · DashScope Embeddings API (optional).
 
 ---
 
@@ -35,8 +35,9 @@ Settings are layered: `config/settings.yaml` → `.env` → shell env vars.
 - Example: `KB_LLM__API_KEY` → `settings.llm.api_key`.
 - Template: `.env.example` (committed) — copy to `.env` and fill in values.
 
-**Critical env var**: `KB_LLM__API_KEY` — required to enable AI chat endpoints.
-Without it, `/api/v1/chat` and `/api/v1/extract` return HTTP 503; all search/indexing still works.
+**Critical env vars**:
+- `KB_LLM__API_KEY` — required to enable AI chat endpoints. Without it, `/api/v1/chat` and `/api/v1/extract` return HTTP 503; all search/indexing still works.
+- `KB_EMBEDDING__API_KEY` — required to enable vector search. Without it, the server falls back to BM25-only keyword search.
 
 ---
 

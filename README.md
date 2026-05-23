@@ -41,10 +41,10 @@ A precision information-retrieval service for manufacturing knowledge. Built on 
        │              │
        ▼              ▼
 ┌──────────┐   ┌───────────────────────────┐
-│  ES 8.x  │   │ Text-Embeddings-Inference │
-│ (BM25 +  │   │     bge-m3 (1024-dim)     │
-│  kNN)    │   └───────────────────────────┘
-└──────────┘
+│  ES 8.x  │   │  DashScope Embeddings API │
+│ (BM25 +  │   │  text-embedding-v3        │
+│  kNN)    │   │  (1024-dim, OpenAI-compat)│
+└──────────┘   └───────────────────────────┘
 ```
 
 **Retrieval strategy**: structured filters narrow the candidate set first, then hybrid BM25 keyword search + dense vector similarity re-ranks results using Reciprocal Rank Fusion (RRF). The caller never sees AI-generated text — only verbatim document sections.
@@ -95,7 +95,7 @@ curl -s http://localhost:9200/_cluster/health | python3 -m json.tool
 # "status": "green" or "yellow" means ready
 ```
 
-> **Embedding service (optional):** `docker compose up -d embedding` starts the HuggingFace TEI (bge-m3) service on port 8080. It downloads ~1 GB on first start. Without it the server runs in **BM25-only mode** — keyword search works fully, kNN semantic search is disabled until the embedding service is available.
+> **Embedding service (optional):** The server calls the **DashScope Embeddings API** (`text-embedding-v3`) for vector search. Set `KB_EMBEDDING__API_KEY` in `.env` to enable it. Without a key the server runs in **BM25-only mode** — keyword search works fully, kNN semantic search is disabled.
 
 ### 3. (Optional) Install the IK Chinese analyzer
 
@@ -115,10 +115,10 @@ Skip this step if you don't need improved Chinese tokenization. The built-in `cj
 uv run uvicorn kb.main:app --reload
 ```
 
-On first startup the server automatically:
+On every startup the server automatically:
 
 1. Creates Elasticsearch indices (`kb_alarm`, `kb_setup`, `kb_experience`) if they don't exist
-2. Reads the three CSV files in `config/` and seeds all documents into ES (skipped if indices are already populated)
+2. Clears and re-seeds all documents from the CSV files in `config/` into ES
 3. Serves the frontend at `http://localhost:8000`
 
 | URL | Description |
@@ -129,7 +129,23 @@ On first startup the server automatically:
 
 ### Troubleshooting startup
 
-If the server fails to connect to ES, check `config/settings.yaml`:
+**`embedding service unavailable` warning at startup**
+
+If `KB_EMBEDDING__API_KEY` is not set or the DashScope API is unreachable you will see a log line like:
+
+```
+WARNING  seed: embedding service unavailable — docs indexed without vectors.
+Keyword (BM25) search is fully available. Vector-only (kNN) fallback is disabled.
+To enable: set KB_EMBEDDING__API_KEY and restart the server.
+```
+
+Keyword search works in full without a key. The only feature that requires stored vectors is the pure `vector_only` kNN fallback (the last step in the `auto` pipeline). BM25+vector *re-scoring* at query time also requires the API to be reachable.
+
+To enable full kNN support: set `KB_EMBEDDING__API_KEY` in `.env` then restart uvicorn.
+
+**Cannot connect to Elasticsearch**
+
+Check `config/settings.yaml`:
 
 ```yaml
 es:
@@ -240,11 +256,12 @@ es:
   # ssl_fingerprint: "dfbe360e..."
 
 embedding:
-  url: "http://localhost:8080"   # TEI service; server works without it (BM25-only)
-  model: "BAAI/bge-m3"
+  url: "https://dashscope.aliyuncs.com/compatible-mode/v1"  # OpenAI-compatible endpoint
+  model: "text-embedding-v3"    # DashScope 1024-dim model
   dims: 1024
   batch_size: 32
   timeout_s: 30
+  # api_key: ""                 # set via KB_EMBEDDING__API_KEY — never commit a real key
 
 search:
   strict_max_hits: 8             # results above this → TOO_MANY, not shown
@@ -269,10 +286,13 @@ Environment variables use the `KB_` prefix and `__` as the nesting delimiter:
 ```bash
 KB_ES__URL=https://my-cluster:9200
 KB_ES__PASSWORD=secret
-KB_ES__SSL_FINGERPRINT=dfbe360e...   # SHA-256 of the server TLS cert
-KB_EMBEDDING__URL=http://gpu-host:8080
-KB_LLM__API_KEY=sk-...               # required to enable AI chat features
-KB_LLM__API_URL=https://api.openai.com/v1/chat/completions   # switch provider
+KB_ES__SSL_FINGERPRINT=dfbe360e...    # SHA-256 of the server TLS cert
+KB_EMBEDDING__API_KEY=sk-...          # DashScope key — required for vector search
+KB_EMBEDDING__URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+KB_EMBEDDING__MODEL=text-embedding-v3
+KB_EMBEDDING__DIMS=1024
+KB_LLM__API_KEY=sk-...                # required to enable AI chat features
+KB_LLM__API_URL=https://api.openai.com/v1/chat/completions   # switch LLM provider
 KB_LLM__MODEL=gpt-4o-mini
 KB_LLM__MAX_TOKENS=1200
 ```
@@ -592,7 +612,7 @@ knowledgebase/
 │   │   ├── seed.py              # Idempotent startup seeder (reads CSV, skips if populated)
 │   │   ├── indexing.py          # Document validation + ES bulk indexing
 │   │   ├── search.py            # Hybrid search pipeline (strict → loose → vector)
-│   │   ├── embedding.py         # TEI client (bge-m3); graceful BM25-only fallback
+│   │   ├── embedding.py         # DashScope embeddings client (OpenAI-compat); BM25-only fallback
 │   │   └── taxonomy.py          # TaxonomyStore with hot-reload
 │   └── es/
 │       ├── client.py            # Async Elasticsearch client factory
@@ -605,7 +625,7 @@ knowledgebase/
 ├── Knowledge Base Search.html   # Single-file React frontend (served at GET /)
 ├── .env.example                 # Template for .env — copy and fill in KB_LLM__API_KEY
 ├── .gitattributes               # Enforce LF line endings for all text files
-├── docker-compose.yml           # Elasticsearch 8.15.3 + optional TEI embedding service
+├── docker-compose.yml           # Elasticsearch 8.15.3 (embedding is a remote API — no container needed)
 ├── CLAUDE.md                    # AI agent quick-reference (architecture, commands, constraints)
 └── pyproject.toml               # Python dependencies and tool config (uv / pip)
 ```

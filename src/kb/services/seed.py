@@ -5,7 +5,8 @@ This ensures the live index always reflects the current state of the CSV files �
 edits, and deletions all take effect on the next restart.
 
 Graceful: if the embedding service is unavailable, documents are indexed
-without vectors (BM25 search still works; kNN is enabled once re-indexed).
+without vectors (BM25 search fully available; pure kNN vector-only fallback
+disabled until the embedding service is reachable and the server is restarted).
 """
 
 from __future__ import annotations
@@ -81,8 +82,11 @@ async def seed(
         log.info("seed: embeddings obtained for %d docs", len(all_docs))
     except (EmbeddingError, Exception) as exc:
         log.warning(
-            "seed: embedding service unavailable (%s) — indexing without vectors; "
-            "kNN search will be disabled until re-indexed with embeddings",
+            "seed: embedding service unavailable (%s: %s) — docs indexed without vectors. "
+            "Keyword (BM25) search is fully available. "
+            "Vector-only (kNN) fallback is disabled. "
+            "To enable: start the TEI embedding service then restart the server.",
+            exc.__class__.__name__,
             exc,
         )
 
