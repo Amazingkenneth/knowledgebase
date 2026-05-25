@@ -1,6 +1,8 @@
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+    build:
+      context: ./elasticsearch
+      dockerfile: Dockerfile
     container_name: kb-es
     environment:
       - discovery.type=single-node
@@ -15,12 +17,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 30
-
-  # IK analyzer plugin must be installed into the ES container.
-  # Run once after first `docker compose up -d elasticsearch`:
-  #   docker exec -it kb-es bin/elasticsearch-plugin install \
-  #     https://release.infinilabs.com/analysis-ik/stable/elasticsearch-analysis-ik-8.15.3.zip
-  #   docker restart kb-es
 
 volumes:
   es-data:

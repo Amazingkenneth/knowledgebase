@@ -2818,8 +2818,8 @@ function Detail({ doc, keywords, onClose }) {
 
   const [copied, setCopied] = rsUse(false);
   const copySourceFile = () => {
-    const filename = doc.source?.file || '—';
-    if (filename === '—') return;
+    const filename = doc.source?.file;
+    if (!filename || filename === '—') return;
     navigator.clipboard.writeText(filename).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -2845,28 +2845,35 @@ function Detail({ doc, keywords, onClose }) {
         </header>
 
         <div className="drawer-hero">
-          <Thumb kind={doc.thumb} />
+          <Thumb kind={doc.thumb || 'lines'} />
         </div>
 
         <div className="drawer-body">
           <div className="drawer-tags">
-            <Chip tone="ghost" icon={<Icon name={typeIconMap[doc.type]} size={11} />}>
-              {(window.KB_TYPE_DEFS || {})[doc.type]?.zh || doc.type}
+            <Chip tone="ghost" icon={<Icon name={typeIconMap[doc.type] || 'doc'} size={11} />}>
+              {(window.KB_TYPE_DEFS || {})[doc.type]?.zh || doc.type || '—'}
             </Chip>
-            <Chip tone="ghost">{doc.project}</Chip>
-            <Chip tone="ghost">{doc.equipment}</Chip>
+            {doc.project && <Chip tone="ghost">{doc.project}</Chip>}
+            {doc.equipment && <Chip tone="ghost">{doc.equipment}</Chip>}
             {(doc.codes || []).map((c) => (
               <Chip key={c} tone="code"><span className="mono">{c}</span></Chip>
             ))}
           </div>
 
           <h2 className="drawer-title">{highlight(doc.title, keywords)}</h2>
-          <div className="drawer-title-en">{doc.titleEn}</div>
+          {doc.titleEn && <div className="drawer-title-en">{doc.titleEn}</div>}
 
+          {doc.body ? (
           <section className="drawer-section">
             <h4>说明 · Description</h4>
             <p className="drawer-prose">{highlight(doc.body, keywords)}</p>
           </section>
+          ) : doc.summary ? (
+          <section className="drawer-section">
+            <h4>摘要 · Summary</h4>
+            <p className="drawer-prose">{doc.summary}</p>
+          </section>
+          ) : null}
 
           {doc.procedure ? (
             <section className="drawer-section">
@@ -2882,6 +2889,7 @@ function Detail({ doc, keywords, onClose }) {
             </section>
           ) : null}
 
+          {doc.source && (
           <section className="drawer-section drawer-source">
             <h4>来源 · Source</h4>
             <div className="source-row">
@@ -2895,6 +2903,7 @@ function Detail({ doc, keywords, onClose }) {
               </button>
             </div>
           </section>
+          )}
         </div>
       </aside>
     </div>
@@ -3609,6 +3618,7 @@ function ChatHomePage({ taxonomy, onSwitchToSearch, onOpenDoc }) {
   const [historyList, setHistoryList] = aUs(() => window.getRecentSearches?.() || []);
   const [showRevise, setShowRevise]   = aUs(false);
   const [reviseFields, setReviseFields] = aUs({ project: '', equipment: '', type: '', keywords: '' });
+  const [sideChatOpen, setSideChatOpen] = aUs(false);
   const endRef   = React.useRef(null);
   const inputRef = React.useRef(null);
 
@@ -3616,7 +3626,7 @@ function ChatHomePage({ taxonomy, onSwitchToSearch, onOpenDoc }) {
 
   const latestResult = aMemo(() => {
     for (let i = msgs.length - 1; i >= 0; i--) {
-      if (msgs[i].kind === 'results') return msgs[i];
+      if (msgs[i].kind === 'results' || msgs[i].kind === 'search_answer') return msgs[i];
     }
     return null;
   }, [msgs]);
@@ -3645,93 +3655,54 @@ function ChatHomePage({ taxonomy, onSwitchToSearch, onOpenDoc }) {
     setMsgs(history);
     setBusy(true);
 
-    // Rule-based extraction (always available)
-    let ruleEx = null;
     try {
-      const rb = parseQuery(text);
-      ruleEx = { project: rb.project, equipment: rb.equipment,
-                 knowledge_type: rb.type, error_codes: rb.code ? [rb.code] : [],
-                 keywords: rb.keywords || [], is_sentence: !!rb.isSentence };
-    } catch(_) {}
+      const apiMessages = history
+        .filter(m => m.content && typeof m.content === 'string' && m.content.trim())
+        .map(m => ({ role: m.role, content: m.content }));
 
-    // LLM extraction with conversation context
-    let llmEx = null;
-    try {
-      const userTurns = history.filter(m => m.role === 'user').map((m,i) => `${i+1}. ${m.content}`).join('\n');
-      const knownStr  = JSON.stringify({ project: accum.project, equipment: accum.equipment,
-        knowledge_type: accum.type, error_codes: accum.code ? [accum.code] : [], keywords: accum.keywords });
-      const ctl = (typeof AbortController === 'function') ? new AbortController() : null;
-      const tid = ctl ? setTimeout(() => { try { ctl.abort(); } catch(_) {} }, 7000) : null;
-      let resp;
-      try {
-        resp = await fetch('/api/v1/extract', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: `对话历史：\n${userTurns}\n\n已知参数：${knownStr}\n\n请提取最新参数。` }),
-          signal: ctl ? ctl.signal : undefined,
-        });
-      } finally { if (tid) clearTimeout(tid); }
-      if (resp && resp.ok) llmEx = normalizeEx(await resp.json());
-    } catch(_) {}
-
-    const pick    = (...vs) => vs.find(v => v != null && v !== '') ?? null;
-    const pickArr = (...vs) => { for(const v of vs) if(Array.isArray(v) && v.length) return v; return []; };
-    const merged = {
-      project:    pick(llmEx?.project,        ruleEx?.project,        accum.project),
-      equipment:  pick(llmEx?.equipment,      ruleEx?.equipment,      accum.equipment),
-      type:       pick(llmEx?.knowledge_type, ruleEx?.knowledge_type, accum.type),
-      code:       pick(llmEx?.error_codes?.[0], ruleEx?.error_codes?.[0], accum.code),
-      keywords:   pickArr(llmEx?.keywords,    ruleEx?.keywords,       accum.keywords),
-      isSentence: llmEx?.is_sentence ?? ruleEx?.is_sentence ?? false,
-    };
-    setAccum(merged);
-
-    const sufficient = !!(merged.project || merged.equipment || merged.code || merged.type)
-                       || (merged.keywords && merged.keywords.length >= 2);
-
-    if (!sufficient) {
-      const missing = ['项目','机台/设备','报警代码'].filter((_,i) =>
-        [!merged.project, !merged.equipment, !merged.code][i]);
-      setMsgs(m => [...m, { role: 'assistant', kind: 'text',
-        content: `信息还不够检索，请补充：${missing.slice(0,3).join('、')}，或描述具体故障场景和关键词。` }]);
-      setBusy(false);
-      setTimeout(() => inputRef.current?.focus(), 50);
-      return;
-    }
-
-    const searchP = { ...merged, raw: text };
-
-    let res = null;
-    try { res = await window.KB_SEARCH(searchP, 'auto', 0); }
-    catch(err) {
-      setMsgs(m => [...m, { role:'assistant', kind:'text', content:`⚠ 检索失败：${err.message}` }]);
-      setBusy(false); return;
-    }
-    const hits   = Array.isArray(res?.hits) ? res.hits : [];
-    const status = res?.status || '';
-
-    if (status === 'too_many') {
-      setMsgs(m => [...m, { role:'assistant', kind:'text',
-        content: `匹配到约 ${res.total} 条结果，请进一步明确机台名、报警代码或项目。` }]);
-      setBusy(false); return;
-    }
-
-    if (hits.length > 0) {
-      const isStrict = status === 'strict_hit';
-      const banner = isStrict ? '完全匹配'
-                   : status === 'vector_only' ? '语义相关（低置信度，仅供参考）'
-                   :                            '不完全匹配，请认真鉴别';
-      setMsgs(m => [...m, { role:'assistant', kind:'results',
-        banner, bannerKind: isStrict ? 'full' : 'partial',
-        hits: hits.slice(0,5), total: res.total }]);
-      if (window.saveRecentSearch) window.saveRecentSearch(text, merged.project, merged.equipment);
-      setHistoryList(window.getRecentSearches?.() || []);
-      if (hits.length >= 3) {
-        const clarify = buildClarifyQuestion(merged, hits);
-        setMsgs(m => [...m, { role:'assistant', kind:'text', content: clarify }]);
+      const resp = await fetch('/api/v1/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: apiMessages }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.detail || `HTTP ${resp.status}`);
       }
-    } else {
-      setMsgs(m => [...m, { role:'assistant', kind:'text',
-        content: '未找到相关知识。请尝试换一种描述，或调整机台/项目/代码。' }]);
+      const data = await resp.json();
+
+      if (data.effective_params) {
+        setAccum({
+          project:   data.effective_params.project || null,
+          equipment: data.effective_params.equipment || null,
+          type:      data.effective_params.knowledge_type || null,
+          code:      data.effective_params.error_codes?.[0] || null,
+          keywords:  data.effective_params.keywords || [],
+        });
+      }
+
+      const reply = data.content || '（无回复）';
+      const hits = data.search_results || [];
+
+      if (hits.length > 0) {
+        const ss = data.search_status || '';
+        const isStrict = ss === 'strict_hit';
+        const banner = isStrict ? '完全匹配'
+          : ss === 'vector_only' ? '语义相关（低置信度，仅供参考）'
+          : ss === 'loose_hit' ? '不完全匹配，仅供参考' : '';
+        setMsgs(m => [...m, {
+          role: 'assistant', kind: 'search_answer', content: reply,
+          banner, bannerKind: isStrict ? 'full' : 'partial',
+          hits: hits.slice(0, 5).map(h => hitToDoc(h, [])),
+          total: hits.length,
+        }]);
+        if (window.saveRecentSearch) window.saveRecentSearch(text, data.effective_params?.project, data.effective_params?.equipment);
+        setHistoryList(window.getRecentSearches?.() || []);
+      } else {
+        setMsgs(m => [...m, { role: 'assistant', kind: 'text', content: reply }]);
+      }
+    } catch (err) {
+      setMsgs(m => [...m, { role: 'assistant', kind: 'text', content: `⚠ ${err.message}` }]);
     }
     setBusy(false);
     setTimeout(() => inputRef.current?.focus(), 50);
@@ -3851,6 +3822,37 @@ function ChatHomePage({ taxonomy, onSwitchToSearch, onOpenDoc }) {
               </div>
             ) : (
               msgs.map((m, i) => {
+                if (m.kind === 'search_answer') {
+                  return (
+                    <div key={i} className="ch-msg ch-msg-ai">
+                      <div className="ch-avatar"><Icon name="sparkle" size={14} /></div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className="ch-bubble ch-md"
+                          dangerouslySetInnerHTML={{ __html: window.marked ? window.marked.parse(m.content) : m.content }}
+                        />
+                        {m.hits && m.hits.length > 0 && (
+                          <div className="ch-results-wrap" style={{ marginTop: 6 }}>
+                            <div className={`ch-results-banner${m.bannerKind === 'partial' ? ' partial' : ''}`}>
+                              {m.banner}
+                            </div>
+                            {m.hits.map((h, j) => (
+                              <div key={j} className="ch-result-card" onClick={() => onOpenDoc && onOpenDoc(h.doc)}>
+                                <div className="ch-result-title">{h.doc.title}</div>
+                                <div className="ch-result-meta">
+                                  {h.doc.type      && <span>{typeDefs[h.doc.type]?.zh || h.doc.type}</span>}
+                                  {h.doc.project   && <span>· {h.doc.project}</span>}
+                                  {h.doc.equipment && <span>· {h.doc.equipment}</span>}
+                                  {h.doc.codes?.length > 0 && <span>· {h.doc.codes.slice(0,3).join(', ')}</span>}
+                                </div>
+                                {h.doc.summary && <div className="ch-result-summary">{h.doc.summary}</div>}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
                 if (m.kind === 'results') {
                   return (
                     <div key={i} className="ch-msg ch-msg-ai">
@@ -3991,6 +3993,14 @@ function ChatHomePage({ taxonomy, onSwitchToSearch, onOpenDoc }) {
                   style={{ display:'inline-flex', alignItems:'center', gap:5 }}>
                   <Icon name="clock" size={12} /> 历史记录
                 </button>
+                <button
+                  className="chat-home-switch-btn"
+                  style={{ display:'inline-flex', alignItems:'center', gap:5 }}
+                  title="对当前检索结果提问 · Ask AI about current results"
+                  onClick={() => setSideChatOpen(o => !o)}
+                >
+                  <Icon name="sparkle" size={12} /> AI 解释
+                </button>
                 <button className="chat-home-switch-btn"
                   onClick={() => onSwitchToSearch && onSwitchToSearch(accum)}>
                   关键词检索 →
@@ -4067,6 +4077,25 @@ function ChatHomePage({ taxonomy, onSwitchToSearch, onOpenDoc }) {
           )}
         </aside>
       </div>
+
+      {/* ── AI Side-question Panel ── */}
+      {sideChatOpen && (
+        <AIChatPanel
+          context={
+            latestResult
+              ? `检索结果（${latestResult.bannerKind === 'full' ? '完全匹配' : '部分匹配'}，共 ${latestResult.total ?? latestResult.hits.length} 条）`
+              : (hasParams ? `已识别参数：${[
+                  accum.project   && `项目 ${accum.project}`,
+                  accum.equipment && `机台 ${accum.equipment}`,
+                  accum.code      && `代码 ${accum.code}`,
+                  accum.keywords?.length && `关键词 ${accum.keywords.join('/')}`,
+                ].filter(Boolean).join('，')}` : null)
+          }
+          results={latestResult ? { hits: latestResult.hits } : null}
+          onClose={() => setSideChatOpen(false)}
+          onOpenDoc={onOpenDoc}
+        />
+      )}
 
       {/* ── History Panel ── */}
       {showHistory && (
@@ -4748,254 +4777,74 @@ function AIChatPanel({ context, results, onClose, onOpenDoc }) {
   const [loading, setLoading]     = aUs(false);
   const [panelSize, setPanelSize] = aUs({ w: 420, h: 560 });
   const [showQuickshots, setShowQuickshots] = aUs(false);
-  const [chatMode, setChatMode]   = aUs('search'); // 'search' (conversational retrieval) | 'explain' (legacy assistant)
   const [accumParams, setAccumParams] = aUs({ project: null, equipment: null, type: null, code: null, keywords: [] });
   const bottomRef = React.useRef(null);
   const inputRef  = React.useRef(null);
 
-  const hits = results?.hits || [];
+  const suggestions = aMemo(() => [
+    '真空系统报警如何处理？',
+    '设备维护的注意事项有哪些？',
+    '如何校准设备参数？',
+    '常见报警代码汇总',
+  ], []);
 
-  // Build rich context for the system prompt
-  const docsContext = hits.length > 0
-    ? '\n\n当前检索到以下文档（按相关度排序）：\n' + hits.slice(0, 6).map((h, i) => {
-        const d = h.doc;
-        const snippets = Object.values(d.sections || {}).filter(Boolean).map(s => s.slice(0, 180)).join(' ');
-        return `${i + 1}. 【${d.title}】类型:${d.type || '—'} 项目:${d.project || '—'} 机台:${d.equipment || '—'}\n   ${snippets}`;
-      }).join('\n')
-    : '';
-
-  const systemPrompt = `你是半导体制造设备知识库助手，帮助工程师理解报警代码、设备操作和故障排查。只根据知识库实际内容作答，不确定时明确说明，不编造设备参数或步骤。回复请使用 Markdown 格式（标题、列表、代码块等）以便阅读。${context ? `\n\n用户当前查询：${context}` : ''}${docsContext}`;
-
-  // Suggestions shown in the empty state — context-aware shortcuts
-  const suggestions = aMemo(() => {
-    const chips = [];
-    if (hits.length > 0) {
-      const first = hits[0].doc;
-      chips.push(`「${first.title}」的处理步骤是什么？`);
-      if (first.codes?.length) chips.push(`此类报警的常见根本原因是什么？`);
-      if (hits.length > 1) chips.push(`这 ${hits.length} 篇文档有什么区别？`);
-      chips.push(`${first.project || '设备'} 的日常维护注意事项？`);
-    } else {
-      chips.push('真空系统报警如何处理？', '设备维护的注意事项有哪些？', '如何校准设备参数？');
-    }
-    return chips.slice(0, 4);
-  }, [hits, context]);
-
-  aCb(() => {
+  aUe(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const sendText = async (text) => {
+  const sendMessage = async (text) => {
     if (!text || loading) return;
     const userMsg = { role: 'user', content: text };
     const history = [...messages, userMsg];
     setMessages(history);
     setInput('');
     setLoading(true);
+
     try {
+      const apiMessages = history
+        .filter(m => m.content && typeof m.content === 'string' && m.content.trim())
+        .map(m => ({ role: m.role, content: m.content }));
+
       const resp = await fetch('/api/v1/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [{ role: 'system', content: systemPrompt }, ...history],
-        }),
+        body: JSON.stringify({ messages: apiMessages }),
       });
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({}));
         throw new Error(err.detail || `HTTP ${resp.status}`);
       }
       const data = await resp.json();
-      const reply = data.content || '（无回复）';
-      setMessages(m => [...m, { role: 'assistant', content: reply }]);
-    } catch (err) {
-      setMessages(m => [...m, { role: 'assistant', content: `⚠ ${err.message}` }]);
-    }
-    setLoading(false);
-    setTimeout(() => inputRef.current?.focus(), 50);
-  };
 
-  // Normalize anything the extractor (or fallback parser) returns into a strict
-  // shape, so downstream code can rely on field types regardless of the LLM's
-  // creativity. Returns null when input is unusable.
-  const normalizeExtracted = (e) => {
-    if (!e || typeof e !== 'object') return null;
-    const asStr  = (v) => (typeof v === 'string' && v.trim()) ? v.trim() : null;
-    const asArr  = (v) => Array.isArray(v) ? v.filter(x => typeof x === 'string' && x.trim()).map(x => x.trim()) : [];
-    const ktype  = asStr(e.knowledge_type);
-    const validType = (ktype === 'alarm' || ktype === 'setup' || ktype === 'experience') ? ktype : null;
-    return {
-      project:        asStr(e.project),
-      equipment:      asStr(e.equipment),
-      knowledge_type: validType,
-      error_codes:    asArr(e.error_codes),
-      keywords:       asArr(e.keywords),
-      is_sentence:    e.is_sentence === true,
-    };
-  };
-
-  // Conversational-search mode: code-controlled loop per reference.txt.
-  // Each user turn: extract params (LLM preferred, rule-based fallback) →
-  // check sufficiency → strict search → fall back to loose if no hits →
-  // render result cards inline.
-  const sendSearch = async (text) => {
-    if (!text || loading) return;
-    if (typeof window.KB_SEARCH !== 'function') {
-      setMessages(m => [...m, { role: 'assistant', kind: 'text', content: '⚠ 检索服务尚未就绪，请稍候刷新页面后再试。' }]);
-      return;
-    }
-    const userMsg = { role: 'user', content: text };
-    const history = [...messages, userMsg];
-    setMessages(history);
-    setInput('');
-    setLoading(true);
-
-    // Always compute a rule-based extraction from the latest user message — used
-    // as a backstop when the LLM extractor is unavailable or returns garbage.
-    let ruleExtracted = null;
-    try {
-      const r = window.parseQuery || parseQuery; // parseQuery is defined globally in this file
-      const rb = r(text);
-      ruleExtracted = {
-        project:        rb.project || null,
-        equipment:      rb.equipment || null,
-        knowledge_type: rb.type || null,
-        error_codes:    rb.code ? [rb.code] : [],
-        keywords:       Array.isArray(rb.keywords) ? rb.keywords : [],
-        is_sentence:    !!rb.isSentence,
-      };
-    } catch (_) { ruleExtracted = null; }
-
-    // 1) Try LLM extraction with full conversation context. /api/v1/extract takes
-    //    a single `query` string, so we synthesize one that carries prior turns
-    //    plus the currently-known params so the model can refine across turns.
-    let llmExtracted = null;
-    let extractFailureReason = null; // null | 'unavailable' | 'parse' | 'network' | 'http'
-    try {
-      const userTurns = history.filter(m => m.role === 'user').map((m, i) => `${i + 1}. ${m.content}`).join('\n');
-      const knownStr = JSON.stringify({
-        project: accumParams.project, equipment: accumParams.equipment,
-        knowledge_type: accumParams.type, error_codes: accumParams.code ? [accumParams.code] : [],
-        keywords: accumParams.keywords,
-      });
-      const extractQuery = `用户的多轮对话（按时间顺序）：\n${userTurns}\n\n已识别的参数：${knownStr}\n\n请基于全部上下文（最新一轮为主、之前轮次为补充），提取最新的参数。`;
-      const ctl = (typeof AbortController === 'function') ? new AbortController() : null;
-      const t = ctl ? setTimeout(() => { try { ctl.abort(); } catch (_) {} }, 8000) : null;
-      let resp;
-      try {
-        resp = await fetch('/api/v1/extract', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: extractQuery }),
-          signal: ctl ? ctl.signal : undefined,
+      if (data.effective_params) {
+        setAccumParams({
+          project:   data.effective_params.project || null,
+          equipment: data.effective_params.equipment || null,
+          type:      data.effective_params.knowledge_type || null,
+          code:      data.effective_params.error_codes?.[0] || null,
+          keywords:  data.effective_params.keywords || [],
         });
-      } finally { if (t) clearTimeout(t); }
-      if (resp.status === 503) {
-        extractFailureReason = 'unavailable';
-      } else if (!resp.ok) {
-        extractFailureReason = 'http';
-      } else {
-        let data = null;
-        try { data = await resp.json(); } catch (_) { data = null; }
-        llmExtracted = normalizeExtracted(data);
-        if (!llmExtracted) extractFailureReason = 'parse';
       }
-    } catch (_) {
-      extractFailureReason = 'network';
-    }
 
-    // 2) Merge order: prefer LLM extraction, then rule-based, then previously-known params.
-    const pick = (...vals) => vals.find(v => v != null && v !== '') ?? null;
-    const pickArr = (...vals) => {
-      for (const v of vals) if (Array.isArray(v) && v.length > 0) return v;
-      return [];
-    };
-    const merged = {
-      project:    pick(llmExtracted?.project,        ruleExtracted?.project,        accumParams.project),
-      equipment:  pick(llmExtracted?.equipment,      ruleExtracted?.equipment,      accumParams.equipment),
-      type:       pick(llmExtracted?.knowledge_type, ruleExtracted?.knowledge_type, accumParams.type),
-      code:       pick(llmExtracted?.error_codes?.[0], ruleExtracted?.error_codes?.[0], accumParams.code),
-      keywords:   pickArr(llmExtracted?.keywords,    ruleExtracted?.keywords,       accumParams.keywords),
-      isSentence: llmExtracted?.is_sentence ?? ruleExtracted?.is_sentence ?? false,
-    };
-    setAccumParams(merged);
+      const reply = data.content || '（无回复）';
+      const searchHits = data.search_results || [];
 
-    // 3) check_param_for_search: at least one structured field OR enough keywords.
-    const sufficient = !!(merged.project || merged.equipment || merged.code || merged.type)
-                        || (merged.keywords && merged.keywords.length >= 2);
-
-    if (!sufficient) {
-      const missing = [];
-      if (!merged.project)   missing.push('项目');
-      if (!merged.equipment) missing.push('机台/设备');
-      if (!merged.code)      missing.push('报警代码');
-      const hint = extractFailureReason === 'unavailable'
-        ? '（提示：AI 参数提取暂不可用，正在使用规则匹配，请尽量包含明确的机台/项目名）'
-        : '';
-      const ask = `信息还不够检索，请补充：${missing.slice(0, 3).join('、')}，或者告诉我您要查的具体场景关键词。${hint}`;
-      setMessages(m => [...m, { role: 'assistant', kind: 'text', content: ask }]);
-      setLoading(false);
-      setTimeout(() => inputRef.current?.focus(), 50);
-      return;
-    }
-
-    // 4) Strict search. Wrap each call individually so we can distinguish which one failed.
-    const searchParams = { ...merged, raw: text };
-    let strictRes = null;
-    try {
-      strictRes = await window.KB_SEARCH(searchParams, 'strict', 0);
+      if (searchHits.length > 0) {
+        const ss = data.search_status || '';
+        const isStrict = ss === 'strict_hit';
+        const banner = isStrict ? '完全匹配'
+          : ss === 'vector_only' ? '语义相关（低置信度，仅供参考）'
+          : ss === 'loose_hit' ? '不完全匹配，仅供参考' : '';
+        setMessages(m => [...m, {
+          role: 'assistant', kind: 'search_answer', content: reply,
+          banner, bannerKind: isStrict ? 'full' : 'partial',
+          hits: searchHits.slice(0, 5).map(h => hitToDoc(h, [])),
+        }]);
+      } else {
+        setMessages(m => [...m, { role: 'assistant', kind: 'text', content: reply }]);
+      }
     } catch (err) {
-      setMessages(m => [...m, { role: 'assistant', kind: 'text', content: `⚠ 严格检索失败：${err && err.message ? err.message : err}` }]);
-      setLoading(false);
-      setTimeout(() => inputRef.current?.focus(), 50);
-      return;
-    }
-    // Defensive: ensure the shape we expect even if the API contract drifts.
-    const safeHits = Array.isArray(strictRes?.hits) ? strictRes.hits : [];
-    const status   = typeof strictRes?.status === 'string' ? strictRes.status : '';
-    const totalN   = typeof strictRes?.total === 'number' ? strictRes.total : safeHits.length;
-
-    if (status === 'strict_hit' && safeHits.length > 0) {
-      setMessages(m => [...m, {
-        role: 'assistant', kind: 'results',
-        banner: '完全匹配', bannerKind: 'full',
-        hits: safeHits.slice(0, 3), total: totalN,
-      }]);
-      setLoading(false);
-      setTimeout(() => inputRef.current?.focus(), 50);
-      return;
-    }
-    if (status === 'too_many') {
-      setMessages(m => [...m, {
-        role: 'assistant', kind: 'text',
-        content: `匹配到较多结果（约 ${totalN} 条），请进一步明确：例如告诉我具体的机台名、报警代码，或更精确的故障描述。`,
-      }]);
-      setLoading(false);
-      setTimeout(() => inputRef.current?.focus(), 50);
-      return;
-    }
-
-    // 5) Strict had no hit → fall back to loose.
-    let looseRes = null;
-    try {
-      looseRes = await window.KB_SEARCH(searchParams, 'loose', 0);
-    } catch (err) {
-      setMessages(m => [...m, { role: 'assistant', kind: 'text', content: `⚠ 宽松检索失败：${err && err.message ? err.message : err}` }]);
-      setLoading(false);
-      setTimeout(() => inputRef.current?.focus(), 50);
-      return;
-    }
-    const looseHits = Array.isArray(looseRes?.hits) ? looseRes.hits : [];
-    if (looseHits.length > 0) {
-      setMessages(m => [...m, {
-        role: 'assistant', kind: 'results',
-        banner: '不完全匹配，请认真鉴别', bannerKind: 'partial',
-        hits: looseHits.slice(0, 3),
-        total: typeof looseRes?.total === 'number' ? looseRes.total : looseHits.length,
-      }]);
-    } else {
-      setMessages(m => [...m, {
-        role: 'assistant', kind: 'text',
-        content: '未找到相关知识。请尝试换一种描述，或调整机台/项目/代码。',
-      }]);
+      setMessages(m => [...m, { role: 'assistant', kind: 'text', content: `⚠ ${err.message}` }]);
     }
     setLoading(false);
     setTimeout(() => inputRef.current?.focus(), 50);
@@ -5008,7 +4857,7 @@ function AIChatPanel({ context, results, onClose, onOpenDoc }) {
 
   const send = () => {
     const t = input.trim();
-    if (chatMode === 'search') sendSearch(t); else sendText(t);
+    if (t) sendMessage(t);
   };
 
   // Drag-to-resize from the top-left handle
@@ -5030,70 +4879,66 @@ function AIChatPanel({ context, results, onClose, onOpenDoc }) {
     document.addEventListener('mouseup', onUp);
   };
 
+  const typeDefs = window.KB_TYPE_DEFS || {};
+  const hasAccumParams = !!(accumParams.project || accumParams.equipment || accumParams.type || accumParams.code || (accumParams.keywords && accumParams.keywords.length > 0));
+
   return (
     <div className="chat-panel" style={{ width: panelSize.w, height: panelSize.h }}>
       <div className="chat-resize-handle" onMouseDown={onResizeStart} title="拖动调整大小 Drag to resize" />
       <div className="chat-head">
         <span className="chat-head-title">
           <Icon name="sparkle" size={14} />
-          {chatMode === 'search' ? '侧边检索 · Side Search' : 'AI 助手 · Assistant'}
+          AI 助手 · Assistant
         </span>
-        <div className="chat-mode-toggle" role="tablist" aria-label="chat mode">
-          <button
-            className={`chat-mode-btn${chatMode === 'search' ? ' active' : ''}`}
-            onClick={() => setChatMode('search')}
-            title="对话式检索：由代码控制流程，多轮收集参数后命中知识"
-          >检索</button>
-          <button
-            className={`chat-mode-btn${chatMode === 'explain' ? ' active' : ''}`}
-            onClick={() => setChatMode('explain')}
-            title="AI 助手：基于当前结果回答自由提问"
-          >解释</button>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {messages.length > 0 && (
+            <button className="icon-btn" onClick={resetSearch} title="新对话 · New chat" aria-label="new chat">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+            </button>
+          )}
+          <button className="icon-btn" onClick={onClose} aria-label="close chat">
+            <Icon name="x" size={16} />
+          </button>
         </div>
-        <button className="icon-btn" onClick={onClose} aria-label="close chat">
-          <Icon name="x" size={16} />
-        </button>
       </div>
 
-      {chatMode === 'search' && (
-        <div className="chat-params-bar">
-          <span style={{ color: 'var(--ink-2)', flexShrink: 0 }}>已识别：</span>
-          {accumParams.project   && <span className="chat-params-chip">项目 {accumParams.project}</span>}
-          {accumParams.equipment && <span className="chat-params-chip">机台 {accumParams.equipment}</span>}
-          {accumParams.type      && <span className="chat-params-chip">类型 {accumParams.type}</span>}
-          {accumParams.code      && <span className="chat-params-chip">代码 {accumParams.code}</span>}
-          {accumParams.keywords && accumParams.keywords.length > 0
-            && <span className="chat-params-chip">关键词 {accumParams.keywords.join(' / ')}</span>}
-          {!accumParams.project && !accumParams.equipment && !accumParams.type && !accumParams.code
-            && (!accumParams.keywords || accumParams.keywords.length === 0)
-            && <span style={{ color: 'var(--muted)' }}>（暂无）</span>}
-          <ConfBadge params={accumParams} size="mini" />
-          <button className="chat-params-reset" onClick={resetSearch} title="清空参数并重新开始">重置</button>
+      {hasAccumParams && (
+      <div className="chat-params-bar">
+        <span style={{ color: 'var(--ink-2)', flexShrink: 0 }}>已识别：</span>
+        {accumParams.project   && <span className="chat-params-chip">项目 {accumParams.project}</span>}
+        {accumParams.equipment && <span className="chat-params-chip">机台 {accumParams.equipment}</span>}
+        {accumParams.type      && <span className="chat-params-chip">{typeDefs[accumParams.type]?.zh || accumParams.type}</span>}
+        {accumParams.code      && <span className="chat-params-chip">代码 {accumParams.code}</span>}
+        {accumParams.keywords && accumParams.keywords.length > 0
+          && <span className="chat-params-chip">关键词 {accumParams.keywords.join(' / ')}</span>}
+        <button className="chat-params-reset" onClick={resetSearch} title="清空参数并重新开始">重置</button>
+      </div>
+      )}
+
+      {context && !hasAccumParams && messages.length === 0 && (
+        <div className="chat-params-bar" style={{ fontSize: '11px', color: 'var(--muted)' }}>
+          <Icon name="search" size={11} />
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{context}</span>
         </div>
       )}
 
       <div className="chat-messages">
-        {messages.length === 0 && chatMode === 'search' && (
-          <div className="chat-empty">
-            <Icon name="sparkle" size={22} />
-            <p>您好，我会通过对话帮您检索知识库。</p>
-            <p style={{ opacity: .7, fontSize: '11.5px' }}>
-              告诉我设备/机台、项目或报警代码，例如：<br/>
-              「FTU 的 125002 报警怎么处理」或「LCD setup」
-            </p>
-          </div>
-        )}
-        {messages.length === 0 && chatMode === 'explain' && (
+        {messages.length === 0 && (
           <>
             <div className="chat-empty">
               <Icon name="sparkle" size={22} />
-              <p>您好！我是 AI 助手，可以帮您理解知识库内容。</p>
-              <p style={{ opacity: .7, fontSize: '11.5px' }}>Hi — ask me about any document or alarm code.</p>
+              <p>您好，我会通过对话帮您检索知识库并回答问题。</p>
+              <p style={{ opacity: .7, fontSize: '11.5px' }}>
+                告诉我设备/机台、项目或报警代码，例如：<br/>
+                「FTU 的 125002 报警怎么处理」或「LCD setup」
+              </p>
             </div>
             <div className="chat-suggestions">
               <div className="chat-suggestions-label">快速提问 Quick questions</div>
               {suggestions.map((s, i) => (
-                <button key={i} className="chat-suggestion-chip" onClick={() => sendText(s)}>
+                <button key={i} className="chat-suggestion-chip" onClick={() => sendMessage(s)}>
                   <Icon name="arrow-right" size={12} />
                   {s}
                 </button>
@@ -5102,25 +4947,33 @@ function AIChatPanel({ context, results, onClose, onOpenDoc }) {
           </>
         )}
         {messages.map((m, i) => {
-          if (m.kind === 'results') {
+          if (m.kind === 'search_answer') {
             return (
               <div key={i} className="chat-msg chat-msg-assistant" style={{ maxWidth: '96%' }}>
-                <div className="chat-msg-content" style={{ background: 'transparent', padding: 0, border: 'none' }}>
-                  <div className={`chat-result-banner${m.bannerKind === 'partial' ? ' partial' : ''}`}>
-                    {m.banner}{typeof m.total === 'number' && m.total > m.hits.length ? `（共 ${m.total} 条，显示前 ${m.hits.length} 条）` : ''}
-                  </div>
-                  {m.hits.map((h, j) => (
-                    <div key={j} className="chat-result-card" onClick={() => onOpenDoc && onOpenDoc(h.doc)}>
-                      <div className="chat-result-title">{h.doc.title}</div>
-                      <div className="chat-result-meta">
-                        {h.doc.type      && <span>{h.doc.type}</span>}
-                        {h.doc.project   && <span>· {h.doc.project}</span>}
-                        {h.doc.equipment && <span>· {h.doc.equipment}</span>}
-                        {h.doc.codes && h.doc.codes.length > 0 && <span>· {h.doc.codes.slice(0, 3).join(', ')}</span>}
-                      </div>
+                <div className="chat-msg-content chat-md" dangerouslySetInnerHTML={{ __html: window.marked ? window.marked.parse(m.content) : m.content }} />
+                {m.hits && m.hits.length > 0 && (
+                  <div style={{ padding: '0 2px', marginTop: 6 }}>
+                    <div className={`chat-result-banner${m.bannerKind === 'partial' ? ' partial' : ''}`}>
+                      {m.banner} · {m.hits.length} 条结果
                     </div>
-                  ))}
-                </div>
+                    {m.hits.map((h, j) => (
+                      <div key={j} className="chat-result-card" onClick={() => onOpenDoc && onOpenDoc(h.doc)}>
+                        <div className="chat-result-title">{h.doc.title}</div>
+                        <div className="chat-result-meta">
+                          {h.doc.type      && <span>{typeDefs[h.doc.type]?.zh || h.doc.type}</span>}
+                          {h.doc.project   && <span>· {h.doc.project}</span>}
+                          {h.doc.equipment && <span>· {h.doc.equipment}</span>}
+                          {h.doc.codes && h.doc.codes.length > 0 && <span>· {h.doc.codes.slice(0, 3).join(', ')}</span>}
+                        </div>
+                        {h.doc.summary && (
+                          <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {h.doc.summary}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           }
@@ -5147,7 +5000,7 @@ function AIChatPanel({ context, results, onClose, onOpenDoc }) {
         {messages.length > 0 && showQuickshots && (
           <div className="chat-quickshots">
             {suggestions.map((s, i) => (
-              <button key={i} className="chat-quickshot-chip" onClick={() => { sendText(s); setShowQuickshots(false); }}>
+              <button key={i} className="chat-quickshot-chip" onClick={() => { sendMessage(s); setShowQuickshots(false); }}>
                 <Icon name="arrow-right" size={10} />{s}
               </button>
             ))}
@@ -5168,7 +5021,7 @@ function AIChatPanel({ context, results, onClose, onOpenDoc }) {
           <input
             ref={inputRef}
             className="chat-input"
-            placeholder="问一个问题… / Ask a question…"
+            placeholder={context ? "基于当前检索提问…" : "问一个问题… / Ask a question…"}
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}

@@ -82,44 +82,62 @@ uv sync --extra dev
 # or: pip install -e ".[dev]"
 ```
 
-### 2. Start Elasticsearch
+### 2. Build and start Elasticsearch
+
+The IK Chinese analyzer plugin is baked into the ES image at build time:
 
 ```bash
+docker compose build      # builds kb-es image with IK plugin (one-time, ~1 min)
 docker compose up -d elasticsearch
 ```
 
-This starts `kb-es` — Elasticsearch 8.15.3 on port 9200 with security disabled (plain HTTP, no auth). Wait until healthy:
+Wait until healthy:
 
 ```bash
 curl -s http://localhost:9200/_cluster/health | python3 -m json.tool
 # "status": "green" or "yellow" means ready
 ```
 
+> **Why IK?** The built-in `cjk` analyzer does CJK bigram tokenization and works without any plugin. IK (`ik_max_word` / `ik_smart`) uses a dictionary-based tokenizer that produces better recall for Chinese manufacturing terms. The `elasticsearch/Dockerfile` installs it automatically — no manual `exec` step needed.
+
+> **Without the plugin:** set `KB_ES__ANALYZER_INDEX=cjk` and `KB_ES__ANALYZER_QUERY=cjk` in `.env`, then restart. The server will fall back to bigram tokenization.
+
 > **Embedding service (optional):** The server calls the **DashScope Embeddings API** (`text-embedding-v3`) for vector search. Set `KB_EMBEDDING__API_KEY` in `.env` to enable it. Without a key the server runs in **BM25-only mode** — keyword search works fully, kNN semantic search is disabled.
-
-### 3. (Optional) Install the IK Chinese analyzer
-
-For better Chinese tokenization, install the IK plugin once after ES starts:
-
-```bash
-docker exec -it kb-es bin/elasticsearch-plugin install \
-  https://release.infinilabs.com/analysis-ik/stable/elasticsearch-analysis-ik-8.15.3.zip
-docker restart kb-es
-```
-
-Skip this step if you don't need improved Chinese tokenization. The built-in `cjk` analyzer works without any plugin.
 
 ### 4. Start the API server
 
 ```bash
-uv run uvicorn kb.main:app --reload
+uv run python -m kb --reload
+```
+
+The port defaults to **8000** and can be changed in three ways (highest priority wins):
+
+```bash
+# 1. CLI flag
+uv run python -m kb --port 8001 --reload
+
+# 2. Inline env var
+KB_SERVER__PORT=8001 uv run python -m kb --reload
+
+# 3. .env file
+KB_SERVER__PORT=8001   # in your .env
+```
+
+**Running multiple instances** (e.g. to compare model performance):
+
+```bash
+# Terminal 1 — model A on port 8000
+KB_LLM__MODEL=qwen-plus  KB_SERVER__PORT=8000 uv run python -m kb
+
+# Terminal 2 — model B on port 8001
+KB_LLM__MODEL=qwen-turbo KB_SERVER__PORT=8001 uv run python -m kb
 ```
 
 On every startup the server automatically:
 
 1. Creates Elasticsearch indices (`kb_alarm`, `kb_setup`, `kb_experience`) if they don't exist
 2. Clears and re-seeds all documents from the CSV files in `config/` into ES
-3. Serves the frontend at `http://localhost:8000`
+3. Serves the frontend at `http://localhost:<port>`
 
 | URL | Description |
 |-----|-------------|
@@ -229,7 +247,7 @@ The system loads its knowledge base from three CSV files in `config/`. These are
    ```
 4. Restart the server:
    ```bash
-   uv run uvicorn kb.main:app --reload
+   uv run python -m kb --reload
    ```
 
 > **Duplicate rows**: rows that produce identical content hash (same title + content + project + equipment) are deduplicated automatically — only one copy is stored in ES.
@@ -249,6 +267,8 @@ es:
   index_prefix: "kb"
   request_timeout_s: 10
   verify_certs: false
+  analyzer_index: "ik_max_word"  # IK plugin (installed via elasticsearch/Dockerfile)
+  analyzer_query: "ik_smart"     # fallback: set both to "cjk" if IK is not installed
   # For production with TLS + auth, uncomment:
   # url: "https://my-cluster:9200"
   # username: "elastic"
@@ -272,6 +292,10 @@ search:
 taxonomy:
   path: "config/taxonomy.yaml"
 
+server:
+  host: "0.0.0.0"
+  port: 8000   # override with KB_SERVER__PORT to run multiple instances
+
 llm:
   api_url: "https://api.deepseek.com/v1/chat/completions"   # default: DeepSeek
   model: "deepseek-chat"
@@ -287,6 +311,8 @@ Environment variables use the `KB_` prefix and `__` as the nesting delimiter:
 KB_ES__URL=https://my-cluster:9200
 KB_ES__PASSWORD=secret
 KB_ES__SSL_FINGERPRINT=dfbe360e...    # SHA-256 of the server TLS cert
+KB_ES__ANALYZER_INDEX=cjk             # fallback if IK plugin is not installed
+KB_ES__ANALYZER_QUERY=cjk            # fallback if IK plugin is not installed
 KB_EMBEDDING__API_KEY=sk-...          # DashScope key — required for vector search
 KB_EMBEDDING__URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 KB_EMBEDDING__MODEL=text-embedding-v3
@@ -295,6 +321,8 @@ KB_LLM__API_KEY=sk-...                # required to enable AI chat features
 KB_LLM__API_URL=https://api.openai.com/v1/chat/completions   # switch LLM provider
 KB_LLM__MODEL=gpt-4o-mini
 KB_LLM__MAX_TOKENS=1200
+KB_SERVER__PORT=8001                  # run on a non-default port
+KB_SERVER__HOST=0.0.0.0              # bind address
 ```
 
 ### TLS fingerprint (production)
@@ -344,14 +372,14 @@ cp .env.example .env
 `.env` is **loaded automatically** by `pydantic-settings` on server startup — no `source` or wrapper command needed:
 
 ```bash
-uv run uvicorn kb.main:app --reload   # .env is read automatically
+uv run python -m kb --reload   # .env is read automatically
 ```
 
 You can still override any variable inline or via the shell:
 
 ```bash
 # One-off inline override (takes precedence over .env)
-KB_LLM__API_KEY=sk-... uv run uvicorn kb.main:app --reload
+KB_LLM__API_KEY=sk-... uv run python -m kb --reload
 ```
 
 > `pydantic-settings` uses `env_prefix="KB_"` and `env_nested_delimiter="__"`. Shell exports always win over `.env` values.
@@ -374,7 +402,7 @@ Any provider that implements the **OpenAI Chat Completions API** (`POST /v1/chat
 export KB_LLM__API_KEY=sk-your-openai-key
 export KB_LLM__API_URL=https://api.openai.com/v1/chat/completions
 export KB_LLM__MODEL=gpt-4o-mini
-uv run uvicorn kb.main:app --reload
+uv run python -m kb --reload
 ```
 
 ### All LLM environment variables
@@ -596,6 +624,7 @@ knowledgebase/
 │   ├── 机台setup_header.csv      # Equipment setup / calibration documents (100 rows)
 │   └── 设备经验_header.csv       # Field experience / failure case documents (100 rows)
 ├── src/kb/
+│   ├── __main__.py              # Entry point: python -m kb [--port PORT] [--host HOST] [--reload]
 │   ├── main.py                  # FastAPI app + lifespan (creates indices, seeds from CSV)
 │   ├── config.py                # Pydantic settings (settings.yaml + KB_* env vars)
 │   ├── api/

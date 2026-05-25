@@ -18,11 +18,10 @@ class ESConfig(BaseModel):
     verify_certs: bool = True
     username: str | None = None
     password: str | None = None
-    # Analyzer names. Default "cjk" is built-in (no plugin needed).
-    # For better Chinese tokenization install analysis-ik and use:
-    #   analyzer_index: "ik_max_word"   analyzer_query: "ik_smart"
-    analyzer_index: str = "cjk"
-    analyzer_query: str = "cjk"
+    # Analyzer names. Defaults use IK (installed via elasticsearch/Dockerfile).
+    # Fallback for environments without the plugin: set both to "cjk" (built-in).
+    analyzer_index: str = "ik_max_word"
+    analyzer_query: str = "ik_smart"
 
 
 class EmbeddingConfig(BaseModel):
@@ -56,12 +55,18 @@ class LLMConfig(BaseModel):
     max_tokens: int = 1200
 
 
+class ServerConfig(BaseModel):
+    host: str = "0.0.0.0"
+    port: int = Field(default=8000, ge=1, le=65535)
+
+
 class Settings(BaseSettings):
     es: ESConfig = Field(default_factory=ESConfig)
     embedding: EmbeddingConfig = Field(default_factory=EmbeddingConfig)
     search: SearchConfig = Field(default_factory=SearchConfig)
     taxonomy: TaxonomyConfig = Field(default_factory=TaxonomyConfig)
     llm: LLMConfig = Field(default_factory=LLMConfig)
+    server: ServerConfig = Field(default_factory=ServerConfig)
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -11,6 +11,9 @@ es:
   # ssl_fingerprint: ""   # set for HTTPS with self-signed cert
   # username: "elastic"
   # password: ""          # override via KB_ES__PASSWORD env var
+  # IK analyzer (installed via elasticsearch/Dockerfile). Fallback: set both to "cjk".
+  analyzer_index: "ik_max_word"
+  analyzer_query: "ik_smart"
 
 embedding:
   url: "https://dashscope.aliyuncs.com/compatible-mode/v1"

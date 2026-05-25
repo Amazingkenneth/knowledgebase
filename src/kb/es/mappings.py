@@ -7,11 +7,10 @@ Physical indices are versioned (kb_alarm_v1) so we can reindex without downtime.
 time. This is a deliberate validation choice (see plan, Section: Validation).
 
 Analyzer choice:
-  - With IK plugin: use "ik_max_word" (index) + "ik_smart" (query). Best for Chinese.
-    Install: bin/elasticsearch-plugin install analysis-ik
-    Then set es.analyzer_index="ik_max_word" and es.analyzer_query="ik_smart" in settings.
-  - Without IK (default): falls back to "cjk" which does CJK bigram analysis —
-    built into every ES distribution, no plugin needed. Adequate for Chinese queries.
+  - Default: "ik_max_word" (index) + "ik_smart" (query). IK plugin is installed
+    automatically via elasticsearch/Dockerfile when you run `docker compose build`.
+  - Fallback (no plugin): set es.analyzer_index="cjk" and es.analyzer_query="cjk".
+    "cjk" is built into every ES distribution and does CJK bigram analysis.
 """
 
 from __future__ import annotations
@@ -89,16 +88,15 @@ def _base_mapping(dims: int, index_analyzer: str, query_analyzer: str) -> dict[s
     }
 
 
-def index_body(dims: int, index_analyzer: str = "cjk", query_analyzer: str = "cjk") -> dict[str, Any]:
+def index_body(dims: int, index_analyzer: str = "ik_max_word", query_analyzer: str = "ik_smart") -> dict[str, Any]:
     """Full create-index body (settings + mappings).
 
     Same shape for every knowledge_type — differentiation is at the application
     layer (which content sections go into `body`). Sharing one mapping keeps
     cross-type search trivial.
 
-    Default analyzer is `cjk` (built-in CJK bigram). To use IK for better
-    Chinese tokenization, install the analysis-ik plugin and pass:
-        index_analyzer="ik_max_word", query_analyzer="ik_smart"
+    Default analyzer is IK (analysis-ik plugin, installed via elasticsearch/Dockerfile).
+    Fallback to "cjk" (built-in) if IK is not available.
     """
     body: dict[str, Any] = {
         "mappings": _base_mapping(dims, index_analyzer, query_analyzer),
