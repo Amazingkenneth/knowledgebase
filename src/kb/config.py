@@ -50,9 +50,9 @@ class TaxonomyConfig(BaseModel):
 
 
 class LLMConfig(BaseModel):
-    api_url: str = "https://api.deepseek.com/v1/chat/completions"
+    api_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
     api_key: str = ""
-    model: str = "deepseek-chat"
+    model: str = "qwen-plus"
     max_tokens: int = 1200
 
 
