@@ -12,11 +12,17 @@ The system is a **retrieval-only knowledge base** for semiconductor manufacturin
 ## End-to-End Request Flow (`/chat`)
 
 ```
-Client (full history)
+Client (full history + optional last_search_params)
+        │
+        ▼
+[0] History management
+        │  recent = last 20 messages
+        │  if older messages exist → LLM summarizes them
         │
         ▼
 [1] LLM: param extraction
-        │  ← all user turns in conversation, numbered
+        │  ← if last_search_params provided: update mode (modify existing params)
+        │  ← else: fresh extraction from all user turns, numbered
         │  → {project, equipment, error_codes, keywords, knowledge_type}
         │
         ▼
@@ -32,6 +38,7 @@ Client (full history)
         ▼
 [4] Build system prompt
         │  content depends on SearchStatus (see Context Construction)
+        │  includes history summary if available
         │
         ▼
 [5] LLM: conversational answer
@@ -47,9 +54,12 @@ ChatResponse {content, search_results, search_status, effective_params}
 
 The LLM is called with a strict JSON-schema prompt (`_build_extract_system`) that lists the exact taxonomy values for `project` and `equipment`. The LLM must match these exactly or return `null` — it is instructed to prefer `null` over guessing.
 
-**Single turn**: the raw user message is sent directly.
+**Two extraction modes**:
 
-**Multi-turn**: all user messages (not assistant messages) are numbered and concatenated:
+**Fresh extraction** (no `last_search_params`): extracts from all user turns in the conversation.
+
+- *Single turn*: the raw user message is sent directly.
+- *Multi-turn*: all user messages (not assistant messages) are numbered and concatenated:
 ```
 多轮对话：
 1. <first user turn>
@@ -58,7 +68,11 @@ The LLM is called with a strict JSON-schema prompt (`_build_extract_system`) tha
 基于全部上下文提取最新参数。
 ```
 
-This means later turns can refine or override earlier ones. The extraction call uses a short timeout (8 s) and fails silently to `{}` — the search gate then blocks the search and the LLM is asked to elicit more information instead.
+**Update mode** (`last_search_params` provided): the client echoes the `effective_params` from the previous response. The LLM receives the current params plus the last 8 messages (both roles) and modifies the params incrementally — adding, removing, or changing fields as the user directs, while preserving fields the user did not mention.
+
+If a history summary is available (see History Management), it is prepended to the extraction query in both modes.
+
+The extraction call uses a short timeout (8 s) and fails silently to `{}` — the search gate then blocks the search and the LLM is asked to elicit more information instead.
 
 **Extracted fields**:
 
@@ -140,9 +154,8 @@ After retrieval, `_build_chat_system()` assembles the system prompt. The behavio
 
 **Document serialization** (`_format_results_for_llm`):
 
-- Up to `_MAX_RESULTS_IN_CONTEXT = 6` documents are included
-- **Top 3** (`_FULL_RESULT_THRESHOLD`): full sections dict + summary
-- **Hits 4–6**: summary only, or first 150 characters of the first section — reduces token usage for lower-ranked results
+- Up to `_MAX_RESULTS_IN_CONTEXT = 2` documents are included
+- Each hit shows: title, project, equipment, error codes (if any), and either the summary or the first 200 characters of the first section
 
 The LLM system prompt enforces three rules in all cases:
 1. Only answer from retrieved documents — never fabricate parameters or steps
@@ -155,15 +168,29 @@ The LLM system prompt enforces three rules in all cases:
 
 The conversational state is **stateless on the server** — the client sends the entire message history on every request. The server:
 
-1. Caps history at `_MAX_HISTORY = 20` messages
-2. Re-runs param extraction fresh from the full history on each turn
-3. Re-runs the full search pipeline on each turn
+1. Caps the recent window at `_MAX_HISTORY = 20` messages
+2. Summarizes messages older than the window via a separate LLM call (see History Management)
+3. Extracts params — either fresh or incrementally via update mode
+4. Re-runs the full search pipeline on each turn
 
 This means the user can refine their query across multiple turns naturally — saying "actually it's the CMP machine" in turn 3 will update the extracted `equipment` and trigger a fresh search without any session state management.
 
+### History Management
+
+When the conversation exceeds 20 messages, older messages are summarized by a dedicated LLM call (`_summarize_older_history`). The summary extracts key information (project, equipment, alarm codes, symptoms, attempted solutions) in 2–3 sentences. This summary is:
+
+- Prepended to the extraction query so params from early turns are not lost
+- Included in the chat system prompt under an "早期对话摘要" (earlier conversation summary) section
+
+If summarization fails (timeout or LLM error), the system proceeds without it — only the recent 20 messages are used.
+
+### Incremental Param Update
+
+The client can send `last_search_params` (the `effective_params` from the previous response) to enable update mode. Instead of re-extracting all params from scratch, the LLM sees the current params alongside recent conversation and applies only the changes the user expressed. This is more robust for long conversations where the user is incrementally refining a search.
+
 **Clarification flow**: when the LLM determines it cannot give a useful answer (no results, too many, or parameters insufficient), the system prompt instructs it to ask for one of: project, equipment, alarm code, or fault description. The next user message is added to history, and the extraction step picks up the new information from the combined context.
 
-**`effective_params` echo**: the response always includes what parameters were actually applied. This allows the frontend to display "searching MEM project, Sphere equipment for keywords: [...]" immediately, letting the user catch extraction errors before reading the LLM's answer.
+**`effective_params` echo**: the response always includes what parameters were actually applied. This allows the frontend to display "searching MEM project, Sphere equipment for keywords: [...]" immediately, letting the user catch extraction errors before reading the LLM's answer. The client should echo this back as `last_search_params` on the next request to enable update mode.
 
 ---
 
