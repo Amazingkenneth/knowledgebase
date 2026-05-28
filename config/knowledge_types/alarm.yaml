@@ -1,0 +1,88 @@
+# Knowledge-type spec: alarm (机台报警)
+# Mirrors config/机台报警_header.csv. Single source of truth for the LLM
+# segmentation prompt and the AlarmDoc pydantic model. Keep entries terse —
+# the whole file is sent to the LLM verbatim.
+
+type: alarm
+display_name: 机台报警 / Alarm
+csv_source: config/机台报警_header.csv
+summary_zh: 报警代码文档，含报警编号、描述、解除流程。
+summary_en: Alarm/fault codes with IDs, descriptions, and remedy steps.
+
+# Field order = order shown to the LLM and to reviewers.
+# csv_column links each output field to the canonical CSV column it represents.
+fields:
+  - name: error_code
+    label_zh: 代码
+    csv_column: 代码
+    required: true
+    desc: alarm/fault number exactly as it appears, e.g. "1030", "F7011", "E1001"
+  - name: title_zh
+    label_zh: 中文标题
+    csv_column: 中文标题
+    desc: Chinese title if present, else empty string
+  - name: title_en
+    label_zh: 英文标题
+    csv_column: 英文标题
+    desc: English title if present, else empty string
+  - name: content
+    label_zh: 内容
+    csv_column: 内容
+    required: true
+    desc: Definitions / Reaction / trigger conditions copied verbatim. Use "—" if absent.
+  - name: resolution
+    label_zh: 解除流程
+    csv_column: 解除流程
+    required: true
+    desc: Remedy / 解除流程 steps copied verbatim. Use "—" if absent.
+  - name: notes
+    label_zh: 注意事项
+    csv_column: 注意事项
+    desc: warnings, parameters, continuation instructions — optional
+  - name: source_pages
+    label_zh: 来源页码
+    csv_column: ppt页面
+    desc: list of page numbers, e.g. [14, 15]
+  - name: confidence
+    label_zh: 置信度
+    desc: 0.0–1.0; see confidence_guide
+
+boundary_hints:
+  - A standalone numeric or alphanumeric code on its own line (e.g. "1030", "F7011", "E1001", "700001")
+  - A new section heading or chapter title
+  - A visible separator line or clear topic change
+  - A table row whose first column matches an alarm code pattern
+
+confidence_guide: |
+  0.9–1.0: clearly delimited with an explicit alarm code and complete fields
+  0.6–0.9: boundaries reasonably clear but some fields inferred
+  0.3–0.6: ambiguous boundary or missing key fields
+  0.0–0.3: cannot confidently assign text to a single alarm entry
+
+skip_if:
+  - Cover page, title page, copyright notice, or table of contents
+  - Preface, foreword, revision history, glossary, or index
+  - Pure prose with no concrete alarm entries
+
+# Canonical example — mirrors row 1 of 机台报警_header.csv.
+example_input: |
+  E1001  末端吸盘真空丢失 (Vacuum Loss on End-Effector)
+  内容：末端吸盘真空压力低于 -70 kPa 持续 200 ms，系统判定吸附失效并立即停止机械手运动。
+  解除流程：
+    1. 进入安全模式，确认晶圆未掉落到机内。
+    2. 目视检查吸盘表面有无划痕、异物。
+    3. 用真空表实测吸附负压；< -70 kPa 进入维修流程。
+  注意事项：若已发生掉片，必须按 IPQC 流程评估损伤。
+
+example_output:
+  - error_code: "E1001"
+    title_zh: "末端吸盘真空丢失"
+    title_en: "Vacuum Loss on End-Effector"
+    content: "末端吸盘真空压力低于 -70 kPa 持续 200 ms，系统判定吸附失效并立即停止机械手运动。"
+    resolution: |
+      1. 进入安全模式，确认晶圆未掉落到机内。
+      2. 目视检查吸盘表面有无划痕、异物。
+      3. 用真空表实测吸附负压；< -70 kPa 进入维修流程。
+    notes: "若已发生掉片，必须按 IPQC 流程评估损伤。"
+    source_pages: [4]
+    confidence: 0.95

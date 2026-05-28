@@ -28,145 +28,23 @@ from typing import Any
 import httpx
 
 from kb.config import Settings
-from kb.models.ingest import StagedDocument
+from kb.models.ingest import SkippedChunk, StagedDocument
 from kb.models.taxonomy import KnowledgeType
 from kb.services.extraction import PageText
+from kb.services.spec import (
+    TypeSpec,
+    load_specs,
+    render_router_prompt,
+    render_segmentation_prompt,
+)
 
 log = logging.getLogger("kb.segmentation")
 
 _OVERLAP_PAGES = 1
 _MIN_SUBCHUNK_PAGES = 1  # recursion floor for binary-split fallback
-
-
-# ── System prompts ───────────────────────────────────────────────────────────
-
-_ALARM_SYSTEM_PROMPT = """\
-You are an alarm-code document parser. Split the extracted text into individual alarm entries.
-你也可以处理中文文档。
-
-Rules / 规则:
-1. Copy text verbatim from the source — never add, rephrase, or fabricate content.
-   只使用原文，不要添加或改写任何内容。
-2. Every entry must have: error_code, title, content, resolution. Use "—" when a field is absent in the source.
-3. "notes" is optional (parameters, continuation instructions, warnings).
-4. Preserve original formatting and numbering.
-5. Lines like "| col | col | col |" are table rows — treat each row as one logical record when it carries a complete entry.
-
-Output a JSON array. Each element:
-{
-  "error_code": "1030",        // alarm/fault number exactly as it appears (e.g. "1030", "F7011", "E1001")
-  "title": "Full alarm title from the source text",
-  "title_zh": "",              // Chinese title if present, else empty string
-  "title_en": "",              // English title if present, else empty string
-  "content": "Definitions and Reaction sections copied verbatim",
-  "resolution": "Remedy / 解除流程 section copied verbatim",
-  "notes": "Parameters and Program Continuation sections if present, else empty string",
-  "source_pages": [14, 15],
-  "confidence": 0.85
-}
-
-confidence scoring:
-- 0.9–1.0: entry is clearly delimited with an explicit alarm code and complete fields
-- 0.6–0.9: entry boundaries are reasonably clear but some fields are inferred
-- 0.3–0.6: ambiguous boundary or missing key fields
-- 0.0–0.3: cannot confidently assign text to a single alarm entry
-
-Alarm entry boundaries — look for:
-- A standalone numeric or alphanumeric code on its own line (e.g. "1030", "F7011", "E1001", "700001")
-- A new section heading or chapter title
-- A visible separator line or clear topic change
-- A table row whose first column matches an alarm code pattern
-
-If you cannot confidently assign text to an alarm entry, set confidence < 0.5.
-Return ONLY the JSON array — no other text, no markdown fence."""
-
-_SETUP_SYSTEM_PROMPT = """\
-You are a setup/commissioning document parser. Split the extracted text into individual setup entries.
-你也可以处理中文文档。
-
-Rules / 规则:
-1. Copy text verbatim — never add, rephrase, or fabricate content.
-2. Each entry: station/component name (station), prerequisites/specs (prerequisites), procedure steps (procedure).
-3. Use empty string for absent fields.
-4. "notes" is optional.
-5. Lines like "| col | col | col |" are table rows — preserve the cell order when copying.
-
-Output a JSON array:
-{
-  "station": "Station or component name",
-  "prerequisites": "Specifications/requirements copied verbatim",
-  "procedure": "Setup steps copied verbatim",
-  "notes": "Warnings or additional notes if present",
-  "source_pages": [1, 2],
-  "confidence": 0.85
-}
-
-confidence scoring:
-- 0.9–1.0: station/component is clearly named and procedure steps are complete
-- 0.6–0.9: entry is identifiable but some fields are inferred or sparse
-- 0.0–0.6: entry boundaries are ambiguous or most fields are missing
-
-Entry boundaries — look for:
-- New station or component name
-- New chapter heading or numbered section
-- Procedure steps restarting from 1
-
-Return ONLY the JSON array — no other text, no markdown fence."""
-
-_EXPERIENCE_SYSTEM_PROMPT = """\
-You are a failure-case / maintenance-experience document parser. Split the extracted text into individual case entries.
-你也可以处理中文文档。
-
-Rules / 规则:
-1. Copy text verbatim — never add, rephrase, or fabricate content.
-2. Each entry: problem title (problem), failure description (failure_desc), analysis (analysis), root cause (root_cause), corrective steps (procedure).
-3. Use empty string for absent fields.
-4. Lines like "| col | col | col |" are table rows — preserve them verbatim.
-
-Output a JSON array:
-{
-  "problem": "Problem title or case heading",
-  "failure_desc": "Failure description copied verbatim",
-  "analysis": "Failure analysis copied verbatim",
-  "root_cause": "Root cause copied verbatim",
-  "procedure": "Corrective steps copied verbatim",
-  "notes": "",
-  "source_pages": [3],
-  "confidence": 0.8
-}
-
-confidence scoring:
-- 0.9–1.0: case has a clear title, full failure description, root cause, and corrective steps
-- 0.6–0.9: case is identifiable but some sections are incomplete
-- 0.0–0.6: ambiguous case boundaries or most fields are absent
-
-Entry boundaries — look for:
-- New problem title or case number
-- Keywords: Problem/故障/案例/Failure/Issue/Case
-- Clear topic change
-
-Return ONLY the JSON array — no other text, no markdown fence."""
-
-_SYSTEM_PROMPTS = {
-    KnowledgeType.ALARM: _ALARM_SYSTEM_PROMPT,
-    KnowledgeType.SETUP: _SETUP_SYSTEM_PROMPT,
-    KnowledgeType.EXPERIENCE: _EXPERIENCE_SYSTEM_PROMPT,
-}
-
-_DETECT_TYPE_PROMPT = """\
-Analyze the following text and classify the document type.
-分析以下文本，判断文档类型。
-
-Types:
-1. "alarm" — alarm/fault codes with numeric or alphanumeric IDs (e.g. 1030, F7011, E1001), descriptions, and remedy steps.
-         报警代码文档，包含报警编号、描述、解除流程。
-2. "setup" — commissioning or setup procedures with station names, specifications, and numbered steps.
-         调试文档，包含工站名称、规格、步骤。
-3. "experience" — failure cases or maintenance experience with problem description, analysis, root cause, and corrective steps.
-         故障案例/经验文档，包含问题描述、分析、根因、纠正步骤。
-
-Return ONLY JSON: {"type": "alarm"} or {"type": "setup"} or {"type": "experience"}
-只返回 JSON，不要其他文本。"""
+# Chunks whose top-confidence entry is below this threshold are surfaced as
+# low-confidence skips so the user can review them rather than silently dropping.
+_LOW_CONFIDENCE_FLOOR = 0.3
 
 
 # ── LLM call ─────────────────────────────────────────────────────────────────
@@ -507,34 +385,81 @@ def chunk_pages(pages: list[PageText], max_chars: int = 12000) -> list[list[Page
 
 # ── Segmentation ─────────────────────────────────────────────────────────────
 
+async def classify_chunk_types(
+    settings: Settings,
+    chunk_text: str,
+    specs: dict[KnowledgeType, TypeSpec] | None = None,
+) -> list[KnowledgeType]:
+    """Classify a chunk → list of knowledge types present (may be more than one).
+
+    Returns an empty list when the chunk is non-content (cover, TOC, preface).
+    Returns multiple types when the chunk legitimately mixes types — e.g. an
+    alarm description followed by its setup/calibration steps on the same page.
+    The caller should then run each type's segmenter on the same chunk.
+    """
+    specs = specs or load_specs()
+    sample = chunk_text[:2400]
+    messages = [
+        {"role": "system", "content": render_router_prompt(specs)},
+        {"role": "user", "content": sample},
+    ]
+    try:
+        raw = await _call_llm(settings, messages, max_tokens=60)
+        parsed = json.loads(_strip_code_fence(raw))
+    except Exception as exc:  # noqa: BLE001 — best-effort classification
+        log.warning("Chunk classification failed: %s — defaulting to experience", exc)
+        return [KnowledgeType.EXPERIENCE]
+
+    # Accept both the multi-type shape {"types": [...]} and the legacy
+    # single-type shape {"type": "..."}. Either way, normalize to a list.
+    raw_types: list[str]
+    if isinstance(parsed, dict) and isinstance(parsed.get("types"), list):
+        raw_types = [str(t).strip().lower() for t in parsed["types"]]
+    elif isinstance(parsed, dict) and "type" in parsed:
+        raw_types = [str(parsed["type"]).strip().lower()]
+    else:
+        raw_types = []
+
+    if not raw_types or "skip" in raw_types:
+        return []
+
+    out: list[KnowledgeType] = []
+    for t in raw_types:
+        try:
+            kt = KnowledgeType(t)
+            if kt not in out:
+                out.append(kt)
+        except ValueError:
+            log.warning("Router returned unknown type %r — ignoring", t)
+    return out or [KnowledgeType.EXPERIENCE]
+
+
+async def classify_chunk_type(
+    settings: Settings,
+    chunk_text: str,
+    specs: dict[KnowledgeType, TypeSpec] | None = None,
+) -> KnowledgeType | None:
+    """Back-compat single-type classifier. Returns the first detected type,
+    or None for skip. New callers should prefer `classify_chunk_types`."""
+    types = await classify_chunk_types(settings, chunk_text, specs)
+    return types[0] if types else None
+
+
 async def detect_knowledge_type(
     settings: Settings,
     sample_text: str,
     pages: list[PageText] | None = None,
 ) -> KnowledgeType:
-    """Use LLM to detect the document type.
-
-    If `pages` is given, build a richer sample by stitching head/middle/tail
-    excerpts — covers and TOCs at the start can mislead a head-only sample.
-    Falls back to `sample_text[:2000]` when pages are not available.
+    """Detect the dominant document type. Used as a hint for the UI; the
+    per-chunk classifier in segment_text is the actual source of truth when
+    no hint is locked.
     """
     sample = (
         _build_type_detection_sample(pages, char_budget=2400)
         if pages else sample_text[:2000]
     )
-
-    messages = [
-        {"role": "system", "content": _DETECT_TYPE_PROMPT},
-        {"role": "user", "content": sample},
-    ]
-    try:
-        raw = await _call_llm(settings, messages, max_tokens=50)
-        parsed = json.loads(_strip_code_fence(raw))
-        type_str = parsed.get("type", "")
-        return KnowledgeType(type_str)
-    except Exception as exc:  # noqa: BLE001 — best-effort classification
-        log.warning("Could not auto-detect document type: %s — defaulting to experience", exc)
-        return KnowledgeType.EXPERIENCE
+    types = await classify_chunk_types(settings, sample)
+    return types[0] if types else KnowledgeType.EXPERIENCE
 
 
 def _build_type_detection_sample(pages: list[PageText], char_budget: int) -> str:
@@ -557,47 +482,125 @@ def _build_type_detection_sample(pages: list[PageText], char_budget: int) -> str
 async def segment_text(
     settings: Settings,
     pages: list[PageText],
-    knowledge_type: KnowledgeType,
+    knowledge_type: KnowledgeType | None,
     file_name: str,
     project_hint: str | None = None,
     equipment_hint: str | None = None,
     on_chunk_progress: Callable[[int, int], None] | None = None,
-) -> list[StagedDocument]:
-    """Segment extracted text into structured documents using the LLM."""
-    if not pages:
-        return []
+) -> tuple[list[StagedDocument], list[SkippedChunk]]:
+    """Segment extracted text into structured documents.
 
+    If `knowledge_type` is provided, it is **locked** — every chunk goes
+    through that type's parser (use when the user explicitly chose a type).
+    If `knowledge_type` is None, each chunk is classified independently:
+    alarm / setup / experience / skip. Mixed-type files are supported and
+    non-content pages (covers, TOCs, prefaces) are skipped with a friendly
+    reason returned alongside.
+    """
+    if not pages:
+        return [], []
+
+    specs = load_specs()
     chunk_chars = settings.ingest.segmentation_chunk_chars
     chunks = chunk_pages(pages, max_chars=chunk_chars)
 
     full_raw_text = "\n\n".join(text for _, text in pages)
     normalized_full_raw = " ".join(full_raw_text.split())
 
-    all_parsed: list[tuple[dict[str, Any], str]] = []  # (entry, normalized_chunk_text)
+    # Per-type buckets so dedup operates per knowledge type.
+    parsed_by_type: dict[KnowledgeType, list[tuple[dict[str, Any], str]]] = {}
+    skipped: list[SkippedChunk] = []
     total_chunks = len(chunks)
 
     for chunk_idx, chunk in enumerate(chunks):
         if on_chunk_progress:
             on_chunk_progress(chunk_idx + 1, total_chunks)
-        entries = await _segment_chunk_with_fallback(
-            settings, chunk, knowledge_type, file_name,
-            project_hint, equipment_hint,
-            chunk_chars=chunk_chars,
-        )
-        all_parsed.extend(entries)
 
-    deduped = _deduplicate_entries(all_parsed, knowledge_type)
+        page_range = _page_range(chunk)
+        chunk_text = "\n\n".join(text for _, text in chunk)
 
+        # Routing: when locked, every chunk goes through that single type.
+        # Otherwise classify and possibly route to several types on the
+        # SAME chunk (mixed-type chunks are real — e.g. an alarm with its
+        # calibration steps inline).
+        if knowledge_type is not None:
+            chunk_types: list[KnowledgeType] = [knowledge_type]
+        else:
+            chunk_types = await classify_chunk_types(settings, chunk_text, specs)
+
+        if not chunk_types:
+            skipped.append(SkippedChunk(
+                source_file=file_name,
+                page_range=page_range,
+                reason="non_content",
+                hint=(
+                    "Looks like a cover, table of contents, preface, or other "
+                    "non-content page — nothing to extract here."
+                ),
+            ))
+            log.info("Skipping non-content chunk %s in %s", page_range, file_name)
+            continue
+
+        per_type_results: dict[KnowledgeType, int] = {}
+        for kt in chunk_types:
+            entries = await _segment_chunk_with_fallback(
+                settings, chunk, kt, file_name,
+                project_hint, equipment_hint,
+                spec=specs[kt],
+                chunk_chars=chunk_chars,
+            )
+            per_type_results[kt] = len(entries)
+            if entries:
+                top_conf = max((e.get("confidence", 0) or 0) for e, _ in entries)
+                if top_conf < _LOW_CONFIDENCE_FLOOR:
+                    skipped.append(SkippedChunk(
+                        source_file=file_name,
+                        page_range=page_range,
+                        reason="low_confidence",
+                        hint=(
+                            f"AI was unsure these pages contain {kt.value} entries "
+                            f"(confidence {top_conf:.2f}). Entries are still included "
+                            "below — please review carefully or reject."
+                        ),
+                    ))
+                parsed_by_type.setdefault(kt, []).extend(entries)
+
+        # Whole-chunk no-entry hint only if EVERY routed type came back empty.
+        if all(n == 0 for n in per_type_results.values()):
+            missed = "/".join(kt.value for kt in chunk_types)
+            skipped.append(SkippedChunk(
+                source_file=file_name,
+                page_range=page_range,
+                reason="no_entries",
+                hint=(
+                    f"AI thought these pages were {missed} but found no entries. "
+                    "If you expected some, try setting a knowledge-type hint on "
+                    "re-upload, or lower the chunk size in settings."
+                ),
+            ))
+
+    # Dedup per type, then assemble.
     docs: list[StagedDocument] = []
-    for idx, (entry, normalized_chunk) in enumerate(deduped):
-        doc = _parsed_to_staged(
-            idx, entry, knowledge_type, file_name,
-            project_hint, equipment_hint,
-            normalized_chunk, normalized_full_raw,
-        )
-        docs.append(doc)
+    idx = 0
+    for kt, entries in parsed_by_type.items():
+        for entry, normalized_chunk in _deduplicate_entries(entries, kt):
+            doc = _parsed_to_staged(
+                idx, entry, kt, file_name,
+                project_hint, equipment_hint,
+                normalized_chunk, normalized_full_raw,
+            )
+            docs.append(doc)
+            idx += 1
 
-    return docs
+    return docs, skipped
+
+
+def _page_range(chunk: list[PageText]) -> str:
+    if not chunk:
+        return "?"
+    if len(chunk) == 1:
+        return str(chunk[0][0])
+    return f"{chunk[0][0]}-{chunk[-1][0]}"
 
 
 async def _segment_chunk_with_fallback(
@@ -609,6 +612,7 @@ async def _segment_chunk_with_fallback(
     equipment_hint: str | None,
     chunk_chars: int,
     *,
+    spec: TypeSpec | None = None,
     repair_attempt: bool = False,
 ) -> list[tuple[dict[str, Any], str]]:
     """Segment a single chunk with three layers of recovery.
@@ -625,7 +629,9 @@ async def _segment_chunk_with_fallback(
         f"{chunk[0][0]}-{chunk[-1][0]}" if len(chunk) > 1 else str(chunk[0][0])
     )
 
-    system_prompt = _SYSTEM_PROMPTS[knowledge_type]
+    if spec is None:
+        spec = load_specs()[knowledge_type]
+    system_prompt = render_segmentation_prompt(spec)
     user_msg = _build_user_message(
         file_name, page_range, project_hint, equipment_hint, chunk_text,
     )
@@ -644,6 +650,7 @@ async def _segment_chunk_with_fallback(
         return await _binary_split_recover(
             settings, chunk, knowledge_type, file_name,
             project_hint, equipment_hint, chunk_chars,
+            spec=spec,
             reason=f"call failure: {exc}",
         )
 
@@ -671,6 +678,7 @@ async def _segment_chunk_with_fallback(
     return await _binary_split_recover(
         settings, chunk, knowledge_type, file_name,
         project_hint, equipment_hint, chunk_chars,
+        spec=spec,
         reason="json parse failure after repair",
     )
 
@@ -726,6 +734,7 @@ async def _binary_split_recover(
     equipment_hint: str | None,
     chunk_chars: int,
     *,
+    spec: TypeSpec | None = None,
     reason: str,
 ) -> list[tuple[dict[str, Any], str]]:
     """Split a failed chunk on a page boundary and re-segment each half.
@@ -758,6 +767,7 @@ async def _binary_split_recover(
             await _segment_chunk_with_fallback(
                 settings, sub, knowledge_type, file_name,
                 project_hint, equipment_hint, chunk_chars,
+                spec=spec,
                 # repair_attempt=True suppresses a second repair-prompt on the
                 # already-narrower sub-chunks; binary split is the better tool
                 # at this depth.

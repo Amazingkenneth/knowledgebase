@@ -1,0 +1,77 @@
+# Knowledge-type spec: setup (机台 setup / 调试规范)
+# Mirrors config/机台setup_header.csv. See alarm.yaml for the format contract.
+
+type: setup
+display_name: 机台 setup / Commissioning
+csv_source: config/机台setup_header.csv
+summary_zh: 调试 / 安装 / 标定 文档，含工站、规格、步骤、工具。
+summary_en: Commissioning / setup / calibration procedures — station, specs, steps, tools.
+
+fields:
+  - name: station
+    label_zh: 工站/部件/站位
+    csv_column: 工站/部件/站位
+    required: true
+    desc: station, component, or position name (becomes the document title)
+  - name: prerequisites
+    label_zh: 规格/要求 + 调试工具
+    csv_column: 规格/要求；调试工具
+    desc: |
+      specifications/requirements AND tools needed, both copied verbatim.
+      Convention: put 规格/要求 on the first line, 调试工具 on the next.
+  - name: procedure
+    label_zh: 调试步骤
+    csv_column: 调试步骤
+    required: true
+    desc: numbered setup steps copied verbatim. Use "—" if absent.
+  - name: notes
+    label_zh: 注意事项
+    csv_column: 注意事项
+    desc: warnings or cautions — optional
+  - name: source_pages
+    label_zh: 来源页码
+    csv_column: PPT页面
+    desc: list of page numbers, e.g. [1, 2]
+  - name: confidence
+    label_zh: 置信度
+    desc: 0.0–1.0; see confidence_guide
+
+boundary_hints:
+  - A new station, component, or position name
+  - A new chapter heading or numbered section
+  - Procedure steps restarting from 1
+  - Headings like "规格/要求", "调试步骤", "调试工具"
+
+confidence_guide: |
+  0.9–1.0: station clearly named and procedure steps complete
+  0.6–0.9: entry identifiable but some fields inferred or sparse
+  0.0–0.6: boundaries ambiguous or most fields missing
+
+skip_if:
+  - Cover page, title page, copyright notice, or table of contents
+  - Preface, foreword, revision history, glossary, or index
+  - Pure background prose with no concrete station or procedure
+
+# Canonical example — mirrors row 1 of 机台setup_header.csv.
+example_input: |
+  上视CCD相机模组
+  规格/要求：视场中心偏移 ≤ ±5 μm；放大倍率 4.0× ±0.02；像素分辨率 1.25 μm/px。
+  调试工具：标定片 CAL-X100；扭矩起子 0.4–1.2 N·m；OpenCV 4.8。
+  调试步骤：
+    1. 装入标准玻璃十字标定片，将其放置在卡盘中心。
+    2. 进入工程模式 → Camera → Calibration，运行 Auto Focus。
+    3. 采集 5×5 棋盘格图像，reprojection error 需 ≤ 0.15 px。
+  注意事项：切勿用棉签触碰镜头镀膜面。
+
+example_output:
+  - station: "上视CCD相机模组"
+    prerequisites: |
+      规格/要求：视场中心偏移 ≤ ±5 μm；放大倍率 4.0× ±0.02；像素分辨率 1.25 μm/px。
+      调试工具：标定片 CAL-X100；扭矩起子 0.4–1.2 N·m；OpenCV 4.8。
+    procedure: |
+      1. 装入标准玻璃十字标定片，将其放置在卡盘中心。
+      2. 进入工程模式 → Camera → Calibration，运行 Auto Focus。
+      3. 采集 5×5 棋盘格图像，reprojection error 需 ≤ 0.15 px。
+    notes: "切勿用棉签触碰镜头镀膜面。"
+    source_pages: [3]
+    confidence: 0.92

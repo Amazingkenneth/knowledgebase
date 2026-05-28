@@ -27,6 +27,15 @@ class FileStatus(StrEnum):
     DONE = "done"
 
 
+class SkippedChunk(BaseModel):
+    """A chunk the segmenter declined to extract — surfaced so the user can see
+    what was filtered and why, in plain language."""
+    source_file: str
+    page_range: str
+    reason: str  # "non_content" | "no_entries" | "low_confidence"
+    hint: str
+
+
 class FileInfo(BaseModel):
     file_name: str
     file_hash: str
@@ -34,6 +43,7 @@ class FileInfo(BaseModel):
     file_size: int = 0
     status: FileStatus
     message: str = ""
+    skipped_chunks: list[SkippedChunk] = Field(default_factory=list)
 
 
 class StagedDocument(BaseModel):

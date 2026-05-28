@@ -36,18 +36,25 @@ Client (files or folder path + optional hints)
         │  → list[(page_number, text)]
         │
         ▼
-[2] Knowledge-type detection (skipped if hinted)
-        │  LLM sees first 3 pages → returns alarm | setup | experience
+[2] Per-chunk routing (skipped when knowledge_type_hint locks the file)
+        │  pages chunked by ingest.segmentation_chunk_chars (default 12000)
+        │  for each chunk → LLM router returns the LIST of types it contains:
+        │      {"types": ["alarm", "setup"]}        ← mixed chunk
+        │      {"types": ["experience"]}            ← single type
+        │      {"types": ["skip"]}                  ← non-content (cover/TOC/preface)
+        │  skip → drop the chunk with a friendly SkippedChunk (reason, hint)
         │
         ▼
-[3] LLM segmentation
-        │  pages chunked by ingest.segmentation_chunk_chars (default 12000)
+[3] LLM segmentation (one call per detected type per chunk)
+        │  prompts rendered from config/knowledge_types/<type>.yaml — single
+        │    source of truth for the LLM contract AND the pydantic model
+        │  each per-type call carries an "ignore other-type content" rule so
+        │    mixed chunks don't bleed into the wrong schema
         │  oversized single pages structurally subdivided (heading/paragraph/line)
-        │  1-page overlap between chunks; duplicates collapsed per knowledge type
-        │  one LLM call per chunk with a type-specific verbatim-only prompt
+        │  1-page overlap; duplicates collapsed per knowledge type
         │  on JSON failure: salvage longest valid prefix → repair retry →
         │                   binary-split chunk and recurse (floor: 1 page)
-        │  → StagedDocument[] (index, fields, confidence, source_pages, warnings)
+        │  → (StagedDocument[], SkippedChunk[])
         │  on_chunk_progress reports "AI analysis: i/n" to the session
         │
         ▼
@@ -93,14 +100,46 @@ Optional dependencies are imported via `_try_import` — a missing optional back
 
 ---
 
+## Knowledge-type Specs (`config/knowledge_types/*.yaml`)
+
+Every knowledge type has a single spec file that drives both the LLM prompt and the storage contract. Editing the YAML changes what the LLM is told to extract *and* what the parity test enforces against the pydantic model — they cannot drift.
+
+```
+config/knowledge_types/
+├── alarm.yaml        ← mirrors config/机台报警_header.csv
+├── setup.yaml        ← mirrors config/机台setup_header.csv
+└── experience.yaml   ← mirrors config/设备经验_header.csv
+```
+
+Each spec carries:
+
+| Block | Purpose |
+|---|---|
+| `summary_zh` / `summary_en` | One-liner shown in the router prompt so the LLM knows when to pick this type |
+| `fields[]` | Output JSON shape — each field has `name`, `desc`, optional `label_zh` and `csv_column` |
+| `boundary_hints[]` | What to look for when splitting entries |
+| `skip_if[]` | Patterns that mean "this isn't content" (cover, TOC, preface…) |
+| `confidence_guide` | Rubric for the per-entry `confidence` score |
+| `example_input` / `example_output` | Worked few-shot example drawn from the canonical CSV row |
+
+`services/spec.py` loads and caches the YAMLs, then renders two prompts:
+
+- **`render_segmentation_prompt(spec)`** — produces the per-type extractor prompt. Includes the field list (with zh labels and CSV-column links shown to the LLM), the worked example, and an explicit rule: *"ONLY extract `<type>` entries. If the chunk also contains other knowledge-type content, IGNORE it."* This is the rule that lets a single chunk be parsed safely by both the alarm and setup extractors without cross-pollination.
+- **`render_router_prompt(specs)`** — produces the classifier prompt. Returns `{"types": [...]}` (a list) so a chunk containing both an alarm and its calibration steps gets routed to **both** parsers.
+
+A parity test (`tests/unit/test_spec.py`) asserts that every required pydantic field is covered by a spec field, and that the spec's `example_output` round-trips through `_parsed_to_staged()` without losing any required content — drift between prompt and model is caught at test time, not at commit time.
+
+---
+
 ## Segmentation (`services/segmentation.py`)
 
-The LLM acts as a **structuring parser**, not a writer. Three system prompts (`_ALARM_SYSTEM_PROMPT`, `_SETUP_SYSTEM_PROMPT`, `_EXPERIENCE_SYSTEM_PROMPT`) instruct the model to:
+The LLM acts as a **structuring parser**, not a writer. Per-type system prompts are rendered from the spec YAMLs above and instruct the model to:
 
 1. Copy source text verbatim — never paraphrase, fabricate, or summarize.
 2. Use `"—"` for fields absent from the source rather than inventing content.
 3. Treat `| col | col | col |` lines as table rows and preserve cell order.
 4. Emit a JSON array of typed segments with a per-entry `confidence` score (0.0–1.0).
+5. Extract ONLY the prompt's target type; ignore other-type content in the same chunk.
 
 ### Chunking
 
@@ -143,11 +182,27 @@ Network/HTTP errors from the LLM also trigger binary-split recovery rather than 
 
 Entries with an empty key are **kept as-is** rather than collapsed together — borderline data is surfaced to the human reviewer instead of silently merged.
 
-### Knowledge-type detection
+### Per-chunk multi-type routing
 
-`detect_knowledge_type()`: when the client gives no `knowledge_type_hint`, the LLM is asked to classify the file as `alarm | setup | experience`. The sample stitches **head + middle + tail** page excerpts (`_build_type_detection_sample`, ~800 chars per slot) so that cover pages, TOCs, and front-matter at the start of the file don't dominate the classification. On any failure the type defaults to `experience` (loosest schema). The chosen type routes the file to the appropriate segmentation prompt and ultimately to the matching ES alias (`kb_alarm_v1`, `kb_setup_v1`, `kb_experience_v1`).
+`classify_chunk_types()` classifies each chunk independently and returns the **list** of knowledge types present:
 
-**One type per file.** A file is classified once and the entire file is segmented with that one prompt. Documents that genuinely mix knowledge types (e.g. a PDF containing both alarm tables and setup procedures) must be split manually before import.
+- `[]` (router said `skip`) → drop the chunk; surface a `SkippedChunk(reason="non_content")` with a friendly hint.
+- `[KnowledgeType.ALARM]` → one segmenter call, alarm prompt.
+- `[KnowledgeType.ALARM, KnowledgeType.SETUP]` → two segmenter calls on the **same chunk text**; each parser extracts only its own entries because the prompt explicitly tells it to ignore other-type content.
+
+When the client passes `knowledge_type_hint` on upload, the hint **locks** every chunk to that type and the router is skipped entirely — use this when you know the whole file is one type and don't want to pay the classifier cost.
+
+`detect_knowledge_type()` is retained as a thin wrapper for callers that want a single "dominant type" answer (e.g. for UI hints); it returns the first entry from `classify_chunk_types`.
+
+### Non-content handling (covers, TOCs, prefaces)
+
+Pages that aren't content (cover, table of contents, preface, revision history, glossary, index, copyright notice, or pure prose) are detected by the router via each spec's `skip_if[]` rules and dropped before segmentation. They surface to the UI as `FileInfo.skipped_chunks: list[SkippedChunk]`, each carrying:
+
+- `page_range` — which pages were skipped
+- `reason` — `non_content` | `no_entries` | `low_confidence`
+- `hint` — a plain-language explanation the reviewer can act on
+
+The file-card `message` summarizes the counts: *"Extracted 14 documents. 2 non-content page(s) skipped (covers/TOC/preface); 1 low-confidence page(s) — please review."*
 
 ### Fidelity check (anti-fabrication)
 
@@ -190,6 +245,8 @@ For each `StagedDocument` with `accepted=True`:
 
 After the loop, `record_committed(file_hash, actions)` updates the tracker. Validation/indexing failures **break** the loop for that doc but the loop intentionally `break`s on the first error so the user can fix and re-commit without partial state surprises.
 
+**Friendly commit errors.** `_friendly_validation_message()` converts raw pydantic errors into one-line hints keyed to the offending field, e.g. *"'resolution' is empty. Required for alarms — paste the Remedy / 解除流程 section."* Each entry in `CommitResponse.errors[]` carries both `error` (the message) and `hint` (what to do about it). Taxonomy/indexing errors also get a tailored hint — *"Check that the project/equipment values match config/taxonomy.yaml."*
+
 ---
 
 ## File Tracker (`kb_import_files` index)
@@ -230,7 +287,10 @@ All knobs live under `ingest:` in `config/settings.yaml` or as `KB_INGEST__*` en
 ## Key Design Constraints
 
 - **Review-gated**: nothing reaches the search indices without an explicit commit step. Even the "fast path" (scan an entire folder) ends at `ready_for_review`.
+- **Spec-driven**: each knowledge type is defined once in `config/knowledge_types/<type>.yaml`. The LLM prompt, the worked example, the skip rules, and the parity check all read from that file — there is no second copy of the field list.
+- **Mixed-type files supported**: routing is per chunk, not per file. A document that contains both alarms and setup procedures is segmented correctly without manual splitting.
 - **Verbatim only**: segmentation prompts forbid paraphrase. Confidence scores on each segment let reviewers triage borderline entries; low-confidence docs still arrive in the preview but warrant inspection.
+- **Friendly feedback**: skipped chunks and commit errors carry an actionable `hint` rather than a raw stack trace, so reviewers can fix issues without reading server logs.
 - **Best-effort embedding**: embedding errors during commit never abort indexing — the doc lands without vectors and remains BM25-searchable.
 - **Dedupe by content hash**: filename is irrelevant; the same bytes uploaded twice short-circuit unless `force=true`.
 - **Imports survive CSV re-seed**: the always-reseed-on-startup behavior wipes the main indices; the tracker's `committed_docs` cache is replayed afterwards so imports persist across restarts.

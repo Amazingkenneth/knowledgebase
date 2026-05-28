@@ -13,8 +13,9 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from elasticsearch import AsyncElasticsearch
 from pydantic import ValidationError
+
+from elasticsearch import AsyncElasticsearch
 from kb.config import Settings
 from kb.es.body_builder import build_body, build_title_text
 from kb.es.mappings import alias_name
@@ -24,6 +25,7 @@ from kb.models.ingest import (
     FileStatus,
     ImportSession,
     ImportStatus,
+    SkippedChunk,
     StagedDocument,
 )
 from kb.models.taxonomy import KnowledgeType, Taxonomy
@@ -31,7 +33,7 @@ from kb.services.embedding import EmbeddingClient, EmbeddingError
 from kb.services.extraction import extract_file
 from kb.services.file_tracker import FileTracker, compute_bytes_hash
 from kb.services.indexing import IndexingError, _to_es_source, doc_id, validate_against_taxonomy
-from kb.services.segmentation import detect_knowledge_type, segment_text
+from kb.services.segmentation import segment_text
 
 log = logging.getLogger("kb.import_pipeline")
 
@@ -215,15 +217,10 @@ class ImportPipeline:
                     await self._tracker.record_failed(info.file_hash, "No text extracted")
                     continue
 
-                # Step 2: detect knowledge type if not hinted
-                kt = knowledge_type_hint
-                if kt is None:
-                    info.message = f"Detecting document type ({len(pages)} pages)…"
-                    session.message = f"Detecting type: {info.file_name}"
-                    sample = "\n".join(text for _, text in pages[:3])
-                    kt = await detect_knowledge_type(self._settings, sample, pages=pages)
-
-                # Step 3: segment into structured documents
+                # Step 2: segment into structured documents.
+                # If knowledge_type_hint is set, every chunk goes through that
+                # parser (lock). If None, each chunk is classified independently
+                # → supports mixed-type files; non-content pages are skipped.
                 chunk_chars = self._settings.ingest.segmentation_chunk_chars
                 total_chars = sum(len(text) for _, text in pages)
                 n_chunks = max(1, -(-total_chars // chunk_chars))  # ceiling div
@@ -234,8 +231,11 @@ class ImportPipeline:
                     _info.message = f"AI analysis: chunk {i}/{total}…"
                     session.message = f"Segmenting {_info.file_name}: {i}/{total}"
 
-                docs = await segment_text(
-                    self._settings, pages, kt, info.file_name,
+                # If no knowledge_type_hint, pass None → per-chunk routing
+                # (supports mixed-type files and skips non-content pages).
+                seg_type = knowledge_type_hint
+                docs, skipped = await segment_text(
+                    self._settings, pages, seg_type, info.file_name,
                     project_hint, equipment_hint,
                     on_chunk_progress=_on_progress,
                 )
@@ -244,9 +244,10 @@ class ImportPipeline:
                     doc.index = doc_index
                     doc_index += 1
                 all_docs.extend(docs)
+                info.skipped_chunks = skipped
 
                 info.status = FileStatus.DONE
-                info.message = f"Extracted {len(docs)} documents"
+                info.message = _build_extraction_summary(len(docs), skipped, knowledge_type_hint)
 
             except ImportError as exc:
                 info.status = FileStatus.FAILED
@@ -319,29 +320,34 @@ class ImportPipeline:
                 committed += 1
 
             except ValidationError as exc:
-                missing = [
-                    str(e["loc"][0]) for e in exc.errors()
-                    if e.get("type") == "string_too_short" and e.get("loc")
-                ]
-                other = [
-                    f"{'.'.join(str(l) for l in e['loc'])}: {e['msg']}"
-                    for e in exc.errors()
-                    if e.get("type") != "string_too_short"
-                ]
-                parts = (
-                    ([f"Missing required fields: {', '.join(missing)}"] if missing else []) + other
+                errors.append({
+                    "index": staged.index,
+                    "title": staged.title or "Untitled",
+                    "error": _friendly_validation_message(exc),
+                    "hint": "Edit this document in the preview and click Save, then commit again.",
+                })
+                break
+            except (IndexingError, ValueError) as exc:
+                msg = str(exc)
+                hint = (
+                    "Check that the project/equipment values match config/taxonomy.yaml."
+                    if "taxonomy" in msg.lower() or "not in" in msg.lower()
+                    else "Fix the document in the preview and try again."
                 )
                 errors.append({
                     "index": staged.index,
                     "title": staged.title or "Untitled",
-                    "error": "; ".join(parts) if parts else str(exc),
+                    "error": msg,
+                    "hint": hint,
                 })
                 break
-            except (IndexingError, ValueError) as exc:
-                errors.append({"index": staged.index, "title": staged.title or "Untitled", "error": str(exc)})
-                break
             except Exception as exc:
-                errors.append({"index": staged.index, "title": staged.title or "Untitled", "error": f"Unexpected: {exc}"})
+                errors.append({
+                    "index": staged.index,
+                    "title": staged.title or "Untitled",
+                    "error": f"Unexpected: {exc}",
+                    "hint": "This is a server-side issue. Check server logs for details.",
+                })
                 log.error("Commit failed for doc %d: %s", staged.index, exc, exc_info=True)
                 break
 
@@ -360,6 +366,61 @@ class ImportPipeline:
             if f.file_name == source_file and f.file_hash:
                 return f.file_hash
         return None
+
+
+def _build_extraction_summary(
+    n_docs: int,
+    skipped: list[SkippedChunk],
+    knowledge_type_hint: KnowledgeType | None,
+) -> str:
+    """Plain-language summary of what happened, shown on the FileInfo card."""
+    parts: list[str] = [f"Extracted {n_docs} document{'s' if n_docs != 1 else ''}"]
+    if not skipped:
+        return parts[0] + "."
+    by_reason: dict[str, int] = {}
+    for s in skipped:
+        by_reason[s.reason] = by_reason.get(s.reason, 0) + 1
+    pretty = {
+        "non_content": "non-content page(s) skipped (covers/TOC/preface)",
+        "no_entries": "page(s) with no extractable entries",
+        "low_confidence": "low-confidence page(s) — please review",
+    }
+    summary_bits = [f"{count} {pretty.get(reason, reason)}" for reason, count in by_reason.items()]
+    parts.append("; ".join(summary_bits))
+    if knowledge_type_hint is None and any(s.reason == "non_content" for s in skipped):
+        parts.append(
+            "Tip: set a knowledge-type hint on re-upload to force every page through one parser."
+        )
+    return ". ".join(parts) + "."
+
+
+_FRIENDLY_FIELD_HINTS = {
+    "title": "Add a short title (≤200 chars) that names the entry.",
+    "content": "Required for alarms — paste the Definitions / Reaction section.",
+    "resolution": "Required for alarms — paste the Remedy / 解除流程 section.",
+    "procedure": "Required for setup — paste the numbered steps.",
+    "body_text": "Required for experience — paste the failure description.",
+    "error_codes": "Provide at least one error code (e.g. 1030, F7011).",
+    "project": "Pick a project from the dropdown (must match taxonomy.yaml).",
+    "equipment": "Pick equipment from the dropdown (must match taxonomy.yaml).",
+}
+
+
+def _friendly_validation_message(exc: ValidationError) -> str:
+    """Convert pydantic ValidationError into a hint the reviewer can act on."""
+    bits: list[str] = []
+    for err in exc.errors():
+        loc = ".".join(str(x) for x in err.get("loc", ()))
+        field = loc.split(".")[0] if loc else ""
+        msg = err.get("msg", "invalid")
+        hint = _FRIENDLY_FIELD_HINTS.get(field)
+        if err.get("type") == "string_too_short":
+            bits.append(f"'{field}' is empty. {hint or 'Please fill it in before saving.'}")
+        elif hint:
+            bits.append(f"'{field}': {msg}. {hint}")
+        else:
+            bits.append(f"'{loc or field}': {msg}")
+    return " ".join(bits) if bits else str(exc)
 
 
 def _staged_to_knowledge_doc(staged: StagedDocument) -> KnowledgeDoc:

@@ -1,0 +1,84 @@
+# Knowledge-type spec: experience (设备经验 / 故障案例)
+# Mirrors config/设备经验_header.csv. See alarm.yaml for the format contract.
+
+type: experience
+display_name: 设备经验 / Failure case
+csv_source: config/设备经验_header.csv
+summary_zh: 故障案例 / 维修经验，含问题、失败描述、失败分析、根因、纠正步骤。
+summary_en: Failure cases / maintenance experience — problem, description, analysis, root cause, corrective steps.
+
+fields:
+  - name: problem
+    label_zh: 问题
+    csv_column: 问题
+    required: true
+    desc: short problem title or case heading (becomes the document title)
+  - name: failure_desc
+    label_zh: 失败描述
+    csv_column: 失败描述
+    required: true
+    desc: when/where/how it happened, copied verbatim
+  - name: analysis
+    label_zh: 失败分析
+    csv_column: 失败分析
+    desc: investigation steps and findings — optional
+  - name: root_cause
+    label_zh: 根因
+    csv_column: 根因
+    desc: identified root cause — optional
+  - name: procedure
+    label_zh: 纠正步骤
+    csv_column: 纠正步骤
+    desc: corrective steps, fix actions — optional
+  - name: notes
+    label_zh: 注意事项
+    desc: extra warnings or context — optional
+  - name: source_pages
+    label_zh: 来源页码
+    csv_column: PPT页面
+    desc: list of page numbers, e.g. [4]
+  - name: confidence
+    label_zh: 置信度
+    desc: 0.0–1.0; see confidence_guide
+
+boundary_hints:
+  - A new problem title or case number
+  - Keywords like 问题 / 故障 / 案例 / Problem / Failure / Issue / Case
+  - Section headings such as 失败描述 / 失败分析 / 根因 / 纠正步骤
+  - A clear topic change between cases
+
+confidence_guide: |
+  0.9–1.0: case has clear title, full failure description, root cause, and corrective steps
+  0.6–0.9: case identifiable but some sections incomplete
+  0.0–0.6: ambiguous boundaries or most fields absent
+
+skip_if:
+  - Cover page, title page, copyright notice, or table of contents
+  - Preface, foreword, revision history, glossary, or index
+  - General troubleshooting advice not tied to a specific case
+
+# Canonical example — mirrors row 1 of 设备经验_header.csv.
+example_input: |
+  直线电机轻微抖动
+  失败描述：2026-01 月起，MEM 线 Stage-02 在 X 轴高速段（> 600 mm/s）周期性出现 5–8 μm 微抖动。
+  失败分析：用激光干涉仪记录跟随误差，FFT 频谱在 187 Hz 出现明显峰值；判定为换向 ripple。
+  根因：磁条上金属碎屑与控制器换向滤波器参数老化共同导致 ripple 放大。
+  纠正步骤：
+    1) 清洁磁条；
+    2) 重新整定 current loop bandwidth 由 800 Hz 提升至 1200 Hz；
+    3) 加装磁条防尘罩；
+    4) 建立每 1500h 强制清洁 PM 项。
+
+example_output:
+  - problem: "直线电机轻微抖动"
+    failure_desc: "2026-01 月起，MEM 线 Stage-02 在 X 轴高速段（> 600 mm/s）周期性出现 5–8 μm 微抖动。"
+    analysis: "用激光干涉仪记录跟随误差，FFT 频谱在 187 Hz 出现明显峰值；判定为换向 ripple。"
+    root_cause: "磁条上金属碎屑与控制器换向滤波器参数老化共同导致 ripple 放大。"
+    procedure: |
+      1) 清洁磁条；
+      2) 重新整定 current loop bandwidth 由 800 Hz 提升至 1200 Hz；
+      3) 加装磁条防尘罩；
+      4) 建立每 1500h 强制清洁 PM 项。
+    notes: ""
+    source_pages: [4]
+    confidence: 0.93
