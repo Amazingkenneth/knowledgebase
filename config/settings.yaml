@@ -36,3 +36,13 @@ search:
 
 taxonomy:
   path: "config/taxonomy.yaml"
+
+ingest:
+  upload_dir: "data/uploads"
+  max_file_size_mb: 50
+  allowed_extensions: ["pdf", "xlsx", "xls", "csv", "pptx", "docx"]
+  ocr_enabled: true
+  ocr_lang: "ch"
+  segmentation_max_tokens: 8000
+  segmentation_chunk_chars: 12000
+  session_ttl_minutes: 120

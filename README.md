@@ -18,6 +18,7 @@ A precision information-retrieval service for manufacturing knowledge. Built on 
 - [Document Types](#document-types)
 - [API Reference](#api-reference)
 - [Search Behaviour](#search-behaviour)
+- [File Import Pipeline](#file-import-pipeline)
 - [Running Tests](#running-tests)
 - [Project Structure](#project-structure)
 
@@ -135,9 +136,10 @@ KB_LLM__MODEL=qwen-turbo KB_SERVER__PORT=8001 uv run python -m kb
 
 On every startup the server automatically:
 
-1. Creates Elasticsearch indices (`kb_alarm`, `kb_setup`, `kb_experience`) if they don't exist
+1. Creates Elasticsearch indices (`kb_alarm`, `kb_setup`, `kb_experience`, `kb_import_files`) if they don't exist
 2. Clears and re-seeds all documents from the CSV files in `config/` into ES
-3. Serves the frontend at `http://localhost:<port>`
+3. Restores previously imported documents from the `kb_import_files` tracker index
+4. Serves the frontend at `http://localhost:<port>`
 
 | URL | Description |
 |-----|-------------|
@@ -233,6 +235,8 @@ The system loads its knowledge base from three CSV files in `config/`. These are
 
 ### How to update the knowledge base
 
+**Option A — Edit CSV files** (traditional):
+
 1. Edit one or more of the three CSV files (keep the header row unchanged).
 2. Add any new projects or equipment names to `config/taxonomy.yaml` and reload:
    ```bash
@@ -249,6 +253,10 @@ The system loads its knowledge base from three CSV files in `config/`. These are
    ```bash
    uv run python -m kb --reload
    ```
+
+**Option B — Import files** (recommended for production):
+
+Navigate to the **导入 Import** page in the web UI, upload PDF/XLSX/PPTX/DOCX/CSV files (or scan a server folder), review the LLM-extracted documents, and commit. See [File Import Pipeline](#file-import-pipeline) for details.
 
 > **Duplicate rows**: rows that produce identical content hash (same title + content + project + equipment) are deduplicated automatically — only one copy is stored in ES.
 
@@ -524,6 +532,11 @@ Every document has common base fields:
 | `POST` | `/api/v1/documents/{knowledge_type}` | Index a single document |
 | `POST` | `/api/v1/documents/{knowledge_type}/_bulk` | Index multiple documents |
 | `DELETE` | `/api/v1/documents/{knowledge_type}/{doc_id}` | Delete a document |
+| `POST` | `/api/v1/ingest/upload` | Upload files for import (multipart) |
+| `POST` | `/api/v1/ingest/scan` | Scan a server-side folder for import |
+| `GET` | `/api/v1/ingest/sessions` | List recent import sessions |
+| `GET` | `/api/v1/ingest/sessions/{id}` | Get session status + extracted docs |
+| `POST` | `/api/v1/ingest/sessions/{id}/commit` | Commit accepted docs to ES |
 
 Full schema available at `http://localhost:8000/docs` (Swagger UI) or `http://localhost:8000/redoc`.
 
@@ -592,6 +605,91 @@ When `status == too_many`, the response also includes `facets` — hit counts by
 
 ---
 
+## File Import Pipeline
+
+In addition to manually editing CSV files, documents can be imported from PDF, XLSX/XLS, CSV, PPTX, and DOCX files through the web UI or API. The pipeline extracts text, uses the LLM to segment it into structured documents, and lets the user preview/edit before committing to Elasticsearch.
+
+### Installing import dependencies
+
+The import pipeline requires extra libraries (pymupdf, openpyxl, python-pptx, python-docx, Pillow):
+
+```bash
+pip install -e ".[ingest]"
+# or: uv sync --extra ingest
+```
+
+For OCR fallback on scanned PDFs, install PaddleOCR separately:
+
+```bash
+pip install paddlepaddle paddleocr
+```
+
+### How it works
+
+```
+Upload/Scan → Hash & Dedup → Extract Text (+OCR) → LLM Segment → Preview/Edit → Commit to ES
+```
+
+1. **Upload files** via the web UI (drag & drop) or scan a server-side folder via API
+2. **Duplicate detection**: SHA-256 file hashes are checked against `kb_import_files` — previously imported files are skipped
+3. **Text extraction**: each file type has a dedicated extractor preserving page boundaries; scanned PDFs fall back to PaddleOCR
+4. **LLM segmentation**: the configured LLM identifies document boundaries (e.g., which pages belong to which alarm code) and maps extracted text to structured fields (content, resolution, procedure, etc.)
+5. **Anti-fabrication check**: extracted fields are verified against raw source text — discrepancies are flagged in the preview
+6. **Preview & edit**: the web UI shows all extracted documents with confidence scores, editable fields, and accept/reject checkboxes
+7. **Commit**: accepted documents are validated against taxonomy, embedded (if available), and indexed into Elasticsearch
+8. **Persistence**: uploaded files are saved to disk (`data/uploads/`); committed document payloads are stored in `kb_import_files` for auto-restore
+
+### Auto-restore after restart
+
+CSV seeding still clears all indices on every restart (existing behaviour). After seeding, `restore_imports()` automatically re-indexes all previously committed imported documents from the `kb_import_files` tracking index. No manual re-import is needed.
+
+### Import API endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/v1/ingest/upload` | Upload files (multipart form data) |
+| `POST` | `/api/v1/ingest/scan` | Scan a server-side folder |
+| `GET` | `/api/v1/ingest/sessions` | List recent import sessions |
+| `GET` | `/api/v1/ingest/sessions/{id}` | Get session status and extracted documents |
+| `PUT` | `/api/v1/ingest/sessions/{id}/documents/{idx}` | Edit a staged document |
+| `PATCH` | `/api/v1/ingest/sessions/{id}/documents/{idx}` | Accept or reject a document |
+| `POST` | `/api/v1/ingest/sessions/{id}/commit` | Commit accepted documents to ES |
+
+### Upload example
+
+```bash
+curl -X POST http://localhost:8000/api/v1/ingest/upload \
+  -F "files=@alarm_codes.pdf" \
+  -F "knowledge_type_hint=alarm" \
+  -F "project_hint=MHK" \
+  -F "equipment_hint=Loader"
+```
+
+### Folder scan example
+
+```bash
+curl -X POST http://localhost:8000/api/v1/ingest/scan \
+  -H "Content-Type: application/json" \
+  -d '{
+    "folder_path": "/data/import_files",
+    "recursive": true,
+    "knowledge_type_hint": "alarm",
+    "project_hint": "MHK"
+  }'
+```
+
+### Configuration
+
+| Env var | Default | Description |
+|---------|---------|-------------|
+| `KB_INGEST__UPLOAD_DIR` | `data/uploads` | Directory for persisting uploaded files |
+| `KB_INGEST__MAX_FILE_SIZE_MB` | `50` | Maximum file size per upload |
+| `KB_INGEST__OCR_ENABLED` | `true` | Enable PaddleOCR fallback for scanned PDFs |
+| `KB_INGEST__SEGMENTATION_MAX_TOKENS` | `4000` | Max LLM response tokens for segmentation |
+| `KB_INGEST__SESSION_TTL_MINUTES` | `120` | Auto-expire staging sessions |
+
+---
+
 ## Running Tests
 
 ```bash
@@ -625,27 +723,36 @@ knowledgebase/
 │   └── 设备经验_header.csv       # Field experience / failure case documents (100 rows)
 ├── src/kb/
 │   ├── __main__.py              # Entry point: python -m kb [--port PORT] [--host HOST] [--reload]
-│   ├── main.py                  # FastAPI app + lifespan (creates indices, seeds from CSV)
+│   ├── main.py                  # FastAPI app + lifespan (creates indices, seeds, restores imports)
 │   ├── config.py                # Pydantic settings (settings.yaml + KB_* env vars)
 │   ├── api/
 │   │   ├── documents.py         # Index / delete / stats endpoints
 │   │   ├── search.py            # POST /api/v1/search
+│   │   ├── chat.py              # POST /api/v1/chat + /extract (LLM conversational search)
 │   │   ├── facets.py            # GET /api/v1/facets + taxonomy reload
+│   │   ├── ingest.py            # File import: upload, scan, preview, edit, commit
 │   │   └── deps.py              # FastAPI dependency injection
 │   ├── models/
 │   │   ├── document.py          # AlarmDoc, SetupDoc, ExperienceDoc (Pydantic v2)
 │   │   ├── search.py            # SearchRequest, SearchResponse, SearchStatus
-│   │   └── taxonomy.py          # Taxonomy, KnowledgeType
+│   │   ├── taxonomy.py          # Taxonomy, KnowledgeType
+│   │   └── ingest.py            # ImportSession, StagedDocument, API shapes
 │   ├── services/
 │   │   ├── csv_loader.py        # CSV files → KnowledgeDoc list
-│   │   ├── seed.py              # Idempotent startup seeder (reads CSV, skips if populated)
+│   │   ├── seed.py              # Startup seeder (CSV → ES) + restore_imports()
 │   │   ├── indexing.py          # Document validation + ES bulk indexing
 │   │   ├── search.py            # Hybrid search pipeline (strict → loose → vector)
-│   │   ├── embedding.py         # DashScope embeddings client (OpenAI-compat); BM25-only fallback
-│   │   └── taxonomy.py          # TaxonomyStore with hot-reload
+│   │   ├── embedding.py         # DashScope embeddings client (OpenAI-compat)
+│   │   ├── taxonomy.py          # TaxonomyStore with hot-reload
+│   │   ├── extraction.py        # Per-filetype text extraction (PDF/XLSX/PPTX/DOCX/CSV)
+│   │   ├── ocr.py               # PaddleOCR wrapper for scanned PDF fallback
+│   │   ├── segmentation.py      # LLM-based document segmentation + anti-fabrication
+│   │   ├── import_pipeline.py   # Import orchestrator: hash → extract → segment → commit
+│   │   └── file_tracker.py      # File hash tracking in ES (kb_import_files index)
 │   └── es/
 │       ├── client.py            # Async Elasticsearch client factory
 │       ├── mappings.py          # Index mappings (dense_vector + keyword + text fields)
+│       ├── import_mappings.py   # Index mapping for kb_import_files (import tracker)
 │       ├── body_builder.py      # Builds the ES `body` field from document sections
 │       └── migrations.py        # Index create / delete CLI
 ├── tests/

@@ -57,9 +57,9 @@ def validate_against_taxonomy(doc: DocumentBase, tax: Taxonomy, *, row: int | No
         raise IndexingError(
             f"knowledge_type {doc.knowledge_type.value!r} not in taxonomy", row=row
         )
-    if not tax.has_project(doc.project):
+    if doc.project and not tax.has_project(doc.project):
         raise IndexingError(f"project {doc.project!r} not in taxonomy", row=row)
-    if not tax.has_equipment(doc.equipment):
+    if doc.equipment and not tax.has_equipment(doc.equipment):
         raise IndexingError(f"equipment {doc.equipment!r} not in taxonomy", row=row)
 
 

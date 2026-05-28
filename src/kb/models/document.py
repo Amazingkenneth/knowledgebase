@@ -24,8 +24,8 @@ class DocumentBase(BaseModel):
     """
 
     knowledge_type: KnowledgeType
-    project: NonEmptyStr
-    equipment: NonEmptyStr
+    project: str = ""
+    equipment: str = ""
     error_codes: list[str] = Field(default_factory=list)
     title: TitleStr
 

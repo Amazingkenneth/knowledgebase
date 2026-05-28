@@ -15,11 +15,12 @@ import logging
 from datetime import UTC, datetime
 from typing import Any
 
-from elasticsearch import AsyncElasticsearch
 from elasticsearch.helpers import async_bulk
 
+from elasticsearch import AsyncElasticsearch
 from kb.config import Settings
 from kb.es.body_builder import build_body, build_title_text
+from kb.es.import_mappings import IMPORT_INDEX_NAME
 from kb.es.mappings import alias_name
 from kb.models.document import KnowledgeDoc
 from kb.models.taxonomy import KnowledgeType, Taxonomy
@@ -125,3 +126,51 @@ async def seed(
     for err in errors:
         log.error("seed bulk error: %s", err)
     log.info("seed: indexed %d documents (%d errors)", success, len(errors))
+
+
+async def restore_imports(es: AsyncElasticsearch, settings: Settings) -> None:
+    """Re-index previously imported documents after seed clears indices.
+
+    Reads committed document payloads from kb_import_files and bulk-indexes
+    them back into the appropriate knowledge-type indices.
+    """
+    try:
+        exists = await es.indices.exists(index=IMPORT_INDEX_NAME)
+        if not exists:
+            return
+    except Exception:
+        return
+
+    try:
+        resp = await es.search(
+            index=IMPORT_INDEX_NAME,
+            body={
+                "query": {"term": {"import_status": "committed"}},
+                "size": 10000,
+                "_source": ["committed_docs"],
+            },
+        )
+    except Exception as exc:
+        log.warning("restore_imports: could not query import tracker — %s", exc)
+        return
+
+    actions: list[dict[str, Any]] = []
+    for hit in resp["hits"]["hits"]:
+        for doc_entry in hit["_source"].get("committed_docs", []):
+            actions.append({
+                "_op_type": "index",
+                "_index": doc_entry["_index"],
+                "_id": doc_entry["_id"],
+                "_source": doc_entry["_source"],
+            })
+
+    if not actions:
+        log.debug("restore_imports: no imported documents to restore")
+        return
+
+    success, errors = await async_bulk(
+        es, actions, raise_on_error=False, stats_only=False, refresh="wait_for"
+    )
+    for err in errors:
+        log.error("restore_imports bulk error: %s", err)
+    log.info("restore_imports: restored %d imported documents (%d errors)", success, len(errors))

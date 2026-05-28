@@ -60,6 +60,21 @@ class ServerConfig(BaseModel):
     port: int = Field(default=8000, ge=1, le=65535)
 
 
+class IngestConfig(BaseModel):
+    upload_dir: str = "data/uploads"
+    max_file_size_mb: int = Field(default=50, ge=1, le=500)
+    allowed_extensions: list[str] = Field(
+        default=["pdf", "xlsx", "xls", "csv", "pptx", "docx"]
+    )
+    ocr_enabled: bool = True
+    ocr_lang: str = "ch"
+    segmentation_max_tokens: int = 4000
+    # Characters per LLM chunk. Larger = fewer API calls but more tokens per call.
+    # 12000 chars ≈ 3000–4000 tokens of input; fits 6–10 alarm entries comfortably.
+    segmentation_chunk_chars: int = Field(default=12000, ge=1000, le=100000)
+    session_ttl_minutes: int = Field(default=120, ge=10, le=1440)
+
+
 class Settings(BaseSettings):
     es: ESConfig = Field(default_factory=ESConfig)
     embedding: EmbeddingConfig = Field(default_factory=EmbeddingConfig)
@@ -67,6 +82,7 @@ class Settings(BaseSettings):
     taxonomy: TaxonomyConfig = Field(default_factory=TaxonomyConfig)
     llm: LLMConfig = Field(default_factory=LLMConfig)
     server: ServerConfig = Field(default_factory=ServerConfig)
+    ingest: IngestConfig = Field(default_factory=IngestConfig)
 
     model_config = SettingsConfigDict(
         env_file=".env",

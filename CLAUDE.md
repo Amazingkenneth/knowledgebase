@@ -53,10 +53,15 @@ Settings are layered: `config/settings.yaml` → `.env` → shell env vars.
 | `src/kb/api/chat.py` | Conversational search (`/chat`: extract → search → LLM) and `/extract` |
 | `src/kb/api/search.py` | `POST /api/v1/search` handler |
 | `src/kb/services/search.py` | Hybrid search pipeline: strict → loose → vector (RRF) |
-| `src/kb/services/seed.py` | CSV → ES seeder — clears and reloads all indices on every startup |
+| `src/kb/services/seed.py` | CSV → ES seeder — clears and reloads all indices on every startup; also `restore_imports()` |
 | `src/kb/es/body_builder.py` | Builds the ES `body` text field from document sections |
 | `src/kb/es/mappings.py` | Index mappings (dense_vector, keyword, text) |
-| `config/settings.yaml` | Runtime defaults (ES URL, embedding, search tuning) |
+| `src/kb/api/ingest.py` | File import endpoints: upload, scan, preview/edit, commit |
+| `src/kb/services/extraction.py` | Per-filetype text extraction (PDF/XLSX/PPTX/DOCX/CSV), OCR fallback |
+| `src/kb/services/segmentation.py` | LLM-based segmentation: splits text into structured documents |
+| `src/kb/services/import_pipeline.py` | Orchestrates: hash → extract → segment → stage → commit |
+| `src/kb/services/file_tracker.py` | File hash tracking in ES (`kb_import_files` index) |
+| `config/settings.yaml` | Runtime defaults (ES URL, embedding, search tuning, ingest) |
 | `config/taxonomy.yaml` | Valid projects / equipment / knowledge_types — edit to extend |
 | `.env.example` | All supported env vars with defaults — template for `.env` |
 | `elasticsearch/Dockerfile` | Custom ES image — installs the `analysis-ik` plugin at build time |
@@ -67,7 +72,8 @@ Settings are layered: `config/settings.yaml` → `.env` → shell env vars.
 
 - **No hallucination**: never add LLM-generated text to search responses. Results are verbatim documents or nothing.
 - **Taxonomy enforcement**: `project` and `equipment` values are validated against `taxonomy.yaml` at index time. New values require a taxonomy update + re-seed.
-- **Always-reseed on startup**: `seed` clears all documents from every index and reloads from the CSV files on every server start. Additions, edits, and row deletions in the CSVs all take effect automatically on the next restart.
+- **Always-reseed on startup**: `seed` clears all documents from every index and reloads from the CSV files on every server start. Additions, edits, and row deletions in the CSVs all take effect automatically on the next restart. After seeding, `restore_imports()` re-indexes any previously imported documents from the `kb_import_files` tracker index.
+- **File import pipeline**: files (PDF/XLSX/CSV/PPTX/DOCX) can be uploaded or scanned from a server folder via `/api/v1/ingest/`. Text extraction uses pymupdf/openpyxl/python-pptx/python-docx with PaddleOCR fallback. LLM segments extracted text into structured documents. Users preview/edit before committing. File hashes track duplicates. Install extras: `pip install -e ".[ingest]"`.
 - **BM25-only fallback**: the embedding service is optional. If it's unreachable, the server continues with keyword-only search (no kNN).
 
 ---

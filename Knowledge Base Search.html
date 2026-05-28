@@ -1443,6 +1443,154 @@ mark.hl {
   color: var(--danger);
 }
 
+/* ── Import page ───────────────────────────────────────────────────────── */
+.import-page {
+  max-width: 960px; margin: 0 auto; padding: 32px var(--pad-x);
+}
+.import-inner { display: flex; flex-direction: column; gap: 28px; }
+.import-section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 24px;
+}
+.import-section-head {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;
+}
+.import-section-title { font-size: 14px; font-weight: 600; margin: 0; }
+.import-dropzone {
+  border: 2px dashed var(--border-2); border-radius: var(--radius);
+  padding: 40px; text-align: center; cursor: pointer;
+  transition: border-color 150ms, background 150ms;
+  color: var(--muted);
+}
+.import-dropzone:hover, .import-dropzone.drag-over {
+  border-color: var(--accent); background: var(--accent-soft);
+  color: var(--accent);
+}
+.import-dropzone-label { font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+.import-dropzone-hint { font-size: 12px; color: var(--muted); }
+.import-hints { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+.import-hint-field { flex: 1; min-width: 180px; }
+.import-hint-field label { display: block; font-size: 11.5px; font-weight: 500; color: var(--ink-2); margin-bottom: 4px; }
+.import-hint-field select, .import-hint-field input {
+  width: 100%; padding: 7px 10px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 13px; font-family: inherit;
+  background: var(--surface); color: var(--ink);
+}
+.import-hint-field select:focus, .import-hint-field input:focus {
+  outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft);
+}
+.import-folder-row { display: flex; gap: 10px; margin-top: 12px; align-items: flex-end; }
+.import-folder-row input { flex: 1; }
+.import-progress { margin-top: 12px; }
+.import-progress-bar {
+  height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; position: relative;
+}
+.import-progress-fill {
+  height: 100%; border-radius: 3px; background: var(--accent);
+  transition: width 300ms ease;
+}
+@keyframes progress-shimmer {
+  0%   { transform: translateX(-200%); }
+  100% { transform: translateX(400%); }
+}
+.import-progress-bar.indeterminate .import-progress-fill {
+  width: 30% !important;
+  background: linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%);
+  animation: progress-shimmer 1.4s ease-in-out infinite;
+  transition: none;
+}
+.import-progress-row {
+  display: flex; align-items: center; gap: 10px; margin-top: 5px;
+}
+.import-progress-text { font-size: 11.5px; color: var(--muted); }
+.import-progress-elapsed { font-size: 11px; color: var(--muted-2); margin-left: auto; }
+.import-step-msg {
+  font-size: 11.5px; color: var(--accent); margin-top: 6px;
+  display: flex; align-items: center; gap: 6px; min-height: 18px;
+}
+.import-file-list { list-style: none; padding: 0; margin: 12px 0 0; display: flex; flex-direction: column; gap: 6px; }
+.import-file-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px; border-radius: var(--radius-sm);
+  background: var(--surface-2); font-size: 12.5px;
+}
+.import-file-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.import-file-step { font-size: 11px; color: var(--accent); font-style: italic; flex-shrink: 0; }
+.import-file-status { font-size: 11px; margin-left: auto; flex-shrink: 0; }
+.import-file-status.ok { color: var(--strict); }
+.import-file-status.skip { color: var(--loose); }
+.import-file-status.err { color: var(--danger); }
+.import-doc-cards { display: flex; flex-direction: column; gap: 14px; }
+.import-doc-card {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); overflow: hidden;
+}
+.import-doc-card.rejected { opacity: 0.5; }
+.import-doc-head {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  background: var(--surface-2); cursor: pointer; user-select: none;
+}
+.import-doc-head:hover { background: color-mix(in oklab, var(--accent) 5%, var(--surface-2)); }
+.import-doc-title { font-size: 13px; font-weight: 500; flex: 1; }
+.import-doc-conf { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+.import-doc-conf.high { background: color-mix(in oklab, var(--strict) 12%, var(--surface)); color: var(--strict); }
+.import-doc-conf.med { background: color-mix(in oklab, var(--loose) 12%, var(--surface)); color: var(--loose); }
+.import-doc-conf.low { background: color-mix(in oklab, var(--danger) 12%, var(--surface)); color: var(--danger); }
+.import-doc-body { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.import-doc-field { display: flex; flex-direction: column; gap: 4px; }
+.import-doc-field label { font-size: 11.5px; font-weight: 500; color: var(--ink-2); }
+.import-doc-field input, .import-doc-field textarea, .import-doc-field select {
+  padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 13px; font-family: inherit; background: var(--surface); color: var(--ink);
+}
+.import-doc-field textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
+.import-doc-field input:focus, .import-doc-field textarea:focus, .import-doc-field select:focus {
+  outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft);
+}
+.import-doc-raw { margin-top: 8px; }
+.import-doc-raw summary { font-size: 11.5px; color: var(--muted); cursor: pointer; }
+.import-doc-raw pre {
+  margin: 6px 0 0; padding: 10px; background: var(--surface-2);
+  border-radius: var(--radius-sm); font-size: 11.5px; white-space: pre-wrap;
+  word-break: break-all; max-height: 200px; overflow-y: auto;
+  font-family: var(--font-mono); color: var(--ink-2);
+}
+.import-warnings { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.import-warning-badge {
+  font-size: 10.5px; padding: 1px 6px; border-radius: 8px;
+  background: color-mix(in oklab, var(--loose) 15%, var(--surface));
+  color: var(--loose);
+}
+.import-bulk-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.import-commit-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 0 0; border-top: 1px solid var(--border); margin-top: 8px;
+}
+.import-commit-summary { font-size: 12.5px; color: var(--ink-2); }
+.import-result { text-align: center; padding: 24px; }
+.import-result-num { font-size: 32px; font-weight: 700; color: var(--accent); }
+.import-result-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.import-toast {
+  position: fixed; top: 80px; right: 24px; z-index: 2000;
+  padding: 10px 18px; border-radius: var(--radius);
+  font-size: 13px; display: flex; align-items: center; gap: 8px;
+  box-shadow: var(--shadow-2); animation: slideInRight 200ms ease;
+}
+.import-toast-ok {
+  background: color-mix(in oklab, var(--strict) 8%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--strict) 30%, var(--border));
+  color: var(--strict);
+}
+.import-toast-err {
+  background: color-mix(in oklab, var(--danger) 8%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--danger) 30%, var(--border));
+  color: var(--danger);
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
 /* Library filter: smaller sticky top (topbar is shorter than Results) */
 .lib-filter-side { top: 120px; }
 
@@ -4145,7 +4293,7 @@ function ChatHomePage({ taxonomy, onSwitchToSearch, onOpenDoc }) {
 }
 
 // --- Header app shell
-function AppHeader({ onHome, onLibrary, onAdmin, page, onChat, onSearch }) {
+function AppHeader({ onHome, onLibrary, onAdmin, onImport, page, onChat, onSearch }) {
   return (
     <header className="app-header">
       <button className="brand" onClick={onHome}>
@@ -4174,6 +4322,9 @@ function AppHeader({ onHome, onLibrary, onAdmin, page, onChat, onSearch }) {
         </button>
         <button className={`nav-item ${page === "library" ? "nav-active" : ""}`} onClick={onLibrary}>
           知识库 <span className="nav-en">Library</span>
+        </button>
+        <button className={`nav-item ${page === "import" ? "nav-active" : ""}`} onClick={onImport}>
+          导入 <span className="nav-en">Import</span>
         </button>
         <button className={`nav-item ${page === "admin" ? "nav-active" : ""}`} onClick={onAdmin}>
           管理 <span className="nav-en">Admin</span>
@@ -4576,6 +4727,566 @@ function LibraryPage({ taxonomy, stats, density, onOpen }) {
 }
 
 // --- Admin page: stats + taxonomy reload + add knowledge form
+// ── Import Page ─────────────────────────────────────────────────────────────
+
+function ImportPage({ taxonomy, onStatsRefresh }) {
+  const [phase, setPhase]           = React.useState('upload'); // upload | processing | preview | committing | result
+  const [sessionId, setSessionId]   = React.useState(null);
+  const [files, setFiles]           = React.useState([]);
+  const [documents, setDocuments]   = React.useState([]);
+  const [progress, setProgress]     = React.useState({ total: 0, processed: 0 });
+  const [processMsg, setProcessMsg] = React.useState('');
+  const [elapsed, setElapsed]       = React.useState(0);
+  const [expanded, setExpanded]     = React.useState({});
+  const [commitResult, setCommitResult] = React.useState(null);
+  const [commitProgress, setCommitProgress] = React.useState({ current: 0, total: 0, phase: 'syncing' });
+  const [toast, setToast]           = React.useState(null);
+  const [loading, setLoading]       = React.useState(false);
+  const elapsedTimerRef             = React.useRef(null);
+
+  // Hints
+  const [ktHint, setKtHint]         = React.useState('');
+  const [projHint, setProjHint]     = React.useState('');
+  const [equipHint, setEquipHint]   = React.useState('');
+  const [folderPath, setFolderPath] = React.useState('');
+  const [dragOver, setDragOver]     = React.useState(false);
+  const fileInputRef = React.useRef(null);
+
+  const showToast = (msg, kind = 'ok') => {
+    setToast({ msg, kind });
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  // ── Upload handler ──
+  const handleFiles = async (fileList) => {
+    if (!fileList || fileList.length === 0) return;
+    setLoading(true);
+    const formData = new FormData();
+    for (const f of fileList) formData.append('files', f);
+    if (ktHint) formData.append('knowledge_type_hint', ktHint);
+    if (projHint) formData.append('project_hint', projHint);
+    if (equipHint) formData.append('equipment_hint', equipHint);
+
+    try {
+      const resp = await fetch('/api/v1/ingest/upload', { method: 'POST', body: formData });
+      if (!resp.ok) throw new Error(`Upload failed: ${resp.status}`);
+      const data = await resp.json();
+      setSessionId(data.session_id);
+      setFiles(data.files);
+      setProcessMsg('');
+      setElapsed(0);
+      setPhase('processing');
+      startElapsedTimer();
+      pollSession(data.session_id);
+    } catch (err) {
+      showToast(err.message, 'err');
+    }
+    setLoading(false);
+  };
+
+  // ── Folder scan handler ──
+  const handleScan = async () => {
+    if (!folderPath.trim()) return;
+    setLoading(true);
+    try {
+      const resp = await fetch('/api/v1/ingest/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          folder_path: folderPath,
+          knowledge_type_hint: ktHint || null,
+          project_hint: projHint || null,
+          equipment_hint: equipHint || null,
+        }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.detail || `Scan failed: ${resp.status}`);
+      }
+      const data = await resp.json();
+      setSessionId(data.session_id);
+      setFiles(data.files);
+      setProcessMsg('');
+      setElapsed(0);
+      setPhase('processing');
+      startElapsedTimer();
+      pollSession(data.session_id);
+    } catch (err) {
+      showToast(err.message, 'err');
+    }
+    setLoading(false);
+  };
+
+  // ── Elapsed time counter ──
+  const startElapsedTimer = () => {
+    if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+    const start = Date.now();
+    elapsedTimerRef.current = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - start) / 1000));
+    }, 1000);
+  };
+  const stopElapsedTimer = () => {
+    if (elapsedTimerRef.current) { clearInterval(elapsedTimerRef.current); elapsedTimerRef.current = null; }
+  };
+
+  // ── Poll session status ──
+  const pollSession = (sid) => {
+    const interval = setInterval(async () => {
+      try {
+        const resp = await fetch(`/api/v1/ingest/sessions/${sid}`);
+        if (!resp.ok) return;
+        const data = await resp.json();
+        setProgress({ total: data.files_total, processed: data.files_processed });
+        if (data.files && data.files.length > 0) setFiles(data.files);
+        if (data.message) setProcessMsg(data.message);
+        if (data.status === 'ready_for_review' || data.status === 'failed') {
+          clearInterval(interval);
+          stopElapsedTimer();
+          setProcessMsg('');
+          setDocuments(data.documents || []);
+          setPhase(data.documents?.length > 0 ? 'preview' : 'upload');
+          if (data.status === 'failed') showToast('处理失败 Processing failed', 'err');
+          else if (data.documents?.length > 0) showToast(`提取了 ${data.documents.length} 条文档 — Extracted ${data.documents.length} documents`);
+          else showToast('未提取到文档 No documents extracted', 'err');
+        }
+      } catch (_) {}
+    }, 2000);
+  };
+
+  // ── Document editing ──
+  const updateDoc = (idx, field, value) => {
+    setDocuments(docs => docs.map(d => d.index === idx ? { ...d, [field]: value } : d));
+  };
+  const toggleAccept = (idx) => {
+    setDocuments(docs => docs.map(d => d.index === idx ? { ...d, accepted: !d.accepted } : d));
+  };
+  const acceptAll = () => setDocuments(docs => docs.map(d => ({ ...d, accepted: true })));
+  const rejectAll = () => setDocuments(docs => docs.map(d => ({ ...d, accepted: false })));
+  const toggleExpand = (idx) => setExpanded(e => ({ ...e, [idx]: !e[idx] }));
+
+  // ── Commit ──
+  const handleCommit = async () => {
+    if (!sessionId) return;
+    setLoading(true);
+    setPhase('committing');
+
+    // Sync local edits to server with per-document progress
+    const total = documents.length;
+    setCommitProgress({ current: 0, total, phase: 'syncing' });
+    for (let i = 0; i < documents.length; i++) {
+      const doc = documents[i];
+      try {
+        await fetch(`/api/v1/ingest/sessions/${sessionId}/documents/${doc.index}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(doc),
+        });
+      } catch (_) {}
+      setCommitProgress({ current: i + 1, total, phase: 'syncing' });
+    }
+
+    setCommitProgress({ current: total, total, phase: 'committing' });
+    try {
+      const resp = await fetch(`/api/v1/ingest/sessions/${sessionId}/commit`, { method: 'POST' });
+      if (!resp.ok) throw new Error(`Commit failed: ${resp.status}`);
+      const result = await resp.json();
+      setCommitResult(result);
+      setPhase('result');
+      if (result.errors?.length > 0) {
+        showToast(`已提交 ${result.committed} 条，${result.errors.length} 条错误 — ${result.committed} committed, ${result.errors.length} errors`, 'err');
+      } else {
+        showToast(`已提交 ${result.committed} 条 — Committed ${result.committed} documents`);
+      }
+      // Refresh stats
+      fetch('/api/v1/documents/stats').then(r => r.json()).then(s => onStatsRefresh(s)).catch(() => {});
+    } catch (err) {
+      showToast(err.message, 'err');
+      setPhase('preview');
+    }
+    setLoading(false);
+  };
+
+  const confClass = (c) => c >= 0.8 ? 'high' : c >= 0.5 ? 'med' : 'low';
+  const acceptedCount = documents.filter(d => d.accepted).length;
+  const rejectedCount = documents.length - acceptedCount;
+  const docsWithEmptyRequired = documents.filter(d => d.accepted && (!d.project || !d.equipment));
+
+  return (
+    <div className="import-page">
+      {toast && (
+        <div className={`import-toast import-toast-${toast.kind}`}>
+          <Icon name={toast.kind === 'err' ? 'info' : 'check'} size={14} />
+          {toast.msg}
+        </div>
+      )}
+
+      <div className="import-inner">
+
+        {/* ── Phase: Upload ── */}
+        {phase === 'upload' && (
+          <section className="import-section">
+            <div className="import-section-head">
+              <h3 className="import-section-title">导入文件 · Import Files</h3>
+            </div>
+            <div
+              className={`import-dropzone ${dragOver ? 'drag-over' : ''}`}
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept=".pdf,.xlsx,.xls,.csv,.pptx,.docx"
+                style={{ display: 'none' }}
+                onChange={(e) => handleFiles(e.target.files)}
+              />
+              <div className="import-dropzone-label">
+                <Icon name="arrow-up" size={16} /> 拖拽文件到此处或点击选择
+              </div>
+              <div className="import-dropzone-hint">
+                Drag & drop files here, or click to browse · PDF, XLSX, CSV, PPTX, DOCX
+              </div>
+            </div>
+
+            <div className="import-hints">
+              <div className="import-hint-field">
+                <label>知识类型 Type</label>
+                <select value={ktHint} onChange={e => setKtHint(e.target.value)}>
+                  <option value="">自动检测 Auto-detect</option>
+                  <option value="alarm">报警 Alarm</option>
+                  <option value="setup">调试 Setup</option>
+                  <option value="experience">经验 Experience</option>
+                </select>
+              </div>
+              <div className="import-hint-field">
+                <label>项目 Project</label>
+                <select value={projHint} onChange={e => setProjHint(e.target.value)}>
+                  <option value="">—</option>
+                  {(taxonomy?.projects || []).map(p => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </div>
+              <div className="import-hint-field">
+                <label>机台 Equipment</label>
+                <select value={equipHint} onChange={e => setEquipHint(e.target.value)}>
+                  <option value="">—</option>
+                  {(taxonomy?.equipment || []).map(e => <option key={e} value={e}>{e}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div className="import-folder-row">
+              <div className="import-hint-field" style={{ flex: 1 }}>
+                <label>或扫描服务器目录 Or scan server folder</label>
+                <input
+                  type="text"
+                  placeholder="/data/import_files"
+                  value={folderPath}
+                  onChange={e => setFolderPath(e.target.value)}
+                />
+              </div>
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={handleScan}
+                disabled={!folderPath.trim() || loading}
+                style={{ marginBottom: '1px' }}
+              >
+                {loading ? '扫描中…' : '扫描 Scan'}
+              </button>
+            </div>
+          </section>
+        )}
+
+        {/* ── Phase: Processing ── */}
+        {phase === 'processing' && (
+          <section className="import-section">
+            <div className="import-section-head">
+              <h3 className="import-section-title">处理中 · Processing</h3>
+            </div>
+            <div className="import-progress">
+              <div className={`import-progress-bar ${progress.processed === 0 ? 'indeterminate' : ''}`}>
+                <div
+                  className="import-progress-fill"
+                  style={{ width: progress.total > 0 && progress.processed > 0 ? `${(progress.processed / progress.total) * 100}%` : '0%' }}
+                />
+              </div>
+              <div className="import-progress-row">
+                <span className="import-progress-text">
+                  {progress.processed} / {progress.total} 文件已处理 · files processed
+                </span>
+                {elapsed > 0 && (
+                  <span className="import-progress-elapsed">
+                    {elapsed < 60 ? `${elapsed}s` : `${Math.floor(elapsed / 60)}m ${elapsed % 60}s`}
+                  </span>
+                )}
+              </div>
+              {processMsg && (
+                <div className="import-step-msg">
+                  <div className="kb-spinner" style={{ width: 12, height: 12, borderWidth: 1.5 }} />
+                  {processMsg}
+                </div>
+              )}
+              {elapsed > 90 && progress.processed === 0 && (
+                <div style={{ fontSize: '11.5px', color: 'var(--loose)', marginTop: 8 }}>
+                  AI analysis of large documents can take several minutes — please keep this tab open.
+                </div>
+              )}
+            </div>
+            <ul className="import-file-list">
+              {files.map((f, i) => (
+                <li key={i} className="import-file-item">
+                  <span className="import-file-name">{f.file_name}</span>
+                  {f.status === 'processing' && f.message && (
+                    <span className="import-file-step">{f.message}</span>
+                  )}
+                  <span className={`import-file-status ${f.status === 'done' ? 'ok' : f.status === 'skipped_duplicate' ? 'skip' : f.status === 'failed' ? 'err' : ''}`}>
+                    {f.status === 'processing' ? (
+                      <span className="kb-spinner" style={{ width: 12, height: 12, borderWidth: 1.5, display: 'inline-block' }} />
+                    ) : f.status === 'done' ? '✓' : f.status === 'skipped_duplicate' ? 'Skipped' : f.status === 'failed' ? '✗' : f.status}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* ── Phase: Committing ── */}
+        {phase === 'committing' && (
+          <section className="import-section">
+            <div className="import-section-head">
+              <h3 className="import-section-title">提交中 · Committing</h3>
+            </div>
+            <div className="import-progress">
+              <div className={`import-progress-bar ${commitProgress.phase === 'committing' ? 'indeterminate' : ''}`}>
+                <div
+                  className="import-progress-fill"
+                  style={{ width: commitProgress.total > 0 ? `${(commitProgress.current / commitProgress.total) * 100}%` : '0%' }}
+                />
+              </div>
+              <div className="import-progress-row">
+                <span className="import-progress-text">
+                  {commitProgress.phase === 'syncing'
+                    ? `同步编辑 ${commitProgress.current} / ${commitProgress.total} · Syncing edits`
+                    : '写入数据库中… · Writing to database…'}
+                </span>
+              </div>
+              <div className="import-step-msg">
+                <div className="kb-spinner" style={{ width: 12, height: 12, borderWidth: 1.5 }} />
+                {commitProgress.phase === 'syncing' ? '正在同步文档编辑… Syncing document edits…' : '正在提交到知识库… Committing to knowledge base…'}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ── Phase: Preview ── */}
+        {phase === 'preview' && (
+          <section className="import-section">
+            <div className="import-section-head">
+              <h3 className="import-section-title">预览 · Preview ({documents.length} 条文档)</h3>
+              <div className="import-bulk-actions">
+                <button className="btn btn-sm" onClick={acceptAll}>全部接受 Accept All</button>
+                <button className="btn btn-sm" onClick={rejectAll}>全部拒绝 Reject All</button>
+              </div>
+            </div>
+
+            {docsWithEmptyRequired.length > 0 && (
+              <div style={{ padding: '10px 14px', borderRadius: 'var(--radius)', background: 'color-mix(in oklab, var(--loose) 10%, var(--surface))', border: '1px solid color-mix(in oklab, var(--loose) 30%, var(--border))', fontSize: '12.5px', color: 'var(--loose)', marginBottom: 12 }}>
+                ⚠ {docsWithEmptyRequired.length} 条已接受文档缺少 项目/机台 字段，提交时将跳过。请在下方填写或取消选中。
+                <span style={{ display: 'block', marginTop: 2, color: 'var(--ink-2)' }}>
+                  {docsWithEmptyRequired.length} accepted document(s) have empty Project / Equipment — they will fail on commit unless filled in or unchecked.
+                </span>
+              </div>
+            )}
+
+            <div className="import-doc-cards">
+              {documents.map(doc => {
+                const isExpanded = expanded[doc.index];
+                const typeLabel = doc.knowledge_type === 'alarm' ? '报警' : doc.knowledge_type === 'setup' ? '调试' : '经验';
+                const missingFields = (!doc.project ? ['项目 Project'] : []).concat(!doc.equipment ? ['机台 Equipment'] : []);
+                return (
+                  <div key={doc.index} className={`import-doc-card ${!doc.accepted ? 'rejected' : ''}`}>
+                    <div className="import-doc-head" onClick={() => toggleExpand(doc.index)}>
+                      <input
+                        type="checkbox"
+                        checked={doc.accepted}
+                        onChange={(e) => { e.stopPropagation(); toggleAccept(doc.index); }}
+                      />
+                      <span className={`import-doc-conf ${confClass(doc.confidence)}`}>
+                        {Math.round(doc.confidence * 100)}%
+                      </span>
+                      <span className="import-doc-title">
+                        [{typeLabel}] {doc.title || '(无标题)'}
+                      </span>
+                      {doc.accepted && missingFields.length > 0 && (
+                        <span title={`Missing: ${missingFields.join(', ')}`} style={{ fontSize: '11px', padding: '1px 6px', borderRadius: 8, background: 'color-mix(in oklab, var(--loose) 15%, var(--surface))', color: 'var(--loose)', flexShrink: 0 }}>
+                          ⚠ {missingFields.join(' · ')}
+                        </span>
+                      )}
+                      <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
+                        {doc.source_file}
+                        {doc.error_codes?.length > 0 && ` · ${doc.error_codes.join(', ')}`}
+                      </span>
+                      <Icon name={isExpanded ? 'chevron-up' : 'chevron-down'} size={14} />
+                    </div>
+
+                    {isExpanded && (
+                      <div className="import-doc-body">
+                        <div className="import-doc-field">
+                          <label>知识类型 Type</label>
+                          <select value={doc.knowledge_type} onChange={e => updateDoc(doc.index, 'knowledge_type', e.target.value)}>
+                            <option value="alarm">报警 Alarm</option>
+                            <option value="setup">调试 Setup</option>
+                            <option value="experience">经验 Experience</option>
+                          </select>
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                          <div className="import-doc-field" style={{ flex: 1 }}>
+                            <label>项目 Project</label>
+                            <select value={doc.project} onChange={e => updateDoc(doc.index, 'project', e.target.value)} style={!doc.project ? { borderColor: 'var(--loose)' } : {}}>
+                              <option value="">— (留空将导致提交失败 / leave blank → commit error)</option>
+                              {(taxonomy?.projects || []).map(p => <option key={p} value={p}>{p}</option>)}
+                            </select>
+                          </div>
+                          <div className="import-doc-field" style={{ flex: 1 }}>
+                            <label>机台 Equipment</label>
+                            <select value={doc.equipment} onChange={e => updateDoc(doc.index, 'equipment', e.target.value)} style={!doc.equipment ? { borderColor: 'var(--loose)' } : {}}>
+                              <option value="">— (留空将导致提交失败 / leave blank → commit error)</option>
+                              {(taxonomy?.equipment || []).map(e => <option key={e} value={e}>{e}</option>)}
+                            </select>
+                          </div>
+                        </div>
+                        <div className="import-doc-field">
+                          <label>标题 Title</label>
+                          <input value={doc.title} onChange={e => updateDoc(doc.index, 'title', e.target.value)} />
+                        </div>
+                        {doc.knowledge_type === 'alarm' && (
+                          <>
+                            <div className="import-doc-field">
+                              <label>报警代码 Error Codes (逗号分隔)</label>
+                              <input value={(doc.error_codes || []).join(', ')} onChange={e => updateDoc(doc.index, 'error_codes', e.target.value.split(',').map(s => s.trim()).filter(Boolean))} />
+                            </div>
+                            <div className="import-doc-field">
+                              <label>内容 Content</label>
+                              <textarea rows={3} value={doc.content} onChange={e => updateDoc(doc.index, 'content', e.target.value)} />
+                            </div>
+                            <div className="import-doc-field">
+                              <label>解除流程 Resolution</label>
+                              <textarea rows={3} value={doc.resolution} onChange={e => updateDoc(doc.index, 'resolution', e.target.value)} />
+                            </div>
+                          </>
+                        )}
+                        {doc.knowledge_type === 'setup' && (
+                          <>
+                            <div className="import-doc-field">
+                              <label>规格/要求 Prerequisites</label>
+                              <textarea rows={2} value={doc.prerequisites} onChange={e => updateDoc(doc.index, 'prerequisites', e.target.value)} />
+                            </div>
+                            <div className="import-doc-field">
+                              <label>调试步骤 Procedure</label>
+                              <textarea rows={3} value={doc.procedure} onChange={e => updateDoc(doc.index, 'procedure', e.target.value)} />
+                            </div>
+                          </>
+                        )}
+                        {doc.knowledge_type === 'experience' && (
+                          <>
+                            <div className="import-doc-field">
+                              <label>内容 Body</label>
+                              <textarea rows={3} value={doc.body_text} onChange={e => updateDoc(doc.index, 'body_text', e.target.value)} />
+                            </div>
+                            <div className="import-doc-field">
+                              <label>流程 Procedure</label>
+                              <textarea rows={2} value={doc.procedure} onChange={e => updateDoc(doc.index, 'procedure', e.target.value)} />
+                            </div>
+                          </>
+                        )}
+                        <div className="import-doc-field">
+                          <label>注意事项 Notes</label>
+                          <textarea rows={2} value={doc.notes} onChange={e => updateDoc(doc.index, 'notes', e.target.value)} />
+                        </div>
+
+                        {doc.warnings?.length > 0 && (
+                          <div className="import-warnings">
+                            {doc.warnings.map((w, i) => <span key={i} className="import-warning-badge">{w}</span>)}
+                          </div>
+                        )}
+
+                        {doc.raw_text_excerpt && (
+                          <details className="import-doc-raw">
+                            <summary>原始文本 Raw Text</summary>
+                            <pre>{doc.raw_text_excerpt}</pre>
+                          </details>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="import-commit-bar">
+              <div style={{ display: 'flex', flex: 1, flexDirection: 'column', gap: 4 }}>
+                <div className="import-commit-summary">
+                  接受 {acceptedCount} 条 · 拒绝 {rejectedCount} 条 — {acceptedCount} accepted · {rejectedCount} rejected
+                </div>
+                {docsWithEmptyRequired.length > 0 && (
+                  <div style={{ fontSize: '11.5px', color: 'var(--loose)' }}>
+                    ⚠ {docsWithEmptyRequired.length} 条缺少项目/机台，提交将部分失败 · {docsWithEmptyRequired.length} missing project/equipment — will error on commit
+                  </div>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                <button className="btn btn-sm" onClick={() => { setPhase('upload'); setDocuments([]); setSessionId(null); }}>
+                  返回 Back
+                </button>
+                <button className="btn btn-primary" onClick={handleCommit} disabled={acceptedCount === 0 || loading}>
+                  提交 {acceptedCount} 条 · Commit
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ── Phase: Result ── */}
+        {phase === 'result' && commitResult && (
+          <section className="import-section">
+            <div className="import-result">
+              <div className="import-result-num">{commitResult.committed}</div>
+              <div className="import-result-label">条文档已提交 documents committed</div>
+              {commitResult.skipped > 0 && (
+                <div className="import-result-label" style={{ marginTop: '8px' }}>
+                  跳过 {commitResult.skipped} 条 · {commitResult.skipped} skipped
+                </div>
+              )}
+              {commitResult.errors?.length > 0 && (
+                <div style={{ marginTop: '12px', textAlign: 'left', background: 'color-mix(in oklab, var(--danger) 6%, var(--surface))', border: '1px solid color-mix(in oklab, var(--danger) 25%, var(--border))', borderRadius: 'var(--radius)', padding: '10px 14px' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--danger)', fontWeight: 600, marginBottom: 6 }}>
+                    {commitResult.errors.length} 条提交失败 · {commitResult.errors.length} document(s) failed
+                  </div>
+                  {commitResult.errors.map((e, i) => (
+                    <div key={i} style={{ fontSize: '12px', color: 'var(--danger)', marginTop: 4, display: 'flex', gap: 6 }}>
+                      <span style={{ fontWeight: 500, flexShrink: 0 }}>#{e.index}{e.title ? ` "${e.title}"` : ''}:</span>
+                      <span>{e.error}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <button
+                className="btn btn-primary"
+                style={{ marginTop: '24px' }}
+                onClick={() => { setPhase('upload'); setDocuments([]); setSessionId(null); setCommitResult(null); }}
+              >
+                继续导入 Import More
+              </button>
+            </div>
+          </section>
+        )}
+      </div>
+    </div>
+  );
+}
+
 const ADMIN_FIELDS = {
   alarm: [
     { key: "title",       label: "标题 Title",            type: "text",     required: true  },
@@ -5139,6 +5850,7 @@ function App() {
         onHome={() => { setPage("landing"); setParams(null); setOpenDoc(null); window.scrollTo(0, 0); }}
         onLibrary={() => { setPage("library"); setOpenDoc(null); window.scrollTo(0, 0); }}
         onAdmin={() => { setPage("admin"); setOpenDoc(null); window.scrollTo(0, 0); }}
+        onImport={() => { setPage("import"); setOpenDoc(null); window.scrollTo(0, 0); }}
         onChat={() => { setPage("chat"); setOpenDoc(null); setChatOpen(false); window.scrollTo(0, 0); }}
         onSearch={() => { setPage("landing"); setParams(null); setOpenDoc(null); window.scrollTo(0, 0); }}
         page={page}
@@ -5165,6 +5877,8 @@ function App() {
           />
         ) : page === "library" ? (
           <LibraryPage taxonomy={taxonomy} stats={stats} density={t.density} onOpen={(d) => setOpenDoc(d)} />
+        ) : page === "import" ? (
+          <ImportPage taxonomy={taxonomy} onStatsRefresh={(s) => setStats(s)} />
         ) : page === "admin" ? (
           <AdminPage stats={stats} onStatsRefresh={(s) => setStats(s)} />
         ) : (
