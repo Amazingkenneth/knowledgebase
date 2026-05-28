@@ -42,9 +42,13 @@
         ▼
 [3] LLM 切分
         │  按 ingest.segmentation_chunk_chars（默认 12000）切块
-        │  每块调用一次 LLM，使用类型对应的“原文复制”提示词
-        │  → StagedDocument[]（index、字段、confidence、source_pages）
-        │  on_chunk_progress 将 “AI analysis: i/n” 写入会话状态
+        │  超长单页按结构（标题/段落/换行）继续细分
+        │  相邻块保留 1 页重叠；按知识类型在切分后做去重
+        │  每块调用一次 LLM，使用类型对应的"原文复制"提示词
+        │  JSON 解析失败时：抢救最长合法前缀 → 触发修复重试 →
+        │                   按页二分递归（递归下限：1 页）
+        │  → StagedDocument[]（index、字段、confidence、source_pages、warnings）
+        │  on_chunk_progress 将 "AI analysis: i/n" 写入会话状态
         │
         ▼
 [4] 会话进入 READY 状态
@@ -73,13 +77,17 @@
 
 | 类型 | 后端 | 说明 |
 |---|---|---|
-| PDF | `pymupdf` (fitz) | 直接文本过短且页面含图片时回退 OCR |
-| XLSX/XLS | `openpyxl` | 一个 sheet 一页；行序列化为 `col=val` |
-| CSV | 标准库 `csv` | 自动检测编码，大文件分块为虚拟页 |
-| PPTX | `python-pptx` | 每张幻灯片一页，附演讲者备注 |
-| DOCX | `python-docx` | 段落聚合，表格拍平为文本 |
+| PDF | `pymupdf` (fitz) | `page.get_text` 抽取正文 + `page.find_tables()` 将表格渲染为竖线网格；图片型页面回退 PaddleOCR |
+| XLSX/XLS | `openpyxl` | 一个 sheet 一页；行渲染为 `\| col \| col \|` 竖线网格；顶部标注 sheet 名称 |
+| CSV | 标准库 `csv` | 自动检测编码（utf-8-sig / utf-8 / gb18030 / latin-1）；行以 tab 拼接 |
+| PPTX | `python-pptx` | 每张幻灯片一页；表格渲染为竖线网格；附演讲者备注 |
+| DOCX | `python-docx` | 段落聚合；表格渲染为竖线网格 |
 
-**OCR 回退**仅在 `ingest.ocr_enabled = true` 且直接抽取文本长度低于内部阈值时触发。PaddleOCR（`ocr_lang` 默认 `ch`）首次使用时懒加载，存在明显冷启动延迟。
+**表格感知**：PDF、DOCX、PPTX、XLSX 的表格统一以 `| 单元格 | 单元格 | 单元格 |` 形式渲染，使列/行关系在送入 LLM 时得以保留——无论横表（表头在上）还是竖表（表头在左），都按底层库返回的布局原样呈现。对 PDF 来说，`get_text` 的扁平 token 视图与表格网格视图**同时**送给 LLM。单元格中嵌入的 `|` 会替换为 `/` 以避免破坏网格结构。
+
+**PDF 文本清洗**：`_clean_extracted_text` 会剥离 NUL、软连字符（`\xad`）、BOM、换页符及其它常见的 C0 控制字符——这些都是 PDF 抽取器经常漏出的"隐形字符"；同时统一 Windows/Mac 换行符，将 3 行以上的空行折叠为 2 行。这意味着下游切分与 ES 索引无需再防御这些可能破坏检索或 JSON 解析的字符。
+
+**OCR 回退**仅在 `ingest.ocr_enabled = true` 且页面直接文本过短（或可打印字符比例偏低）且包含图片时触发。PaddleOCR（`ocr_lang` 默认 `ch`）首次使用时懒加载，存在明显冷启动延迟。OCR 结果**仅在**显著更长（>20%）**且**通过可打印字符健全性检测后，才会替换直接文本——避免 OCR 噪声覆盖原本质量良好的抽取文本。OCR 异常会被捕获并记录日志，默认保留直接文本。
 
 可选依赖通过 `_try_import` 加载——缺失某个后端（如 PaddleOCR）不会导致服务崩溃，但相关文件会失败并给出清晰的 `ImportError`。安装额外依赖：`pip install -e ".[ingest]"`。
 
@@ -91,13 +99,65 @@ LLM 在此扮演**结构化解析器**，不是写作者。三种系统提示（
 
 1. 完全原文复制——禁止改写、捏造或概括。
 2. 源文中缺失的字段填 `"—"`，禁止编造。
-3. 输出 JSON 数组，每条记录附带 `confidence` 评分（0.0–1.0）。
+3. 将 `| col | col | col |` 形式的行识别为表格行，保留单元格顺序。
+4. 输出 JSON 数组，每条记录附带 `confidence` 评分（0.0–1.0）。
 
-文本按 `segmentation_chunk_chars` 切块，相邻块保留 `_OVERLAP_PAGES = 1` 页重叠，避免跨块边界的条目被切断。每块调用一次 LLM，结果合并。
+### 切块
 
-**知识类型检测**（`detect_knowledge_type`）：当客户端未传 `knowledge_type_hint` 时，将前三页发送给 LLM 并要求三选一，结果决定使用哪个切分提示，以及最终写入哪个 ES 别名（`kb_alarm_v1` / `kb_setup_v1` / `kb_experience_v1`）。
+`chunk_pages()` 将页打包为受 `segmentation_chunk_chars` 约束的块，相邻块保留 `_OVERLAP_PAGES = 1` 页重叠，确保跨块边界的条目仍能被完整看到。
 
-**`project_hint` / `equipment_hint`** 会被注入切分提示，便于源文未显式提及时为文档预填项目/机台。用户仍可在预览阶段修改。
+打包前，`_split_oversized_page()` 会对任何单页超过 `max_chars` 的页进行**结构化细分**，优先级如下：
+
+1. **类标题边界** — markdown 标题、中文 `第N章/节`、英文 `Chapter N`、编号小节（`1.2.3 …`）、纯大写行。
+2. **段落分隔**（`\n\n`）。
+3. **行分隔**（`\n`）。
+4. **硬字符截断**（最后手段，仅在单行长度超过 `max_chars` 时使用）。
+
+细分得到的子页**保留原页码**，因此 `source_pages` 的可追溯性不受影响。这堵上了之前一个隐性漏洞——单个超大页（如 1 页的 DOCX、巨大的 sheet、长版 PDF 页）会越过 LLM 输入预算被悄悄送出。
+
+### JSON 健壮性
+
+LLM 的失败形式多样：输出被截断（中途撞上 `max_tokens`）、从噪声 PDF 复制了非法控制字符、加上 "Here is the JSON:" 之类的前言，或包了 markdown 围栏。`_parse_json_array()` 全部处理：
+
+1. 剥离 markdown 围栏，清洗 C0 控制字符。
+2. 直接尝试 `json.loads`。
+3. 失败后从 `[` 开始扫描，按括号/引号深度寻找**最长合法前缀**——即便响应在某条记录中途被截断，也能恢复已完成的条目。
+4. 将单个对象提升为只含一个元素的数组。
+
+如果某块仍解析失败，`_segment_chunk_with_fallback()` 启用两层恢复机制：
+
+- **修复重试**（每块至多一次）：将 LLM 自己的坏输出回传给它，要求重新输出合法 JSON。
+- **按页二分恢复**：将失败块在页边界一分为二，每半重新切分（递归下限：单页，此时干净放弃胜过反复折腾）。这就是应对"单条记录超过 `max_tokens`"的方案——块会持续缩小，直到该条目能装下。
+
+LLM 的网络/HTTP 异常同样会触发二分恢复，而不是直接丢弃整块。
+
+### 跨块去重
+
+`_deduplicate_entries()` 折叠由 1 页重叠产生的重复条目，按知识类型使用不同 key：
+
+| 类型 | 去重 key | 冲突保留规则 |
+|---|---|---|
+| ALARM | 归一化的 `error_code` | `confidence` 较高者胜 |
+| SETUP | 归一化的 `station` + `procedure` 前 80 字符 | `confidence` 较高者胜 |
+| EXPERIENCE | 归一化的 `problem` + `failure_desc` 前 80 字符 | `confidence` 较高者胜 |
+
+key 为空的条目**原样保留**，不会被相互折叠——边界条目交给人工复核，胜过被静默合并。
+
+### 知识类型检测
+
+`detect_knowledge_type()`：客户端未传 `knowledge_type_hint` 时，让 LLM 在 `alarm | setup | experience` 中三选一。送样时拼接**头部 + 中部 + 尾部**的页摘录（`_build_type_detection_sample`，每段约 800 字符），避免文件开头的封面、目录、前言主导分类。任何失败都默认归为 `experience`（schema 最松）。所选类型决定使用哪个切分提示以及最终写入哪个 ES 别名（`kb_alarm_v1` / `kb_setup_v1` / `kb_experience_v1`）。
+
+**一份文件一种类型**：文件被一次性分类，整个文件用同一个提示切分。真正混合了多种知识类型的文档（如一份 PDF 同时含报警表与调试流程）需要在导入前手动拆分。
+
+### 保真校验（反捏造）
+
+切分完成后，每个需要原文复制的字段（`content`、`resolution`、`procedure`、`failure_desc`）都会调用 `verify_extraction_fidelity()` 与源文本比对：先严格匹配**当前块文本**，再回退匹配**整篇文件文本**（处理跨块边界的合法内容）。校验失败时字段仍保留，但暂存文档会带上 `fabrication_warning: <field>` 标记供审阅。
+
+### Hint 与超时
+
+`project_hint` / `equipment_hint` 会被注入切分提示，便于源文未显式提及时为文档预填项目/机台。用户仍可在预览阶段修改。
+
+`_estimate_timeout()` 根据实际 payload 大小估算 HTTP 读超时，使用 CJK 感知的 token 估算（中文 ≈ 1.5 tok/字符，拉丁 ≈ 0.25 tok/字符）。超长块不会触发超时——它们会先撞上 `max_tokens` 上限，再走二分恢复路径。
 
 ---
 

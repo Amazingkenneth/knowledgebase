@@ -14,7 +14,11 @@ from kb.services.segmentation import (
     chunk_pages,
     verify_extraction_fidelity,
     _deduplicate_alarms_with_context,
+    _deduplicate_entries,
+    _parse_json_array,
+    _split_oversized_page,
 )
+from kb.models.taxonomy import KnowledgeType
 
 
 class TestExtractCSV:
@@ -126,3 +130,85 @@ class TestDeduplicateAlarms:
         ]
         result = _deduplicate_alarms_with_context(entries)
         assert len(result) == 2
+
+
+class TestUniversalDedup:
+    def test_setup_dedups_by_station(self) -> None:
+        entries = [
+            ({"station": "Loader 1", "procedure": "Step A then B", "confidence": 0.7}, "c1"),
+            ({"station": "Loader 1", "procedure": "Step A then B", "confidence": 0.9}, "c2"),
+            ({"station": "Unloader", "procedure": "X", "confidence": 0.8}, "c3"),
+        ]
+        result = _deduplicate_entries(entries, KnowledgeType.SETUP)
+        stations = sorted(e["station"] for e, _ in result)
+        assert stations == ["Loader 1", "Unloader"]
+        # Higher-confidence Loader 1 wins
+        loader = next(e for e, _ in result if e["station"] == "Loader 1")
+        assert loader["confidence"] == 0.9
+
+    def test_experience_dedups_by_problem(self) -> None:
+        entries = [
+            ({"problem": "P1", "failure_desc": "leak", "confidence": 0.6}, "c1"),
+            ({"problem": "P1", "failure_desc": "leak", "confidence": 0.9}, "c2"),
+        ]
+        result = _deduplicate_entries(entries, KnowledgeType.EXPERIENCE)
+        assert len(result) == 1
+        assert result[0][0]["confidence"] == 0.9
+
+    def test_empty_keys_pass_through(self) -> None:
+        entries = [
+            ({"station": "", "procedure": "", "confidence": 0.5}, "c1"),
+            ({"station": "", "procedure": "", "confidence": 0.6}, "c2"),
+        ]
+        result = _deduplicate_entries(entries, KnowledgeType.SETUP)
+        # Both kept — empty-keyed entries are not collapsed into each other
+        assert len(result) == 2
+
+
+class TestParseJsonArray:
+    def test_plain_array(self) -> None:
+        out = _parse_json_array('[{"a": 1}, {"b": 2}]')
+        assert out == [{"a": 1}, {"b": 2}]
+
+    def test_markdown_fence(self) -> None:
+        out = _parse_json_array('```json\n[{"a": 1}]\n```')
+        assert out == [{"a": 1}]
+
+    def test_single_object_promoted(self) -> None:
+        out = _parse_json_array('{"a": 1}')
+        assert out == [{"a": 1}]
+
+    def test_truncated_recovers_prefix(self) -> None:
+        # LLM ran out of tokens partway through the third entry
+        truncated = '[{"a": 1}, {"b": 2}, {"c": "incomp'
+        out = _parse_json_array(truncated)
+        assert out == [{"a": 1}, {"b": 2}]
+
+    def test_control_chars_stripped(self) -> None:
+        out = _parse_json_array('[{"a": "ok\x00here"}]')
+        assert out == [{"a": "okhere"}]
+
+    def test_leading_prose(self) -> None:
+        out = _parse_json_array('Here is the array:\n[{"a": 1}]')
+        assert out == [{"a": 1}]
+
+
+class TestSplitOversizedPage:
+    def test_small_page_unchanged(self) -> None:
+        page = (3, "short content")
+        assert _split_oversized_page(page, max_chars=100) == [page]
+
+    def test_preserves_page_number(self) -> None:
+        # Build a page with multiple heading-like sections, well over budget
+        text = "\n\n".join(f"1.{i} Section heading\n" + ("body " * 200) for i in range(1, 6))
+        sub_pages = _split_oversized_page((7, text), max_chars=400)
+        assert len(sub_pages) > 1
+        assert all(p[0] == 7 for p in sub_pages)
+        assert all(len(p[1]) <= 800 for p in sub_pages)  # some slack for joining
+
+    def test_hard_cut_when_no_separators(self) -> None:
+        # Single massive run with no breaks at all
+        text = "x" * 5000
+        sub_pages = _split_oversized_page((1, text), max_chars=1000)
+        assert len(sub_pages) >= 5
+        assert all(p[0] == 1 for p in sub_pages)

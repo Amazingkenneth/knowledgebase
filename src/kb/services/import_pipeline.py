@@ -221,7 +221,7 @@ class ImportPipeline:
                     info.message = f"Detecting document type ({len(pages)} pages)…"
                     session.message = f"Detecting type: {info.file_name}"
                     sample = "\n".join(text for _, text in pages[:3])
-                    kt = await detect_knowledge_type(self._settings, sample)
+                    kt = await detect_knowledge_type(self._settings, sample, pages=pages)
 
                 # Step 3: segment into structured documents
                 chunk_chars = self._settings.ingest.segmentation_chunk_chars
