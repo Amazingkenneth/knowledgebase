@@ -135,6 +135,10 @@ def render_segmentation_prompt(spec: TypeSpec) -> str:
     skip_lines = "\n".join(f"  - {s}" for s in spec.skip_if)
     hint_lines = "\n".join(f"  - {h}" for h in spec.boundary_hints)
 
+    required_names = [f.name for f in spec.fields if f.required]
+    required_clause = (
+        ", ".join(f'"{n}"' for n in required_names) if required_names else "none"
+    )
     return f"""\
 You are a {spec.display_name} document parser. Split the extracted text into individual entries.
 你也可以处理中文文档。
@@ -147,12 +151,18 @@ Rules / 规则:
    只使用原文，不要添加或改写任何内容。
 2. Output a JSON array. Each element has these fields:
 {chr(10).join(field_lines)}
-3. Use empty string "" (or "—" for required content fields) when a value is absent in the source.
+3. Use empty string "" for optional fields absent in the source.
 4. Table rows like "| col | col |" — treat each complete row as one logical record.
-5. ONLY extract {spec.type.value} entries. If the chunk also contains other
-   knowledge-type content (e.g. an alarm section in a setup document, or vice
-   versa), IGNORE that other content — do NOT force it into {spec.type.value} fields.
-   只提取 {spec.type.value} 类型的条目；其他类型的内容请直接忽略。
+5. ONLY extract {spec.type.value} entries. If the chunk contains NO {spec.type.value}
+   entries at all, return an empty array []. Do NOT emit skeleton entries with
+   empty required fields ({required_clause}) just to fill the array —
+   an empty array [] is the correct answer when no {spec.type.value} entries exist.
+   如果该段落不包含 {spec.type.value} 类型条目，请返回空数组 []，不要输出空字段占位条目。
+6. Required fields ({required_clause}) MUST be populated verbatim from the
+   source for every emitted entry. If you cannot find a required field's
+   value in the source, DROP the entry — do not output it.
+7. If the chunk also contains other knowledge-type content, IGNORE that
+   other content — do NOT force it into {spec.type.value} fields.
 
 Entry boundaries — look for:
 {hint_lines}
@@ -160,7 +170,7 @@ Entry boundaries — look for:
 Confidence scoring:
 {spec.confidence_guide}
 
-If the input has NO {spec.type.value} entries (return an empty array []):
+Return an empty array [] if any of these apply:
 {skip_lines}
 
 Example input ({spec.csv_source or 'canonical sample'}):
@@ -190,11 +200,23 @@ def render_router_prompt(specs: dict[KnowledgeType, TypeSpec]) -> str:
 Classify the text chunk by which knowledge types it contains.
 对文本进行分类，识别其中包含哪些知识类型。
 
-Return JSON: {{"types": ["alarm"|"setup"|"experience", ...]}}
-- Return ALL types present in the chunk (a single chunk may mix types — e.g.
-  an alarm description followed by a setup procedure → return both).
+Return JSON: {{"types": ["alarm"|"setup"|"experience", ...]}}.
+
+Rules:
+- Default: return EXACTLY ONE type — the single dominant content type.
+- Return multiple types ONLY when entries of multiple types BOTH appear with
+  their own distinct structure (e.g. a standalone alarm-code table AND a
+  separate numbered tuning procedure for a station — each with its own
+  heading and its own entries).
+- Negative example: an alarm whose "Remedy" / "解除流程" section contains
+  numbered steps is STILL only {{"types": ["alarm"]}} — the remedy steps
+  are part of the alarm entry, not a separate setup procedure.
+- Negative example: a setup procedure that references alarm codes inline
+  is STILL only {{"types": ["setup"]}} — references to alarms do not make
+  a setup chunk an alarm chunk.
 - Return {{"types": ["skip"]}} ONLY if the chunk is entirely non-content.
-- 如果同一段落同时包含报警和调试步骤等多种类型，必须全部列出。
+- 默认只返回单一主导类型；只有当不同类型的条目各自独立成块时才返回多个类型。
+  报警条目中的解除步骤仍属于报警，不要额外标为 setup。
 
 Types:
 {chr(10).join(type_lines)}

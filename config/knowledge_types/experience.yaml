@@ -33,6 +33,20 @@ fields:
   - name: notes
     label_zh: 注意事项
     desc: extra warnings or context — optional
+  - name: project
+    label_zh: 项目
+    csv_column: 项目
+    desc: |
+      project name copied verbatim from the source if explicitly stated
+      (look for "Project: X" / "项目: X" / "所属项目: X" lines or table cells).
+      Use empty string "" if not stated. Do NOT guess from filename or context.
+  - name: equipment
+    label_zh: 机台
+    csv_column: 机台
+    desc: |
+      equipment name copied verbatim from the source if explicitly stated
+      (look for "Equipment: X" / "机台: X" / "设备: X" lines or table cells).
+      Use empty string "" if not stated. Do NOT guess from filename or context.
   - name: source_pages
     label_zh: 来源页码
     csv_column: PPT页面
@@ -80,5 +94,7 @@ example_output:
       3) 加装磁条防尘罩；
       4) 建立每 1500h 强制清洁 PM 项。
     notes: ""
+    project: ""
+    equipment: ""
     source_pages: [4]
     confidence: 0.93

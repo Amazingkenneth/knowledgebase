@@ -76,7 +76,8 @@ async def test_locked_type_bypasses_classifier():
             seg_calls += 1
             body = _mk_response(json.dumps([{
                 "error_code": "1030", "title": "Cycle time exceeded",
-                "content": "—", "resolution": "check program",
+                "content": "Cycle time exceeded the configured limit.",
+                "resolution": "check program",
                 "source_pages": [1], "confidence": 0.9,
             }]))
         resp = type("R", (), {})()
@@ -135,7 +136,8 @@ async def test_multi_type_chunk_routed_to_each_type():
         elif "alarm" in sys_msg.lower() and "parser" in sys_msg.lower():
             body = _mk_response(json.dumps([{
                 "error_code": "E1001", "title_zh": "真空丢失", "title_en": "Vacuum Loss",
-                "content": "vacuum loss", "resolution": "—",
+                "content": "vacuum loss on end effector",
+                "resolution": "1. enter safe mode 2. inspect",
                 "source_pages": [1], "confidence": 0.9,
             }]))
         else:
@@ -159,6 +161,110 @@ async def test_multi_type_chunk_routed_to_each_type():
     assert KnowledgeType.SETUP in types
     # No no_entries hint should fire — both parsers produced output.
     assert not any(s.reason == "no_entries" for s in skipped)
+
+
+@pytest.mark.asyncio
+async def test_skeleton_entries_are_dropped():
+    """LLM-emitted skeleton entries (empty required fields, conf 0.0) must be
+    dropped, not surfaced as documents. This was the dominant failure mode on
+    alarm-only files routed multi-type by the classifier."""
+    pages = [(1, "300411 Axis drive error reading file. Some content here.")]
+
+    async def fake_post(self, url, **kwargs):  # noqa: ARG001
+        msgs = kwargs.get("json", {}).get("messages", [])
+        sys_msg = msgs[0]["content"] if msgs else ""
+        if "Classify" in sys_msg:
+            body = _mk_response(json.dumps({"types": ["setup"]}))
+        else:
+            # Skeleton entries the way Qwen-turbo actually emitted them on
+            # alarm-only chunks routed as setup: stations populated from
+            # taxonomy noise, every other required field empty, conf 0.0.
+            body = _mk_response(json.dumps([
+                {"station": "FTU", "procedure": "", "source_pages": [1], "confidence": 0.0},
+                {"station": "Stage", "procedure": "", "source_pages": [1], "confidence": 0.0},
+            ]))
+        resp = type("R", (), {})()
+        resp.status_code = 200
+        resp.json = lambda: body
+        resp.text = ""
+        return resp
+
+    with patch("httpx.AsyncClient.post", new=fake_post):
+        docs, skipped = await segment_text(
+            _settings(), pages, knowledge_type=None, file_name="alarms.docx",
+        )
+    assert docs == [], "skeleton entries with empty required fields must be dropped"
+    # The route returned zero valid entries → surface no_entries hint.
+    assert any(s.reason == "no_entries" for s in skipped)
+
+
+@pytest.mark.asyncio
+async def test_low_confidence_entries_are_dropped():
+    """Entries below the hard confidence floor (0.3) are dropped even if all
+    required fields are populated — the LLM uses ≤0.2 to mean 'guessing'."""
+    pages = [(1, "Some text.")]
+
+    async def fake_post(self, url, **kwargs):  # noqa: ARG001
+        msgs = kwargs.get("json", {}).get("messages", [])
+        sys_msg = msgs[0]["content"] if msgs else ""
+        if "Classify" in sys_msg:
+            body = _mk_response(json.dumps({"types": ["alarm"]}))
+        else:
+            body = _mk_response(json.dumps([{
+                "error_code": "X1", "content": "filled", "resolution": "filled",
+                "source_pages": [1], "confidence": 0.1,  # below floor
+            }]))
+        resp = type("R", (), {})()
+        resp.status_code = 200
+        resp.json = lambda: body
+        resp.text = ""
+        return resp
+
+    with patch("httpx.AsyncClient.post", new=fake_post):
+        docs, _ = await segment_text(
+            _settings(), pages, knowledge_type=None, file_name="x.pdf",
+        )
+    assert docs == []
+
+
+@pytest.mark.asyncio
+async def test_router_false_positive_does_not_warn_when_dominant_type_succeeds():
+    """When the router fans out (alarm+setup) and the secondary type returns
+    skeleton noise, the no_entries hint must NOT fire — the dominant route
+    produced valid entries, so the secondary is a router false-positive."""
+    pages = [(1, "300411 Axis drive error. Definitions: foo. Remedy: bar.")]
+
+    async def fake_post(self, url, **kwargs):  # noqa: ARG001
+        msgs = kwargs.get("json", {}).get("messages", [])
+        sys_msg = msgs[0]["content"] if msgs else ""
+        if "Classify" in sys_msg:
+            body = _mk_response(json.dumps({"types": ["alarm", "setup"]}))
+        elif "alarm" in sys_msg.lower() and "parser" in sys_msg.lower():
+            body = _mk_response(json.dumps([{
+                "error_code": "300411", "content": "Definitions: foo.",
+                "resolution": "Remedy: bar.",
+                "source_pages": [1], "confidence": 0.95,
+            }]))
+        else:  # setup parser asked to extract from alarm chunk → skeleton noise
+            body = _mk_response(json.dumps([{
+                "station": "FTU", "procedure": "",
+                "source_pages": [1], "confidence": 0.0,
+            }]))
+        resp = type("R", (), {})()
+        resp.status_code = 200
+        resp.json = lambda: body
+        resp.text = ""
+        return resp
+
+    with patch("httpx.AsyncClient.post", new=fake_post):
+        docs, skipped = await segment_text(
+            _settings(), pages, knowledge_type=None, file_name="alarms.docx",
+        )
+    assert len(docs) == 1
+    assert docs[0].knowledge_type == KnowledgeType.ALARM
+    assert not any(s.reason == "no_entries" for s in skipped), (
+        "no_entries hint must not fire when a sibling type produced valid entries"
+    )
 
 
 @pytest.mark.asyncio

@@ -209,19 +209,32 @@ def extract_docx(path: Path) -> list[PageText]:
         raise ImportError("python-docx is required for DOCX extraction: pip install python-docx")
 
     from docx import Document
+    from docx.oxml.ns import qn
+    from docx.table import Table
+    from docx.text.paragraph import Paragraph
 
     doc = Document(str(path))
+
+    # Walk body in document order so paragraphs and tables stay interleaved
+    # the way a human reading the doc sees them. The previous "all paragraphs
+    # then all tables" pass destroyed locality between an entry written in
+    # prose and a following one-row table that named its Project / Equipment.
+    p_tag = qn("w:p")
+    tbl_tag = qn("w:tbl")
+    body = doc.element.body
     texts: list[str] = []
-    for para in doc.paragraphs:
-        t = para.text.strip()
-        if t:
-            texts.append(t)
-    for table in doc.tables:
-        rendered = _render_office_table(
-            [[cell.text for cell in row.cells] for row in table.rows]
-        )
-        if rendered:
-            texts.append(rendered)
+    for child in body.iterchildren():
+        if child.tag == p_tag:
+            t = Paragraph(child, body).text.strip()
+            if t:
+                texts.append(t)
+        elif child.tag == tbl_tag:
+            tbl = Table(child, body)
+            rendered = _render_office_table(
+                [[cell.text for cell in row.cells] for row in tbl.rows]
+            )
+            if rendered:
+                texts.append(rendered)
     full_text = "\n".join(texts)
     if not full_text.strip():
         return []

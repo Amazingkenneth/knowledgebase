@@ -28,6 +28,20 @@ fields:
     label_zh: 注意事项
     csv_column: 注意事项
     desc: warnings or cautions — optional
+  - name: project
+    label_zh: 项目
+    csv_column: 项目
+    desc: |
+      project name copied verbatim from the source if explicitly stated
+      (look for "Project: X" / "项目: X" / "所属项目: X" lines or table cells).
+      Use empty string "" if not stated. Do NOT guess from filename or context.
+  - name: equipment
+    label_zh: 机台
+    csv_column: 机台
+    desc: |
+      equipment name copied verbatim from the source if explicitly stated
+      (look for "Equipment: X" / "机台: X" / "设备: X" lines or table cells).
+      Use empty string "" if not stated. Do NOT guess from filename or context.
   - name: source_pages
     label_zh: 来源页码
     csv_column: PPT页面
@@ -73,5 +87,7 @@ example_output:
       2. 进入工程模式 → Camera → Calibration，运行 Auto Focus。
       3. 采集 5×5 棋盘格图像，reprojection error 需 ≤ 0.15 px。
     notes: "切勿用棉签触碰镜头镀膜面。"
+    project: ""
+    equipment: ""
     source_pages: [3]
     confidence: 0.92

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
@@ -234,13 +235,44 @@ class ImportPipeline:
                 # If no knowledge_type_hint, pass None → per-chunk routing
                 # (supports mixed-type files and skips non-content pages).
                 seg_type = knowledge_type_hint
+
+                # Filename-based hint fallback. If the user didn't supply
+                # project/equipment hints but the filename contains a token
+                # that matches a taxonomy value (e.g. "PDX-aligner-faults.pdf"
+                # → project=PDX, equipment=Aligner), use that as the hint.
+                # User can still override per-doc in the preview UI.
+                effective_project = project_hint
+                effective_equipment = equipment_hint
+                if not effective_project or not effective_equipment:
+                    fn_project, fn_equipment = _detect_taxonomy_from_filename(
+                        info.file_name, self._taxonomy,
+                    )
+                    if not effective_project and fn_project:
+                        effective_project = fn_project
+                        log.info(
+                            "Auto-detected project=%s from filename %s",
+                            fn_project, info.file_name,
+                        )
+                    if not effective_equipment and fn_equipment:
+                        effective_equipment = fn_equipment
+                        log.info(
+                            "Auto-detected equipment=%s from filename %s",
+                            fn_equipment, info.file_name,
+                        )
+
                 docs, skipped = await segment_text(
                     self._settings, pages, seg_type, info.file_name,
-                    project_hint, equipment_hint,
+                    effective_project, effective_equipment,
                     on_chunk_progress=_on_progress,
                 )
 
+                # Resolve project/equipment against the taxonomy. Entry values
+                # supplied by the LLM (verbatim from the source) take priority,
+                # then filename-detected hints (already folded into the doc by
+                # the segmenter), then the cross-project bucket "所有项目" so
+                # the reviewer is never blocked from committing.
                 for doc in docs:
+                    _resolve_taxonomy_fields(doc, self._taxonomy, info.file_name)
                     doc.index = doc_index
                     doc_index += 1
                 all_docs.extend(docs)
@@ -368,6 +400,84 @@ class ImportPipeline:
         return None
 
 
+# Tokenizer used for filename → taxonomy detection. Split on anything that's
+# not a CJK character or alphanumeric. Empty tokens are discarded.
+_FILENAME_TOKEN_RE = re.compile(r"[^a-zA-Z0-9一-鿿]+")
+
+
+def _detect_taxonomy_from_filename(
+    filename: str, taxonomy: Taxonomy,
+) -> tuple[str | None, str | None]:
+    """Return (project, equipment) inferred from filename tokens.
+
+    A taxonomy value matches when it appears as a whole lowercase token in
+    the filename stem. Substring-of-token matches are rejected to avoid
+    false positives like "Stage" matching a filename containing "stages".
+    Returns the first match for each axis; None when nothing matches.
+    """
+    stem = Path(filename).stem
+    tokens = {t for t in _FILENAME_TOKEN_RE.split(stem.lower()) if t}
+    if not tokens:
+        return None, None
+    project = next(
+        (p for p in taxonomy.projects if p.lower() in tokens),
+        None,
+    )
+    equipment = next(
+        (e for e in taxonomy.equipment if e.lower() in tokens),
+        None,
+    )
+    return project, equipment
+
+
+_DEFAULT_PROJECT_FALLBACK = "所有项目"
+
+
+def _resolve_taxonomy_fields(
+    doc: StagedDocument, taxonomy: Taxonomy, file_name: str,
+) -> None:
+    """Validate doc.project / doc.equipment against the taxonomy in-place.
+
+    Values are matched case-insensitively but stored as the canonical
+    taxonomy casing. Unknown values are cleared (with a reviewer-visible
+    warning) so the dropdown doesn't end up holding free-form text the
+    commit step would reject anyway. Project finally falls back to the
+    `所有项目` cross-project bucket — never bar the user from committing
+    a doc just because the source didn't name a known project.
+    """
+    project_map = {p.lower(): p for p in taxonomy.projects}
+    equipment_map = {e.lower(): e for e in taxonomy.equipment}
+
+    raw_project = (doc.project or "").strip()
+    raw_equipment = (doc.equipment or "").strip()
+
+    if raw_project:
+        canonical = project_map.get(raw_project.lower())
+        if canonical:
+            doc.project = canonical
+        else:
+            log.info(
+                "Dropping unknown project %r on %s doc %d (not in taxonomy)",
+                raw_project, file_name, doc.index,
+            )
+            doc.warnings.append(f"unknown_project: {raw_project}")
+            doc.project = ""
+    if raw_equipment:
+        canonical = equipment_map.get(raw_equipment.lower())
+        if canonical:
+            doc.equipment = canonical
+        else:
+            log.info(
+                "Dropping unknown equipment %r on %s doc %d (not in taxonomy)",
+                raw_equipment, file_name, doc.index,
+            )
+            doc.warnings.append(f"unknown_equipment: {raw_equipment}")
+            doc.equipment = ""
+
+    if not doc.project and _DEFAULT_PROJECT_FALLBACK in taxonomy.projects:
+        doc.project = _DEFAULT_PROJECT_FALLBACK
+
+
 def _build_extraction_summary(
     n_docs: int,
     skipped: list[SkippedChunk],
@@ -383,7 +493,6 @@ def _build_extraction_summary(
     pretty = {
         "non_content": "non-content page(s) skipped (covers/TOC/preface)",
         "no_entries": "page(s) with no extractable entries",
-        "low_confidence": "low-confidence page(s) — please review",
     }
     summary_bits = [f"{count} {pretty.get(reason, reason)}" for reason, count in by_reason.items()]
     parts.append("; ".join(summary_bits))

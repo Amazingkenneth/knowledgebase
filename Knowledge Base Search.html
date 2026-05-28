@@ -4909,7 +4909,10 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
   const confClass = (c) => c >= 0.8 ? 'high' : c >= 0.5 ? 'med' : 'low';
   const acceptedCount = documents.filter(d => d.accepted).length;
   const rejectedCount = documents.length - acceptedCount;
-  const docsWithEmptyRequired = documents.filter(d => d.accepted && (!d.project || !d.equipment));
+  // Project is required by taxonomy validation; equipment is optional. Flag
+  // only docs missing a project so the reviewer isn't badgered about docs
+  // whose source genuinely doesn't name a piece of equipment.
+  const docsWithEmptyRequired = documents.filter(d => d.accepted && !d.project);
 
   return (
     <div className="import-page">
@@ -5093,9 +5096,9 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
 
             {docsWithEmptyRequired.length > 0 && (
               <div style={{ padding: '10px 14px', borderRadius: 'var(--radius)', background: 'color-mix(in oklab, var(--loose) 10%, var(--surface))', border: '1px solid color-mix(in oklab, var(--loose) 30%, var(--border))', fontSize: '12.5px', color: 'var(--loose)', marginBottom: 12 }}>
-                ⚠ {docsWithEmptyRequired.length} 条已接受文档缺少 项目/机台 字段，提交时将跳过。请在下方填写或取消选中。
+                ⚠ {docsWithEmptyRequired.length} 条已接受文档缺少 项目 字段，提交时将跳过。请在下方填写或取消选中。
                 <span style={{ display: 'block', marginTop: 2, color: 'var(--ink-2)' }}>
-                  {docsWithEmptyRequired.length} accepted document(s) have empty Project / Equipment — they will fail on commit unless filled in or unchecked.
+                  {docsWithEmptyRequired.length} accepted document(s) have empty Project — they will fail on commit unless filled in or unchecked.
                 </span>
               </div>
             )}
@@ -5232,7 +5235,7 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
                 </div>
                 {docsWithEmptyRequired.length > 0 && (
                   <div style={{ fontSize: '11.5px', color: 'var(--loose)' }}>
-                    ⚠ {docsWithEmptyRequired.length} 条缺少项目/机台，提交将部分失败 · {docsWithEmptyRequired.length} missing project/equipment — will error on commit
+                    ⚠ {docsWithEmptyRequired.length} 条缺少项目，提交将部分失败 · {docsWithEmptyRequired.length} missing project — will error on commit
                   </div>
                 )}
               </div>

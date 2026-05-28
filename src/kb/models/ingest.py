@@ -32,7 +32,7 @@ class SkippedChunk(BaseModel):
     what was filtered and why, in plain language."""
     source_file: str
     page_range: str
-    reason: str  # "non_content" | "no_entries" | "low_confidence"
+    reason: str  # "non_content" | "no_entries"
     hint: str
 
 

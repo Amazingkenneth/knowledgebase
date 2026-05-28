@@ -9,12 +9,17 @@ Robustness layers (outer → inner):
   1. Structural chunking: prefer heading/paragraph boundaries over hard
      char-count cuts; split oversized single pages instead of overflowing.
   2. JSON salvage: extract the longest valid JSON-array prefix from a
-     partial / truncated LLM response before declaring failure.
+     partial / truncated LLM response; if that fails, sweep for every
+     balanced `{...}` substring that parses on its own.
   3. Repair retry: on JSON failure, ask the model once to re-emit valid JSON.
   4. Binary-split fallback: if a chunk still fails (typically because a
      single entry exceeds max_tokens), split the chunk in half on a page
      boundary and recurse. Down to one page, then one structural block.
-  5. Universal dedup across overlapping chunks (per knowledge type).
+  5. Entry validation: drop entries that lack required content fields or
+     fall below the hard confidence floor. Catches the router-false-positive
+     case where a per-type segmenter is asked to extract entries from a
+     chunk that has none and the LLM emits empty-field skeletons.
+  6. Universal dedup across overlapping chunks (per knowledge type).
 """
 
 from __future__ import annotations
@@ -42,9 +47,15 @@ log = logging.getLogger("kb.segmentation")
 
 _OVERLAP_PAGES = 1
 _MIN_SUBCHUNK_PAGES = 1  # recursion floor for binary-split fallback
-# Chunks whose top-confidence entry is below this threshold are surfaced as
-# low-confidence skips so the user can review them rather than silently dropping.
-_LOW_CONFIDENCE_FLOOR = 0.3
+# Hard-drop entries whose confidence is below this threshold. The LLM uses
+# ≤0.2 to mean "I had to guess / no real entry here"; surfacing those as
+# documents wastes the reviewer's time and was the dominant source of the
+# "0% confidence, blank fields" noise observed on alarm-only files routed
+# multi-type by the classifier.
+_HARD_DROP_CONFIDENCE = 0.3
+# Field values that mean "absent" — used by entry validation. The spec
+# instructs the LLM to emit "—" for required content fields it can't find.
+_EMPTY_VALUES = frozenset({"", "—", "-", "n/a", "na", "none", "null"})
 
 
 # ── LLM call ─────────────────────────────────────────────────────────────────
@@ -108,13 +119,58 @@ def _strip_code_fence(text: str) -> str:
     return text.strip()
 
 
-# Invalid JSON control chars: C0 controls except tab (\x09), LF (\x0a), CR (\x0d)
-_CONTROL_CHAR_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
-
-
 def _sanitize_json(text: str) -> str:
-    """Strip control characters that are illegal inside JSON strings."""
-    return _CONTROL_CHAR_RE.sub("", text)
+    """Escape / strip raw control characters that are illegal inside JSON strings.
+
+    Per RFC 8259, U+0000–U+001F (including TAB U+0009, LF U+000A, CR U+000D)
+    MUST be escaped inside JSON string literals. Models like Qwen-turbo
+    routinely emit raw TABs and newlines inside `content` / `resolution`
+    strings, which then trips `json.loads` with "Invalid control character at
+    line X column Y". This was the dominant root cause of the
+    `Unrecoverable JSON: char 0` failures observed in the wild.
+
+    Strategy:
+      * Inside strings: escape TAB/LF/CR to their JSON forms (\\t, \\n, \\r);
+        drop other C0 controls (their meaning in extracted text is rarely
+        useful and they cannot be represented without ambiguity).
+      * Outside strings: leave whitespace as-is — TAB/LF/CR are valid JSON
+        between-token whitespace.
+    """
+    out: list[str] = []
+    in_str = False
+    escape = False
+    for ch in text:
+        if escape:
+            out.append(ch)
+            escape = False
+            continue
+        if in_str:
+            if ch == "\\":
+                out.append(ch)
+                escape = True
+                continue
+            if ch == '"':
+                in_str = False
+                out.append(ch)
+                continue
+            if ch == "\t":
+                out.append("\\t")
+                continue
+            if ch == "\n":
+                out.append("\\n")
+                continue
+            if ch == "\r":
+                out.append("\\r")
+                continue
+            code = ord(ch)
+            if code < 0x20 or code == 0x7f:
+                continue  # drop other C0 controls
+            out.append(ch)
+        else:
+            if ch == '"':
+                in_str = True
+            out.append(ch)
+    return "".join(out)
 
 
 # ── JSON parsing / salvage ───────────────────────────────────────────────────
@@ -157,7 +213,68 @@ def _parse_json_array(raw: str) -> list[dict[str, Any]]:
     if salvaged_list is not None:
         return salvaged_list
 
+    # Last-ditch: walk the full text collecting every balanced top-level
+    # JSON object that parses on its own. Catches responses shaped like
+    # `[\nprose...{...}{...}\n]` where the outer-array salvage gives up
+    # because nothing legal sits between objects.
+    sweep = _sweep_json_objects(cleaned)
+    if sweep:
+        return sweep
+
     raise json.JSONDecodeError("Unrecoverable JSON", cleaned, start)
+
+
+def _sweep_json_objects(text: str) -> list[dict[str, Any]]:
+    """Find every balanced `{...}` substring in text that parses as a dict.
+
+    This is the bottom-of-the-barrel recovery: it ignores commas, array
+    syntax, and any other structural context. It exists for the failure
+    mode where the LLM emits `[` followed by non-JSON content followed
+    by recoverable object fragments — observed when a per-type segmenter
+    is asked to extract entries from a chunk that contains none, and the
+    model improvises.
+    """
+    out: list[dict[str, Any]] = []
+    i = 0
+    while i < len(text):
+        if text[i] != "{":
+            i += 1
+            continue
+        depth = 0
+        in_str = False
+        escape = False
+        end = -1
+        for j in range(i, len(text)):
+            ch = text[j]
+            if escape:
+                escape = False
+                continue
+            if in_str:
+                if ch == "\\":
+                    escape = True
+                elif ch == '"':
+                    in_str = False
+                continue
+            if ch == '"':
+                in_str = True
+                continue
+            if ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    end = j
+                    break
+        if end == -1:
+            break  # unclosed object — no more salvageable objects ahead
+        try:
+            obj = json.loads(text[i: end + 1])
+            if isinstance(obj, dict):
+                out.append(obj)
+        except json.JSONDecodeError:
+            pass
+        i = end + 1
+    return out
 
 
 def _salvage_json_array(text: str) -> list[dict[str, Any]] | None:
@@ -551,21 +668,14 @@ async def segment_text(
             )
             per_type_results[kt] = len(entries)
             if entries:
-                top_conf = max((e.get("confidence", 0) or 0) for e, _ in entries)
-                if top_conf < _LOW_CONFIDENCE_FLOOR:
-                    skipped.append(SkippedChunk(
-                        source_file=file_name,
-                        page_range=page_range,
-                        reason="low_confidence",
-                        hint=(
-                            f"AI was unsure these pages contain {kt.value} entries "
-                            f"(confidence {top_conf:.2f}). Entries are still included "
-                            "below — please review carefully or reject."
-                        ),
-                    ))
                 parsed_by_type.setdefault(kt, []).extend(entries)
 
         # Whole-chunk no-entry hint only if EVERY routed type came back empty.
+        # With validation now dropping skeleton/low-confidence noise upstream,
+        # a routed-type that returns 0 here is genuinely empty — but if the
+        # router fanned out to multiple types and at least one produced
+        # entries, the empty types are router false-positives and surfacing
+        # them as "no entries" warnings just confuses the reviewer.
         if all(n == 0 for n in per_type_results.values()):
             missed = "/".join(kt.value for kt in chunk_types)
             skipped.append(SkippedChunk(
@@ -656,14 +766,30 @@ async def _segment_chunk_with_fallback(
 
     try:
         entries = _parse_json_array(raw_response)
+        valid = _filter_valid_entries(entries, spec, knowledge_type, page_range)
+        if valid:
+            return [(e, normalized_chunk) for e in valid]
+        # Parsed OK but nothing valid. Two sub-cases:
+        #   - LLM correctly returned [] → empty array, no salvage needed.
+        #   - LLM returned skeleton/low-confidence noise that all got filtered.
+        # In either case, this is *not* a parse failure — do not retry or
+        # binary-split. Return empty so the caller can decide whether this
+        # routed type was a false positive.
         if entries:
-            return [(e, normalized_chunk) for e in entries]
-        log.warning("LLM returned empty entries for pages %s", page_range)
+            log.info(
+                "LLM returned %d entr%s for pages %s but none passed validation "
+                "(empty required fields or confidence < %.2f) — likely a router "
+                "false-positive for type=%s",
+                len(entries), "y" if len(entries) == 1 else "ies",
+                page_range, _HARD_DROP_CONFIDENCE, knowledge_type.value,
+            )
         return []
     except json.JSONDecodeError as exc:
         log.warning(
-            "Invalid JSON from LLM for pages %s (%s) — attempting recovery",
-            page_range, exc,
+            "Invalid JSON from LLM for pages %s type=%s (%s) — "
+            "attempting recovery. Raw response (%d chars): %r",
+            page_range, knowledge_type.value, exc,
+            len(raw_response), raw_response[:500],
         )
 
     # Layer 2: repair-prompt retry, but only once per chunk.
@@ -671,8 +797,18 @@ async def _segment_chunk_with_fallback(
         repaired = await _try_repair_json(
             settings, messages, raw_response,
         )
-        if repaired:
-            return [(e, normalized_chunk) for e in repaired]
+        if repaired is not None:
+            valid = _filter_valid_entries(repaired, spec, knowledge_type, page_range)
+            if valid:
+                return [(e, normalized_chunk) for e in valid]
+            if repaired:
+                log.info(
+                    "Repair retry parsed %d entr%s for pages %s but none passed "
+                    "validation — treating as no-entries for type=%s",
+                    len(repaired), "y" if len(repaired) == 1 else "ies",
+                    page_range, knowledge_type.value,
+                )
+            return []
 
     # Layer 3: binary-split recursion.
     return await _binary_split_recover(
@@ -681,6 +817,60 @@ async def _segment_chunk_with_fallback(
         spec=spec,
         reason="json parse failure after repair",
     )
+
+
+# ── Entry validation ─────────────────────────────────────────────────────────
+
+def _is_empty_value(v: Any) -> bool:
+    """True when a parsed-entry field value is effectively absent."""
+    if v is None:
+        return True
+    if isinstance(v, str):
+        return v.strip().lower() in _EMPTY_VALUES
+    if isinstance(v, (list, tuple, dict)):
+        return len(v) == 0
+    return False
+
+
+def _filter_valid_entries(
+    entries: list[dict[str, Any]],
+    spec: TypeSpec,
+    knowledge_type: KnowledgeType,
+    page_range: str,
+) -> list[dict[str, Any]]:
+    """Drop entries that fail required-field or confidence checks.
+
+    An entry is invalid when:
+      * any field marked `required: true` in the spec is empty/"—"/etc., OR
+      * its confidence is below `_HARD_DROP_CONFIDENCE`.
+
+    This is the primary defense against the router-false-positive failure
+    mode where a per-type segmenter is asked to extract entries from a
+    chunk that has none, and the LLM emits skeleton dicts with empty
+    fields and confidence 0.0 instead of an empty array.
+    """
+    required = spec.required_fields
+    valid: list[dict[str, Any]] = []
+    for e in entries:
+        try:
+            conf = float(e.get("confidence", 0.0) or 0.0)
+        except (TypeError, ValueError):
+            conf = 0.0
+        if conf < _HARD_DROP_CONFIDENCE:
+            log.debug(
+                "Dropping %s entry on pages %s: confidence %.2f < %.2f",
+                knowledge_type.value, page_range, conf, _HARD_DROP_CONFIDENCE,
+            )
+            continue
+        missing = [f for f in required if _is_empty_value(e.get(f))]
+        if missing:
+            log.debug(
+                "Dropping %s entry on pages %s: required fields empty: %s",
+                knowledge_type.value, page_range, missing,
+            )
+            continue
+        valid.append(e)
+    return valid
 
 
 def _build_user_message(
@@ -703,8 +893,14 @@ async def _try_repair_json(
     settings: Settings,
     original_messages: list[dict[str, str]],
     bad_response: str,
-) -> list[dict[str, Any]]:
-    """One-shot repair: show the LLM its own bad output and ask for fix."""
+) -> list[dict[str, Any]] | None:
+    """One-shot repair: show the LLM its own bad output and ask for fix.
+
+    Returns:
+      * `list[dict]` (possibly empty) if the repaired response parsed.
+      * `None` if the repair LLM call or its JSON parse failed — signals
+        the caller to fall back to binary-split recovery.
+    """
     repair_messages = original_messages + [
         {"role": "assistant", "content": bad_response[:4000]},
         {
@@ -713,16 +909,24 @@ async def _try_repair_json(
                 "Your previous response was not valid JSON. "
                 "Re-emit the SAME entries as a valid JSON array only. "
                 "No prose, no markdown fence, no explanation. "
+                "If there are no entries to extract, return an empty array []. "
                 "If you ran out of room, return only the complete entries you finished."
             ),
         },
     ]
     try:
         repaired_raw = await _call_llm(settings, repair_messages)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Repair LLM call failed: %s", exc)
+        return None
+    try:
         return _parse_json_array(repaired_raw)
-    except (json.JSONDecodeError, Exception) as exc:  # noqa: BLE001
-        log.warning("Repair attempt failed: %s", exc)
-        return []
+    except json.JSONDecodeError as exc:
+        log.warning(
+            "Repair response still unparseable: %s. Raw (%d chars): %r",
+            exc, len(repaired_raw), repaired_raw[:500],
+        )
+        return None
 
 
 async def _binary_split_recover(
@@ -879,11 +1083,18 @@ def _parsed_to_staged(
         confidence = 0.5
     warnings: list[str] = []
 
+    # Prefer values the LLM extracted verbatim from the source entry
+    # (e.g. "Project: PDX" / "Equipment: Aligner" rows in alarm tables).
+    # Fall back to the upload-time hint when the entry has none. Validation
+    # against the taxonomy + the "所有项目" fallback happen in the pipeline
+    # layer so the segmenter stays decoupled from the taxonomy.
+    entry_project = str(entry.get("project", "") or "").strip()
+    entry_equipment = str(entry.get("equipment", "") or "").strip()
     doc = StagedDocument(
         index=idx,
         knowledge_type=knowledge_type,
-        project=project_hint or "",
-        equipment=equipment_hint or "",
+        project=entry_project or (project_hint or ""),
+        equipment=entry_equipment or (equipment_hint or ""),
         source_file=file_name,
         source_pages=source_pages,
         confidence=confidence,
