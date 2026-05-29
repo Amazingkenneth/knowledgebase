@@ -188,7 +188,7 @@ To enable full kNN support: set `KB_EMBEDDING__API_KEY` in `.env` then restart u
 
 **Cannot connect to Elasticsearch**
 
-- **Docker Compose (Option A):** the `app` service reaches ES at `http://elasticsearch:9200` (set automatically) and waits for its healthcheck. Check `docker compose ps` — if `elasticsearch` is not `healthy`, inspect `docker compose logs elasticsearch` (most often it needs more memory; the image requests 1 GB heap).
+- **Docker Compose (Option A):** the `app` service reaches ES at `http://elasticsearch:9200` (set automatically) and waits for its healthcheck. Check `docker compose ps` — if `elasticsearch` is not `healthy`, inspect `docker compose logs elasticsearch`. Two common causes: it needs more memory (the image requests 1 GB heap), or on stricter Linux hosts the kernel's `vm.max_map_count` is too low — raise it with `sudo sysctl -w vm.max_map_count=262144` (persist in `/etc/sysctl.conf`).
 - **Local (Option B):** the app connects to `http://localhost:9200` from `config/settings.yaml`. Confirm the container is up: `docker compose ps elasticsearch`.
 
 The ES container in `docker-compose.yml` runs with `xpack.security.enabled=false` (plain HTTP, no auth) — suitable for local/single-node use.

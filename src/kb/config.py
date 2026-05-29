@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from pathlib import Path
 
-import yaml
 from pydantic import BaseModel, Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+    YamlConfigSettingsSource,
+)
 
 
 class ESConfig(BaseModel):
@@ -90,17 +93,32 @@ class Settings(BaseSettings):
         env_prefix="KB_",
         env_nested_delimiter="__",
         extra="ignore",
+        yaml_file="config/settings.yaml",
+        yaml_file_encoding="utf-8",
     )
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        # Precedence, highest first: init kwargs > shell env > .env > settings.yaml > secrets.
+        # settings.yaml ranks *below* env vars so KB_* overrides (e.g. KB_ES__URL in
+        # docker-compose) win over the file's defaults.
+        return (
+            init_settings,
+            env_settings,
+            dotenv_settings,
+            YamlConfigSettingsSource(settings_cls),
+            file_secret_settings,
+        )
 
 
 @lru_cache(maxsize=1)
-def get_settings(settings_path: str | Path = "config/settings.yaml") -> Settings:
-    """Load settings.yaml, then layer env-var overrides on top."""
-    path = Path(settings_path)
-    base: dict[str, object] = {}
-    if path.exists():
-        loaded = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-        if not isinstance(loaded, dict):
-            raise ValueError(f"{path}: top-level YAML must be a mapping")
-        base = loaded
-    return Settings(**base)  # type: ignore[arg-type]
+def get_settings() -> Settings:
+    """Load settings — precedence: shell env > .env > config/settings.yaml > defaults."""
+    return Settings()
