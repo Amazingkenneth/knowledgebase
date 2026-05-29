@@ -1,0 +1,32 @@
+# Keep the build context small and reproducible.
+
+# Python / build artifacts
+.venv/
+venv/
+**/__pycache__/
+*.py[cod]
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+
+# VCS & editor
+.git/
+.gitignore
+.gitattributes
+.ipynb_checkpoints/
+
+# Local config & data (provided at runtime via env_file / volumes)
+.env
+.envrc
+data/uploads/*
+!data/uploads/.gitkeep
+
+# Tests & docs not needed in the image
+tests/
+docs/
+thoughts.md
+README.md
+CLAUDE.md

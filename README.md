@@ -10,7 +10,9 @@ A precision information-retrieval service for manufacturing knowledge. Built on 
 
 - [Architecture Overview](#architecture-overview)
 - [Prerequisites](#prerequisites)
-- [Quickstart](#quickstart)
+- [Quick Start](#quick-start)
+  - [Option A — Docker Compose (recommended)](#option-a--docker-compose-recommended)
+  - [Option B — Local (host Python + ES container)](#option-b--local-host-python--es-container)
 - [Data Source — CSV Files](#data-source--csv-files)
 - [Configuration](#configuration)
 - [AI Chat API](#ai-chat-api)
@@ -19,7 +21,7 @@ A precision information-retrieval service for manufacturing knowledge. Built on 
 - [API Reference](#api-reference)
 - [Search Behaviour](#search-behaviour)
 - [File Import Pipeline](#file-import-pipeline)
-- [Running Tests](#running-tests)
+- [Development](#development)
 - [Project Structure](#project-structure)
 
 ---
@@ -54,98 +56,119 @@ A precision information-retrieval service for manufacturing knowledge. Built on 
 
 ## Prerequisites
 
-| Tool | Version |
-|------|---------|
-| Python | 3.12+ |
-| [uv](https://docs.astral.sh/uv/) | latest |
-| Docker + Docker Compose | 24+ |
+There are two ways to run the project — pick the row that matches your goal:
+
+| Goal | What you need |
+|------|---------------|
+| **Just run it** (deploy / try it out) | Docker + Docker Compose 24+ — see [Option A](#option-a--docker-compose-recommended). Nothing else. |
+| **Develop / modify code** | Python 3.12+, [uv](https://docs.astral.sh/uv/), and Docker (for Elasticsearch) — see [Option B](#option-b--local-host-python--es-container). |
+
+An LLM API key (`KB_LLM__API_KEY`) and an embedding key (`KB_EMBEDDING__API_KEY`) are **optional** — the server boots without them and degrades gracefully (keyword-only search, AI chat disabled). See [Configuration](#configuration).
 
 ---
 
-## Quickstart
+## Quick Start
 
-### 1. Install Python dependencies
+The whole stack — the API plus an Elasticsearch with the IK Chinese analyzer — is containerized. **Option A** is the fastest way to get running and the recommended path for deploying on any machine. **Option B** runs the app from source for development.
 
-```bash
-uv sync
-```
+### Option A — Docker Compose (recommended)
 
-Or with plain pip:
+Everything runs in containers. The only requirement is Docker.
 
 ```bash
-pip install -e .
+# 1. Clone, then (optionally) add your API keys
+cp .env.example .env          # edit .env to set KB_LLM__API_KEY / KB_EMBEDDING__API_KEY
+                              # (skip this and the app still runs — keyword-only, AI chat off)
+
+# 2. Build and start the whole stack (ES + IK plugin + API)
+docker compose up -d --build  # first build ~2-3 min; subsequent starts are instant
 ```
 
-For dev extras (testing, linting):
-
-```bash
-uv sync --extra dev
-# or: pip install -e ".[dev]"
-```
-
-### 2. Build and start Elasticsearch
-
-The IK Chinese analyzer plugin is baked into the ES image at build time:
-
-```bash
-docker compose build      # builds kb-es image with IK plugin (one-time, ~1 min)
-docker compose up -d elasticsearch
-```
-
-Wait until healthy:
-
-```bash
-curl -s http://localhost:9200/_cluster/health | python3 -m json.tool
-# "status": "green" or "yellow" means ready
-```
-
-> **Why IK?** The built-in `cjk` analyzer does CJK bigram tokenization and works without any plugin. IK (`ik_max_word` / `ik_smart`) uses a dictionary-based tokenizer that produces better recall for Chinese manufacturing terms. The `elasticsearch/Dockerfile` installs it automatically — no manual `exec` step needed.
-
-> **Without the plugin:** set `KB_ES__ANALYZER_INDEX=cjk` and `KB_ES__ANALYZER_QUERY=cjk` in `.env`, then restart. The server will fall back to bigram tokenization.
-
-> **Embedding service (optional):** The server calls the **DashScope Embeddings API** (`text-embedding-v3`) for vector search. Set `KB_EMBEDDING__API_KEY` in `.env` to enable it. Without a key the server runs in **BM25-only mode** — keyword search works fully, kNN semantic search is disabled.
-
-### 4. Start the API server
-
-```bash
-uv run python -m kb --reload
-```
-
-The port defaults to **8000** and can be changed in three ways (highest priority wins):
-
-```bash
-# 1. CLI flag
-uv run python -m kb --port 8001 --reload
-
-# 2. Inline env var
-KB_SERVER__PORT=8001 uv run python -m kb --reload
-
-# 3. .env file
-KB_SERVER__PORT=8001   # in your .env
-```
-
-**Running multiple instances** (e.g. to compare model performance):
-
-```bash
-# Terminal 1 — model A on port 8000
-KB_LLM__MODEL=qwen-plus  KB_SERVER__PORT=8000 uv run python -m kb
-
-# Terminal 2 — model B on port 8001
-KB_LLM__MODEL=qwen-turbo KB_SERVER__PORT=8001 uv run python -m kb
-```
-
-On every startup the server automatically:
-
-1. Creates Elasticsearch indices (`kb_alarm`, `kb_setup`, `kb_experience`, `kb_import_files`) if they don't exist
-2. Clears and re-seeds all documents from the CSV files in `config/` into ES
-3. Restores previously imported documents from the `kb_import_files` tracker index
-4. Serves the frontend at `http://localhost:<port>`
+That's it. Open **http://localhost:8000**.
 
 | URL | Description |
 |-----|-------------|
 | `http://localhost:8000` | Knowledge Base Search UI |
 | `http://localhost:8000/docs` | Swagger UI / interactive API docs |
 | `http://localhost:8000/redoc` | ReDoc API reference |
+| `http://localhost:9200` | Elasticsearch (direct) |
+
+**Everyday commands:**
+
+```bash
+docker compose logs -f app        # follow API logs
+docker compose ps                 # service status + health
+docker compose restart app        # restart the API (e.g. after editing config/*.csv)
+docker compose down               # stop everything (keeps ES data + uploads)
+docker compose down -v            # stop and wipe the Elasticsearch data volume
+```
+
+**What the compose stack gives you:**
+
+- The `app` service waits for Elasticsearch to be **healthy** before starting, and reaches it over the internal network (`KB_ES__URL=http://elasticsearch:9200` is set automatically — no need to configure it).
+- **Persistence:** ES data lives in the `es-data` named volume; uploaded/imported files in `./data/uploads`; your CSVs and `taxonomy.yaml` are bind-mounted from `./config`, so edits on the host take effect on the next `docker compose restart app`.
+- **API keys** are read from `.env` (optional). Anything in `.env` is passed through to the container.
+
+**Enabling OCR (scanned PDFs/images):** OCR (PaddleOCR) is left out of the default image to keep it slim (~440 MB). To bake it in, set the build arg in `docker-compose.yml`:
+
+```yaml
+# docker-compose.yml → services.app.build.args
+INSTALL_OCR: "true"      # adds ~1.5-2 GB; models download on first use
+```
+
+then rebuild: `docker compose build app && docker compose up -d`.
+
+> **Without the IK plugin / a different analyzer:** the bundled ES image installs IK automatically. If you point the app at an external cluster that lacks IK, set `KB_ES__ANALYZER_INDEX=cjk` and `KB_ES__ANALYZER_QUERY=cjk` in `.env`.
+
+### Option B — Local (host Python + ES container)
+
+Run the app from source for development; Elasticsearch still runs in Docker.
+
+**1. Install dependencies**
+
+```bash
+uv sync --extra ingest          # app + file-import libs
+# or for the full dev setup (tests, linters):
+uv sync --extra dev --extra ingest
+# plain pip equivalent: pip install -e ".[ingest]"
+```
+
+**2. Start Elasticsearch only**
+
+```bash
+docker compose up -d --build elasticsearch   # builds the IK image (one-time, ~1 min)
+curl -s http://localhost:9200/_cluster/health | python3 -m json.tool
+# "status": "green" or "yellow" means ready
+```
+
+**3. Configure (optional)**
+
+```bash
+cp .env.example .env   # set KB_LLM__API_KEY / KB_EMBEDDING__API_KEY if you want AI/vector features
+```
+
+> `.env` is **loaded automatically** by `pydantic-settings` — no `source` needed. Shell exports always win over `.env`.
+
+**4. Start the API server**
+
+```bash
+uv run python -m kb --reload
+```
+
+The port defaults to **8000**; override it (highest priority wins): `--port 8001` flag → `KB_SERVER__PORT=8001` inline → `.env`. See [Development](#development) for running multiple instances and the dev workflow.
+
+### What happens on startup
+
+On every start (either option) the server automatically:
+
+1. Creates Elasticsearch indices (`kb_alarm`, `kb_setup`, `kb_experience`, `kb_import_files`) if they don't exist
+2. Clears and re-seeds all documents from the CSV files in `config/` into ES
+3. Restores previously imported documents from the `kb_import_files` tracker index
+4. Serves the frontend at `http://localhost:<port>`
+
+> **Why IK?** The built-in `cjk` analyzer does CJK bigram tokenization and works without any plugin. IK (`ik_max_word` / `ik_smart`) uses a dictionary-based tokenizer that produces better recall for Chinese manufacturing terms. The `elasticsearch/Dockerfile` installs it automatically — no manual `exec` step needed.
+
+> **Embedding service (optional):** The server calls the **DashScope Embeddings API** (`text-embedding-v3`) for vector search. Set `KB_EMBEDDING__API_KEY` to enable it. Without a key the server runs in **BM25-only mode** — keyword search works fully, kNN semantic search is disabled.
 
 ### Troubleshooting startup
 
@@ -165,14 +188,10 @@ To enable full kNN support: set `KB_EMBEDDING__API_KEY` in `.env` then restart u
 
 **Cannot connect to Elasticsearch**
 
-Check `config/settings.yaml`:
+- **Docker Compose (Option A):** the `app` service reaches ES at `http://elasticsearch:9200` (set automatically) and waits for its healthcheck. Check `docker compose ps` — if `elasticsearch` is not `healthy`, inspect `docker compose logs elasticsearch` (most often it needs more memory; the image requests 1 GB heap).
+- **Local (Option B):** the app connects to `http://localhost:9200` from `config/settings.yaml`. Confirm the container is up: `docker compose ps elasticsearch`.
 
-```yaml
-es:
-  url: "http://localhost:9200"   # plain HTTP, no auth
-```
-
-The ES container in `docker-compose.yml` runs with `xpack.security.enabled=false`.
+The ES container in `docker-compose.yml` runs with `xpack.security.enabled=false` (plain HTTP, no auth) — suitable for local/single-node use.
 
 ---
 
@@ -690,7 +709,21 @@ curl -X POST http://localhost:8000/api/v1/ingest/scan \
 
 ---
 
-## Running Tests
+## Development
+
+### Setup
+
+```bash
+uv sync --extra dev --extra ingest    # app + dev tools (pytest, ruff, mypy) + import libs
+```
+
+Start the API from source with auto-reload (see [Option B](#option-b--local-host-python--es-container) for the full local setup, including the Elasticsearch container):
+
+```bash
+uv run python -m kb --reload
+```
+
+### Tests, lint, type-check
 
 ```bash
 # Unit tests — fast, no infrastructure required
@@ -705,9 +738,36 @@ uv run pytest
 # Lint
 uv run ruff check src tests
 
-# Type check
+# Type check (strict)
 uv run mypy src
 ```
+
+### Running multiple instances
+
+Run side-by-side servers on different ports — useful for comparing models or settings:
+
+```bash
+# Terminal 1 — model A on port 8000
+KB_LLM__MODEL=qwen-plus  KB_SERVER__PORT=8000 uv run python -m kb
+
+# Terminal 2 — model B on port 8001
+KB_LLM__MODEL=qwen-turbo KB_SERVER__PORT=8001 uv run python -m kb
+```
+
+### Editing the seed data
+
+The three CSVs in `config/` are re-seeded into ES on every startup, so changes take effect on the next restart — `uv run python -m kb` locally, or `docker compose restart app` under Docker. See [Data Source — CSV Files](#data-source--csv-files) for the column mappings.
+
+### Building the app image manually
+
+`docker compose` builds it for you, but you can build the image directly:
+
+```bash
+docker build -t kb-app .                          # slim (~440 MB, no OCR)
+docker build -t kb-app --build-arg INSTALL_OCR=true .   # with PaddleOCR (~2 GB)
+```
+
+The build uses a multi-stage [`Dockerfile`](Dockerfile): `uv sync --frozen` resolves dependencies from `uv.lock` into a venv, which is copied into a slim Python 3.12 runtime along with `config/` and the frontend HTML. `.dockerignore` keeps the build context lean.
 
 ---
 
@@ -758,10 +818,14 @@ knowledgebase/
 ├── tests/
 │   ├── unit/                    # Pure Python, no infrastructure required
 │   └── integration/             # Requires Docker (testcontainers + Elasticsearch)
+├── elasticsearch/
+│   └── Dockerfile               # Custom ES 8.15.3 image — installs the IK analyzer plugin
 ├── Knowledge Base Search.html   # Single-file React frontend (served at GET /)
 ├── .env.example                 # Template for .env — copy and fill in KB_LLM__API_KEY
 ├── .gitattributes               # Enforce LF line endings for all text files
-├── docker-compose.yml           # Elasticsearch 8.15.3 (embedding is a remote API — no container needed)
+├── Dockerfile                   # App image (multi-stage uv build; INSTALL_OCR build arg)
+├── .dockerignore                # Keeps the app build context lean
+├── docker-compose.yml           # Full stack: Elasticsearch (+IK) + the app service
 ├── CLAUDE.md                    # AI agent quick-reference (architecture, commands, constraints)
 └── pyproject.toml               # Python dependencies and tool config (uv / pip)
 ```

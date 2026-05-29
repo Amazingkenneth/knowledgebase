@@ -38,9 +38,10 @@ Client (files or folder path + optional hints)
         ▼
 [2] Per-chunk routing (skipped when knowledge_type_hint locks the file)
         │  pages chunked by ingest.segmentation_chunk_chars (default 12000)
-        │  for each chunk → LLM router returns the LIST of types it contains:
-        │      {"types": ["alarm", "setup"]}        ← mixed chunk
-        │      {"types": ["experience"]}            ← single type
+        │  for each chunk → LLM router returns the type list (one dominant by default):
+        │      {"types": ["alarm"]}                 ← single dominant type (default)
+        │      {"types": ["alarm", "setup"]}        ← only when both types stand
+        │                                              alone with distinct structure
         │      {"types": ["skip"]}                  ← non-content (cover/TOC/preface)
         │  skip → drop the chunk with a friendly SkippedChunk (reason, hint)
         │
@@ -48,12 +49,16 @@ Client (files or folder path + optional hints)
 [3] LLM segmentation (one call per detected type per chunk)
         │  prompts rendered from config/knowledge_types/<type>.yaml — single
         │    source of truth for the LLM contract AND the pydantic model
-        │  each per-type call carries an "ignore other-type content" rule so
-        │    mixed chunks don't bleed into the wrong schema
+        │  each per-type call carries an "ignore other-type content" rule and a
+        │    "return [] — never emit empty skeletons" rule so mixed chunks and
+        │    router false-positives don't pollute the output
         │  oversized single pages structurally subdivided (heading/paragraph/line)
         │  1-page overlap; duplicates collapsed per knowledge type
-        │  on JSON failure: salvage longest valid prefix → repair retry →
-        │                   binary-split chunk and recurse (floor: 1 page)
+        │  on JSON failure: salvage longest valid prefix → object sweep →
+        │                   repair retry → binary-split chunk and recurse (floor: 1 page)
+        │  entry validation: drop entries with empty required fields or
+        │                   confidence < 0.3 (router false-positive guard)
+        │  project/equipment: LLM-extracted verbatim > filename/upload hint > 所有项目
         │  → (StagedDocument[], SkippedChunk[])
         │  on_chunk_progress reports "AI analysis: i/n" to the session
         │
@@ -88,9 +93,11 @@ Each filetype has a dedicated extractor that returns `list[PageText] = list[(int
 | XLSX/XLS | `openpyxl` | One sheet = one page; rows rendered as `\| col \| col \|` pipe-grids; sheet name tagged at the top |
 | CSV | stdlib `csv` | Encoding auto-detected (utf-8-sig / utf-8 / gb18030 / latin-1); rows tab-joined |
 | PPTX | `python-pptx` | One slide = one page; tables rendered as pipe-grids; speaker notes appended |
-| DOCX | `python-docx` | Paragraphs + tables rendered as pipe-grids |
+| DOCX | `python-docx` | Body walked in **document order** (`body.iterchildren()`), so paragraphs and tables stay interleaved as written; tables rendered as pipe-grids |
 
 **Table awareness.** For PDF, DOCX, PPTX, and XLSX, tables are rendered as `| cell | cell | cell |` rows so column/row relationships survive into the LLM prompt — both horizontal (header-on-top) and vertical (header-on-left) layouts are preserved as whatever the underlying library returns. The flat-token view from `get_text` is kept alongside the grid view; the LLM sees both. Embedded `|` inside cells is replaced with `/` to keep the grid parseable.
+
+**DOCX document order.** DOCX extraction walks the document body in true reading order (`doc.element.body.iterchildren()`, dispatching on the `w:p` / `w:tbl` tags) rather than the old "all paragraphs, then all tables" two-pass. The two-pass destroyed locality between an entry written in prose and a following one-row table that named its Project / Equipment — interleaving them keeps that relationship intact for the segmenter and for the verbatim project/equipment extraction below.
 
 **PDF text cleaning.** `_clean_extracted_text` strips NULs, soft hyphens (`\xad`), BOMs, form feeds, and other stray C0 controls that PDF extractors commonly leak; collapses Windows/Mac line endings; and collapses runs of 3+ blank lines. This means downstream segmentation and ES indexing don't have to defend against invisible characters that would otherwise break search or JSON parsing.
 
@@ -116,7 +123,7 @@ Each spec carries:
 | Block | Purpose |
 |---|---|
 | `summary_zh` / `summary_en` | One-liner shown in the router prompt so the LLM knows when to pick this type |
-| `fields[]` | Output JSON shape — each field has `name`, `desc`, optional `label_zh` and `csv_column` |
+| `fields[]` | Output JSON shape — each field has `name`, `desc`, optional `label_zh`, `csv_column`, and `required` flag. All three specs now include `project` and `equipment` fields the LLM fills **verbatim from the source** ("Project: X" / "项目: X" cells), or `""` when not stated — it must never guess them from the filename or context |
 | `boundary_hints[]` | What to look for when splitting entries |
 | `skip_if[]` | Patterns that mean "this isn't content" (cover, TOC, preface…) |
 | `confidence_guide` | Rubric for the per-entry `confidence` score |
@@ -124,8 +131,8 @@ Each spec carries:
 
 `services/spec.py` loads and caches the YAMLs, then renders two prompts:
 
-- **`render_segmentation_prompt(spec)`** — produces the per-type extractor prompt. Includes the field list (with zh labels and CSV-column links shown to the LLM), the worked example, and an explicit rule: *"ONLY extract `<type>` entries. If the chunk also contains other knowledge-type content, IGNORE it."* This is the rule that lets a single chunk be parsed safely by both the alarm and setup extractors without cross-pollination.
-- **`render_router_prompt(specs)`** — produces the classifier prompt. Returns `{"types": [...]}` (a list) so a chunk containing both an alarm and its calibration steps gets routed to **both** parsers.
+- **`render_segmentation_prompt(spec)`** — produces the per-type extractor prompt. Includes the field list (with zh labels and CSV-column links shown to the LLM), the worked example, and several explicit rules: (a) *"ONLY extract `<type>` entries. If the chunk also contains other knowledge-type content, IGNORE it"* — lets a single chunk be parsed safely by both the alarm and setup extractors without cross-pollination; (b) *"if the chunk contains NO `<type>` entries, return an empty array `[]`. Do NOT emit skeleton entries with empty required fields just to fill the array"*; (c) *"required fields (`<computed from spec>`) MUST be populated verbatim for every emitted entry — if you can't find a required field's value, DROP the entry."* The required-field list in (b)/(c) is computed from the spec's `required: true` fields, so the prompt always matches what entry validation enforces.
+- **`render_router_prompt(specs)`** — produces the classifier prompt. Returns `{"types": [...]}` (a list), but the rules now bias toward **exactly one dominant type**: multiple types are returned only when entries of each type stand alone with their own distinct structure (e.g. a standalone alarm-code table *and* a separate numbered tuning procedure). The prompt carries negative examples — an alarm's "Remedy / 解除流程" numbered steps are still `["alarm"]` (not setup), and a setup procedure that references alarm codes inline is still `["setup"]`. This curbs the over-fanout that produced router false-positives.
 
 A parity test (`tests/unit/test_spec.py`) asserts that every required pydantic field is covered by a spec field, and that the spec's `example_output` round-trips through `_parsed_to_staged()` without losing any required content — drift between prompt and model is caught at test time, not at commit time.
 
@@ -136,10 +143,12 @@ A parity test (`tests/unit/test_spec.py`) asserts that every required pydantic f
 The LLM acts as a **structuring parser**, not a writer. Per-type system prompts are rendered from the spec YAMLs above and instruct the model to:
 
 1. Copy source text verbatim — never paraphrase, fabricate, or summarize.
-2. Use `"—"` for fields absent from the source rather than inventing content.
+2. Use `""` for *optional* fields absent from the source. Required content fields must be filled verbatim, or the entry is dropped — do not invent placeholders.
 3. Treat `| col | col | col |` lines as table rows and preserve cell order.
-4. Emit a JSON array of typed segments with a per-entry `confidence` score (0.0–1.0).
+4. Emit a JSON array of typed segments with a per-entry `confidence` score (0.0–1.0). When the chunk contains no entries of the target type, emit an empty array `[]` — never a skeleton entry with blank fields.
 5. Extract ONLY the prompt's target type; ignore other-type content in the same chunk.
+
+> The robustness pipeline is layered outer → inner: **structural chunking → JSON salvage (longest-prefix + object sweep) → repair retry → binary-split recovery → entry validation → cross-chunk dedup.** Each layer is detailed below.
 
 ### Chunking
 
@@ -158,17 +167,31 @@ Sub-pages keep the **original page number**, so `source_pages` traceability is p
 
 The LLM can fail in several ways: truncated output (hit `max_tokens` mid-element), illegal control chars copied from a noisy PDF, leading prose like "Here is the JSON:", or markdown fences. `_parse_json_array()` handles all of these:
 
-1. Strip markdown fences and sanitize C0 control chars.
+1. Strip markdown fences and sanitize control chars (see below).
 2. Try a direct `json.loads`.
 3. On failure, scan for `[`, then walk bracket/quote depth to find the **longest valid prefix** of the array — recovers complete entries even when the response is truncated mid-element.
 4. Promote a bare object to a single-element list.
+5. **Object sweep** (last-ditch): `_sweep_json_objects()` walks the whole text collecting every balanced `{…}` substring that parses as a dict on its own — ignoring commas and array syntax entirely. This catches responses shaped like `[ prose… {…}{…} ]` where the outer-array salvage gives up because nothing legal sits between the objects, the failure mode seen when a per-type segmenter is asked to extract from a chunk with no entries and improvises.
+
+**Control-char sanitization** (`_sanitize_json`) is now string-aware rather than a blanket strip. Per RFC 8259, raw TAB/LF/CR are illegal *inside* JSON string literals, and models like Qwen-turbo routinely emit them inside `content` / `resolution` strings — the dominant root cause of the old `Unrecoverable JSON: char 0` failures. The sanitizer tracks string vs. non-string context: **inside** a string it escapes TAB/LF/CR to `\t`/`\n`/`\r` and drops other C0 controls; **outside** a string it leaves whitespace untouched (valid between-token whitespace).
 
 If parsing still fails for a chunk, `_segment_chunk_with_fallback()` applies two recovery layers:
 
-- **Repair retry** (once per chunk): the LLM is shown its own bad output and asked to re-emit valid JSON.
+- **Repair retry** (once per chunk): the LLM is shown its own bad output and asked to re-emit valid JSON (the repair prompt now also says "if there are no entries, return `[]`"). `_try_repair_json()` returns `None` — distinct from an empty list — when the repair call or its parse also fails, signalling the caller to fall through to binary-split rather than treating a failure as "no entries".
 - **Binary-split recovery**: the failed chunk is split in half on a page boundary and each half is re-segmented (recursion floor: a single page, where giving up cleanly is better than thrashing). This is the answer to the `max_tokens`-exceeded-by-a-single-entry case — the chunk shrinks until the entry fits.
 
-Network/HTTP errors from the LLM also trigger binary-split recovery rather than dropping the chunk.
+Network/HTTP errors from the LLM also trigger binary-split recovery rather than dropping the chunk. Note that a chunk which **parses** but yields only skeleton/low-confidence entries is *not* a parse failure — it is filtered by entry validation (below) and returns empty without retrying or splitting.
+
+### Entry validation (router false-positive guard)
+
+`_filter_valid_entries()` runs on every parsed (and repaired) entry list before the entries are accepted. An entry is **dropped** when:
+
+- its `confidence` is below `_HARD_DROP_CONFIDENCE = 0.3`, **or**
+- any field marked `required: true` in the spec is empty (value in `{"", "—", "-", "n/a", "na", "none", "null"}`, or an empty list/dict).
+
+This is the primary defense against the **router-false-positive** failure mode: when the classifier fans a chunk out to a type it doesn't actually contain, the per-type segmenter is asked to extract entries that aren't there and the LLM tends to emit skeleton dicts with blank fields and `confidence: 0.0` instead of an empty array. Those skeletons were the dominant source of the "0% confidence, blank fields" noise reviewers saw on alarm-only files routed multi-type. Dropping them upstream means a routed type that returns nothing is treated as a genuine no-entry (a router false-positive), not surfaced as a low-confidence document for the reviewer to wade through.
+
+This replaces the previous `_LOW_CONFIDENCE_FLOOR` behavior, which kept low-confidence entries and surfaced them as a `low_confidence` `SkippedChunk`. There is no longer a `low_confidence` skip reason — sub-threshold entries are simply not emitted.
 
 ### Deduplication across overlapping chunks
 
@@ -187,8 +210,10 @@ Entries with an empty key are **kept as-is** rather than collapsed together — 
 `classify_chunk_types()` classifies each chunk independently and returns the **list** of knowledge types present:
 
 - `[]` (router said `skip`) → drop the chunk; surface a `SkippedChunk(reason="non_content")` with a friendly hint.
-- `[KnowledgeType.ALARM]` → one segmenter call, alarm prompt.
-- `[KnowledgeType.ALARM, KnowledgeType.SETUP]` → two segmenter calls on the **same chunk text**; each parser extracts only its own entries because the prompt explicitly tells it to ignore other-type content.
+- `[KnowledgeType.ALARM]` → one segmenter call, alarm prompt. **This is the default** — the router prompt now asks for exactly one dominant type.
+- `[KnowledgeType.ALARM, KnowledgeType.SETUP]` → two segmenter calls on the **same chunk text**; each parser extracts only its own entries because the prompt explicitly tells it to ignore other-type content. The router only fans out like this when entries of each type stand alone with their own distinct structure (a standalone alarm-code table *and* a separate numbered tuning procedure) — not when one type is merely referenced inside the other.
+
+The router was deliberately retuned away from "return ALL types present." Over-fanout meant a plain alarm whose remedy section happened to contain numbered steps got routed to `setup` as well, and the setup segmenter then either invented junk or (now) emitted skeletons that entry validation drops. Biasing to a single dominant type, plus the validation guard, removes that whole class of noise.
 
 When the client passes `knowledge_type_hint` on upload, the hint **locks** every chunk to that type and the router is skipped entirely — use this when you know the whole file is one type and don't want to pay the classifier cost.
 
@@ -199,18 +224,28 @@ When the client passes `knowledge_type_hint` on upload, the hint **locks** every
 Pages that aren't content (cover, table of contents, preface, revision history, glossary, index, copyright notice, or pure prose) are detected by the router via each spec's `skip_if[]` rules and dropped before segmentation. They surface to the UI as `FileInfo.skipped_chunks: list[SkippedChunk]`, each carrying:
 
 - `page_range` — which pages were skipped
-- `reason` — `non_content` | `no_entries` | `low_confidence`
+- `reason` — `non_content` | `no_entries` (the former `low_confidence` reason was removed; low-confidence entries are now hard-dropped by entry validation, not surfaced)
 - `hint` — a plain-language explanation the reviewer can act on
 
-The file-card `message` summarizes the counts: *"Extracted 14 documents. 2 non-content page(s) skipped (covers/TOC/preface); 1 low-confidence page(s) — please review."*
+A whole-chunk `no_entries` hint is only raised when **every** routed type came back empty. If the router fanned out to several types and at least one produced entries, the empty types are treated as router false-positives and silently ignored rather than confusing the reviewer with "no entries" warnings.
+
+The file-card `message` summarizes the counts: *"Extracted 14 documents. 2 non-content page(s) skipped (covers/TOC/preface)."*
 
 ### Fidelity check (anti-fabrication)
 
 After segmentation, each verbatim-required field (`content`, `resolution`, `procedure`, `failure_desc`) is checked against the source text via `verify_extraction_fidelity()`. The check runs against the **chunk text first** (strict), then falls back to the **full-file text** (catches content that legitimately spans a chunk boundary). On failure the field is kept but the staged document carries a `fabrication_warning: <field>` entry for the reviewer.
 
-### Hints and timeouts
+### Project & equipment resolution
 
-`project_hint` / `equipment_hint` are passed through into the segmentation prompt so detected entries can be pre-populated when the source file does not name them explicitly. The user can still edit these in the preview step.
+`project` / `equipment` are resolved through a three-tier priority chain so every staged doc lands with a usable, taxonomy-valid project without ever blocking the reviewer:
+
+1. **LLM-extracted, verbatim** — each spec now declares `project` / `equipment` fields. The segmenter fills them only when the source explicitly names them ("Project: X" / "项目: X" cells); otherwise `""`. The prompt forbids guessing from filename or context. `_parsed_to_staged()` reads `entry["project"]` / `entry["equipment"]` and prefers them over the upload hint.
+2. **Filename / upload hint** — when the entry carries no value, the upload-time `project_hint` / `equipment_hint` is used. If those weren't supplied, `_detect_taxonomy_from_filename()` tokenizes the filename stem (splitting on non-CJK/non-alphanumeric) and matches a taxonomy value only as a **whole lowercase token** — so `PDX-aligner-faults.pdf` → `project=PDX, equipment=Aligner`, but `stages.pdf` won't match a `Stage` equipment. These detected hints are folded into the segmentation hints.
+3. **Taxonomy resolution** — after segmentation, `_resolve_taxonomy_fields()` validates each doc's `project` / `equipment` against `taxonomy.yaml` (case-insensitive match, stored in canonical casing). Unknown values are **cleared** and a reviewer-visible warning is appended (`unknown_project:` / `unknown_equipment:`), since the commit step would reject free-form text anyway. Project then falls back to the cross-project bucket `所有项目` so the reviewer is never barred from committing a doc just because the source didn't name a known project. Equipment is left empty when unknown — it is optional.
+
+The reviewer can still override any of these per-doc in the preview UI. The UI's "missing required field" warning now flags only docs with an empty **project** (equipment is optional), so reviewers aren't badgered about files whose source genuinely doesn't name a machine.
+
+### Timeouts
 
 `_estimate_timeout()` derives the HTTP read-timeout from the actual payload size using a CJK-aware token estimator (CJK ≈ 1.5 tok/char, Latin ≈ 0.25 tok/char). Long chunks won't time out — they'll hit the `max_tokens` ceiling first and recover via the binary-split path.
 
@@ -288,8 +323,9 @@ All knobs live under `ingest:` in `config/settings.yaml` or as `KB_INGEST__*` en
 
 - **Review-gated**: nothing reaches the search indices without an explicit commit step. Even the "fast path" (scan an entire folder) ends at `ready_for_review`.
 - **Spec-driven**: each knowledge type is defined once in `config/knowledge_types/<type>.yaml`. The LLM prompt, the worked example, the skip rules, and the parity check all read from that file — there is no second copy of the field list.
-- **Mixed-type files supported**: routing is per chunk, not per file. A document that contains both alarms and setup procedures is segmented correctly without manual splitting.
-- **Verbatim only**: segmentation prompts forbid paraphrase. Confidence scores on each segment let reviewers triage borderline entries; low-confidence docs still arrive in the preview but warrant inspection.
+- **Mixed-type files supported**: routing is per chunk, not per file. A document that contains both alarms and setup procedures is segmented correctly without manual splitting — but the router biases toward a single dominant type and only fans out when each type stands alone structurally, avoiding false-positive cross-routing.
+- **Verbatim only**: segmentation prompts forbid paraphrase. Confidence scores on each segment let reviewers triage borderline entries; entries below the 0.3 confidence floor or with empty required fields are dropped outright rather than surfaced as noise.
+- **Project/equipment never block commit**: values are taken verbatim from the source when present, else inferred from the filename, else defaulted to the `所有项目` cross-project bucket. Unknown taxonomy values are cleared (with a reviewer warning) instead of failing the doc; equipment is optional.
 - **Friendly feedback**: skipped chunks and commit errors carry an actionable `hint` rather than a raw stack trace, so reviewers can fix issues without reading server logs.
 - **Best-effort embedding**: embedding errors during commit never abort indexing — the doc lands without vectors and remains BM25-searchable.
 - **Dedupe by content hash**: filename is irrelevant; the same bytes uploaded twice short-circuit unless `force=true`.

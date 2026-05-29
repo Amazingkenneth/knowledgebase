@@ -18,5 +18,39 @@ services:
       timeout: 5s
       retries: 30
 
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Set to "true" to bake the PaddleOCR fallback into the image (~1.5-2GB).
+        INSTALL_OCR: "false"
+    container_name: kb-app
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    # API keys (KB_LLM__API_KEY / KB_EMBEDDING__API_KEY) come from .env — copy
+    # .env.example to .env first. Missing keys only disable AI/vector features.
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # Reach ES over the compose network, overriding any KB_ES__URL in .env.
+      - KB_ES__URL=http://elasticsearch:9200
+    ports:
+      - "8000:8000"
+    volumes:
+      # Bind-mounted so CSV edits + the startup taxonomy auto-sync persist to the host.
+      - ./config:/app/config
+      # Persist uploaded/imported files across container recreation.
+      - ./data/uploads:/app/data/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:8000/healthz || exit 1"]
+      interval: 15s
+      timeout: 5s
+      start_period: 40s
+      retries: 5
+    restart: unless-stopped
+
 volumes:
   es-data:

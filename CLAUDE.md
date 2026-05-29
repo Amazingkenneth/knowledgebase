@@ -16,6 +16,8 @@ Stack: FastAPI · Elasticsearch 8.x (IK analyzer plugin) · pydantic-settings ·
 ## Commands
 
 ```bash
+docker compose up -d --build           # full stack (ES + app) — simplest deploy; app on :8000
+docker compose up -d --build elasticsearch  # ES only (for local dev against host-run app)
 uv run python -m kb --reload           # start dev server (port from KB_SERVER__PORT, default 8000)
 uv run python -m kb --port 8001 --reload  # explicit port override
 uv run uvicorn kb.main:app --reload --port 8000  # direct uvicorn (port not read from settings)
@@ -64,6 +66,8 @@ Settings are layered: `config/settings.yaml` → `.env` → shell env vars.
 | `config/settings.yaml` | Runtime defaults (ES URL, embedding, search tuning, ingest) |
 | `config/taxonomy.yaml` | Valid projects / equipment / knowledge_types — edit to extend |
 | `.env.example` | All supported env vars with defaults — template for `.env` |
+| `Dockerfile` | App image — multi-stage uv build; `INSTALL_OCR` build arg (default off) |
+| `docker-compose.yml` | Full stack: `elasticsearch` + `app` services; app gets `KB_ES__URL` over the compose network |
 | `elasticsearch/Dockerfile` | Custom ES image — installs the `analysis-ik` plugin at build time |
 
 ---
@@ -75,6 +79,7 @@ Settings are layered: `config/settings.yaml` → `.env` → shell env vars.
 - **Always-reseed on startup**: `seed` clears all documents from every index and reloads from the CSV files on every server start. Additions, edits, and row deletions in the CSVs all take effect automatically on the next restart. After seeding, `restore_imports()` re-indexes any previously imported documents from the `kb_import_files` tracker index.
 - **File import pipeline**: files (PDF/XLSX/CSV/PPTX/DOCX) can be uploaded or scanned from a server folder via `/api/v1/ingest/`. Text extraction uses pymupdf/openpyxl/python-pptx/python-docx with PaddleOCR fallback. LLM segments extracted text into structured documents. Users preview/edit before committing. File hashes track duplicates. Install extras: `pip install -e ".[ingest]"`.
 - **BM25-only fallback**: the embedding service is optional. If it's unreachable, the server continues with keyword-only search (no kNN).
+- **Deployment**: `docker compose up -d --build` runs the full stack (ES+IK and the `app` image). Runtime assets are read **relative to the working dir** (`config/`, the seed CSVs, `data/uploads`, `Knowledge Base Search.html`) — the image sets `WORKDIR /app`; compose bind-mounts `./config` and `./data/uploads` and overrides `KB_ES__URL` to the `elasticsearch` service. Note the startup taxonomy auto-sync rewrites `config/taxonomy.yaml`, so it must stay writable.
 
 ---
 
