@@ -127,7 +127,7 @@ async def update_document(
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found")
     if doc_index < 0 or doc_index >= len(session.documents):
-        raise HTTPException(status_code=404, detail="Document index out of range")
+        raise HTTPException(status_code=400, detail="Document index out of range")
 
     doc = session.documents[doc_index]
     for field, value in body.model_dump(exclude_none=True).items():
@@ -145,7 +145,7 @@ async def accept_reject_document(
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found")
     if doc_index < 0 or doc_index >= len(session.documents):
-        raise HTTPException(status_code=404, detail="Document index out of range")
+        raise HTTPException(status_code=400, detail="Document index out of range")
 
     session.documents[doc_index].accepted = body.accepted
     return {"status": "updated"}

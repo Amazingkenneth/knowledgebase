@@ -30,7 +30,7 @@ class ESConfig(BaseModel):
 class EmbeddingConfig(BaseModel):
     url: str = "http://localhost:8080"
     api_key: str = ""
-    model: str = "BAAI/bge-m3"
+    model: str = "text-embedding-v3"
     dims: int = 1024
     # DashScope's OpenAI-compatible embeddings endpoint rejects batches >10.
     batch_size: int = Field(default=10, ge=1, le=128)
@@ -65,6 +65,9 @@ class ServerConfig(BaseModel):
 
 class IngestConfig(BaseModel):
     upload_dir: str = "data/uploads"
+    # Server-side folder scans (POST /ingest/scan) are confined to this root so a
+    # caller can't read arbitrary host paths. Folders outside it are rejected.
+    scan_root: str = "data"
     max_file_size_mb: int = Field(default=50, ge=1, le=500)
     allowed_extensions: list[str] = Field(
         default=["pdf", "xlsx", "xls", "csv", "pptx", "docx"]
@@ -76,7 +79,7 @@ class IngestConfig(BaseModel):
     # Drop OCR lines below this recognition confidence so low-quality scans
     # don't feed garbage tokens into the segmentation LLM.
     ocr_min_confidence: float = Field(default=0.5, ge=0.0, le=1.0)
-    segmentation_max_tokens: int = 4000
+    segmentation_max_tokens: int = 8000
     # Characters per LLM chunk. Larger = fewer API calls but more tokens per call.
     # 12000 chars ≈ 3000–4000 tokens of input; fits 6–10 alarm entries comfortably.
     segmentation_chunk_chars: int = Field(default=12000, ge=1000, le=100000)

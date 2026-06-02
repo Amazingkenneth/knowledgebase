@@ -16,6 +16,7 @@ Two-stage retrieval design:
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from elasticsearch import AsyncElasticsearch
@@ -33,6 +34,8 @@ from kb.models.taxonomy import KnowledgeType
 import httpx
 
 from kb.services.embedding import EmbeddingClient, EmbeddingError
+
+log = logging.getLogger("kb.search")
 
 LOOSE_BANNER = "没有完全匹配的知识，以下为相关参考，仅供参考。"
 VECTOR_BANNER = "没有关键词匹配的知识，以下基于语义相似度的相关参考，仅供参考。"
@@ -217,8 +220,8 @@ class SearchService:
             try:
                 qvec = (await self._embedder.embed([req.query_text]))[0]
                 body["rescore"] = _rescore_clause(qvec, cfg.rrf_window, cfg.vector_weight)
-            except (EmbeddingError, httpx.HTTPError):
-                pass
+            except (EmbeddingError, httpx.HTTPError) as exc:
+                log.warning("vector rescore unavailable, falling back to BM25: %s", exc)
 
         resp = await self._es.search(index=index, body=body)
         total = int(resp["hits"]["total"]["value"])
@@ -268,8 +271,8 @@ class SearchService:
             try:
                 qvec = (await self._embedder.embed([req.query_text]))[0]
                 body["rescore"] = _rescore_clause(qvec, cfg.rrf_window, cfg.vector_weight)
-            except (EmbeddingError, httpx.HTTPError):
-                pass
+            except (EmbeddingError, httpx.HTTPError) as exc:
+                log.warning("vector rescore unavailable, falling back to BM25: %s", exc)
 
         resp = await self._es.search(index=index, body=body)
         total = int(resp["hits"]["total"]["value"])
@@ -304,7 +307,8 @@ class SearchService:
         index = _index_for(req, self._settings.es.index_prefix)
         try:
             qvec = (await self._embedder.embed([req.query_text]))[0]
-        except (EmbeddingError, httpx.HTTPError):
+        except (EmbeddingError, httpx.HTTPError) as exc:
+            log.warning("vector-only search unavailable (embedding down): %s", exc)
             return SearchResponse(
                 status=SearchStatus.NO_HIT,
                 total=0,

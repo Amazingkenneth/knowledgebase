@@ -39,6 +39,8 @@ taxonomy:
 
 ingest:
   upload_dir: "data/uploads"
+  # Server-side folder scans are confined to this root (see config.py).
+  scan_root: "data"
   max_file_size_mb: 50
   allowed_extensions: ["pdf", "xlsx", "xls", "csv", "pptx", "docx"]
   ocr_enabled: true

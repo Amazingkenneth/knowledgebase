@@ -10,7 +10,7 @@ import asyncio
 import logging
 import re
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path, PurePosixPath
 from typing import Any
 
@@ -76,6 +76,26 @@ class ImportPipeline:
         )
         return sessions[:limit]
 
+    def _evict_expired_sessions(self) -> None:
+        """Drop finished sessions older than the configured TTL.
+
+        Sessions live in memory for the process lifetime, so without this the
+        ``_sessions`` dict grows unbounded. Only terminal sessions
+        (COMMITTED/FAILED) are evicted — an in-flight or under-review session is
+        never removed out from under a user.
+        """
+        ttl = timedelta(minutes=self._settings.ingest.session_ttl_minutes)
+        cutoff = datetime.now(UTC) - ttl
+        terminal = {ImportStatus.COMMITTED, ImportStatus.FAILED}
+        expired = [
+            sid for sid, s in self._sessions.items()
+            if s.status in terminal and (s.created_at or datetime.now(UTC)) < cutoff
+        ]
+        for sid in expired:
+            del self._sessions[sid]
+        if expired:
+            log.info("Evicted %d expired import session(s)", len(expired))
+
     async def start_upload(
         self,
         files: list[tuple[str, bytes]],  # (filename, content)
@@ -84,6 +104,7 @@ class ImportPipeline:
         equipment_hint: str | None = None,
         force: bool = False,
     ) -> ImportSession:
+        self._evict_expired_sessions()
         session_id = str(uuid.uuid4())
         session = ImportSession(
             session_id=session_id,
@@ -190,17 +211,27 @@ class ImportPipeline:
         equipment_hint: str | None = None,
         force: bool = False,
     ) -> ImportSession:
-        """Scan a server-side folder and start processing."""
-        folder = Path(folder_path)
+        """Scan a server-side folder and start processing.
+
+        The folder must resolve to a path inside ``ingest.scan_root`` so callers
+        can't read arbitrary host paths. Symlinked entries are skipped to prevent
+        escaping the root via links.
+        """
+        scan_root = Path(self._settings.ingest.scan_root).resolve()
+        folder = Path(folder_path).resolve()
         if not folder.is_dir():
             raise ValueError(f"Folder not found: {folder_path}")
+        if folder != scan_root and not folder.is_relative_to(scan_root):
+            raise ValueError(
+                f"Folder must be inside the allowed scan root ({scan_root})"
+            )
 
         allowed = set(self._settings.ingest.allowed_extensions)
         pattern = "**/*" if recursive else "*"
         files_to_upload: list[tuple[str, bytes]] = []
 
         for p in sorted(folder.glob(pattern)):
-            if not p.is_file():
+            if p.is_symlink() or not p.is_file():
                 continue
             ext = p.suffix.lower().lstrip(".")
             if ext not in allowed:
@@ -407,7 +438,7 @@ class ImportPipeline:
                     "error": _friendly_validation_message(exc),
                     "hint": "Edit this document in the preview and click Save, then commit again.",
                 })
-                break
+                continue
             except (IndexingError, ValueError) as exc:
                 msg = str(exc)
                 hint = (
@@ -421,7 +452,7 @@ class ImportPipeline:
                     "error": msg,
                     "hint": hint,
                 })
-                break
+                continue
             except Exception as exc:
                 errors.append({
                     "index": staged.index,
@@ -430,7 +461,7 @@ class ImportPipeline:
                     "hint": "This is a server-side issue. Check server logs for details.",
                 })
                 log.error("Commit failed for doc %d: %s", staged.index, exc, exc_info=True)
-                break
+                continue
 
         # Update file tracker with committed docs
         for file_hash, docs in file_committed.items():
@@ -439,7 +470,13 @@ class ImportPipeline:
             except Exception as exc:
                 log.error("Failed to update tracker for %s: %s", file_hash[:12], exc)
 
-        session.status = ImportStatus.COMMITTED
+        # Status reflects the actual outcome: a clean run is COMMITTED; if every
+        # document failed it's FAILED; a partial run stays COMMITTED but carries the
+        # populated `errors` list so callers can surface what was dropped.
+        if errors and committed == 0:
+            session.status = ImportStatus.FAILED
+        else:
+            session.status = ImportStatus.COMMITTED
         return {"committed": committed, "skipped": skipped, "errors": errors}
 
     def _find_file_hash(self, session: ImportSession, source_file: str) -> str | None:
