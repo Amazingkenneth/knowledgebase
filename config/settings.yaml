@@ -43,6 +43,7 @@ ingest:
   allowed_extensions: ["pdf", "xlsx", "xls", "csv", "pptx", "docx"]
   ocr_enabled: true
   ocr_lang: "ch"
+  ocr_min_confidence: 0.5
   segmentation_max_tokens: 8000
   segmentation_chunk_chars: 12000
   session_ttl_minutes: 120

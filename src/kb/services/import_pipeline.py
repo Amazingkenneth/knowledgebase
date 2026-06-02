@@ -31,7 +31,7 @@ from kb.models.ingest import (
 )
 from kb.models.taxonomy import KnowledgeType, Taxonomy
 from kb.services.embedding import EmbeddingClient, EmbeddingError
-from kb.services.extraction import extract_file
+from kb.services.extraction import ScannedPdfError, extract_file
 from kb.services.file_tracker import FileTracker, compute_bytes_hash
 from kb.services.indexing import IndexingError, _to_es_source, doc_id, validate_against_taxonomy
 from kb.services.segmentation import segment_text
@@ -211,7 +211,12 @@ class ImportPipeline:
                 info.message = "Extracting text…"
                 session.message = f"Extracting: {info.file_name}"
                 ocr_enabled = self._settings.ingest.ocr_enabled
-                pages = extract_file(path, ocr_enabled=ocr_enabled)
+                pages = extract_file(
+                    path,
+                    ocr_enabled=ocr_enabled,
+                    ocr_lang=self._settings.ingest.ocr_lang,
+                    ocr_min_confidence=self._settings.ingest.ocr_min_confidence,
+                )
                 if not pages:
                     info.status = FileStatus.FAILED
                     info.message = "No text extracted"
@@ -281,6 +286,25 @@ class ImportPipeline:
                 info.status = FileStatus.DONE
                 info.message = _build_extraction_summary(len(docs), skipped, knowledge_type_hint)
 
+            except ScannedPdfError as exc:
+                # Image-only PDF with no readable text — point the user at OCR
+                # instead of a generic failure.
+                from kb.services.ocr import ocr_available
+
+                if not self._settings.ingest.ocr_enabled:
+                    hint = "Enable OCR (KB_INGEST__OCR_ENABLED=true) and re-import."
+                elif not ocr_available():
+                    hint = (
+                        "OCR is not installed in this deployment — rebuild the image "
+                        "with --build-arg INSTALL_OCR=true, then re-import."
+                    )
+                else:
+                    hint = "OCR ran but found no readable text (low-quality scan)."
+                msg = f"{exc} {hint}"
+                info.status = FileStatus.FAILED
+                info.message = msg
+                log.warning("Scanned PDF %s: %s", info.file_name, msg)
+                await self._tracker.record_failed(info.file_hash, msg)
             except ImportError as exc:
                 info.status = FileStatus.FAILED
                 info.message = str(exc)

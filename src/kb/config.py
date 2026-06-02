@@ -70,7 +70,12 @@ class IngestConfig(BaseModel):
         default=["pdf", "xlsx", "xls", "csv", "pptx", "docx"]
     )
     ocr_enabled: bool = True
+    # PaddleOCR language model. "ch" also reads Latin script (English model
+    # numbers/units); use "en" for English-only documents.
     ocr_lang: str = "ch"
+    # Drop OCR lines below this recognition confidence so low-quality scans
+    # don't feed garbage tokens into the segmentation LLM.
+    ocr_min_confidence: float = Field(default=0.5, ge=0.0, le=1.0)
     segmentation_max_tokens: int = 4000
     # Characters per LLM chunk. Larger = fewer API calls but more tokens per call.
     # 12000 chars ≈ 3000–4000 tokens of input; fits 6–10 alarm entries comfortably.

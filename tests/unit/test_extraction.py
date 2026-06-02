@@ -9,7 +9,12 @@ from pathlib import Path
 
 import pytest
 
-from kb.services.extraction import extract_csv, extract_file, EXTRACTORS
+from kb.services.extraction import (
+    EXTRACTORS,
+    _should_use_ocr,
+    extract_csv,
+    extract_file,
+)
 from kb.services.segmentation import (
     chunk_pages,
     verify_extraction_fidelity,
@@ -60,6 +65,52 @@ class TestExtractFile:
 
     def test_supported_extensions(self) -> None:
         assert set(EXTRACTORS.keys()) == {"pdf", "pptx", "docx", "xlsx", "xls", "csv"}
+
+
+class _FakePage:
+    """Minimal stand-in for a pymupdf page for OCR-trigger tests."""
+
+    def __init__(self, *, images: int = 0, coverage_bbox: tuple | None = None) -> None:
+        self._images = images
+        self._bbox = coverage_bbox
+
+        class _Rect:
+            width = 100.0
+            height = 100.0
+
+        self.rect = _Rect()
+
+    def get_images(self, full: bool = False) -> list:
+        return [object()] * self._images
+
+    def get_image_info(self) -> list:
+        return [{"bbox": self._bbox}] if self._bbox else []
+
+
+class TestShouldUseOCR:
+    def test_disabled_never_ocrs(self) -> None:
+        page = _FakePage(images=1)
+        assert _should_use_ocr("", page, ocr_enabled=False) is False
+
+    def test_sparse_text_with_image_triggers(self) -> None:
+        # Scanned page leaks a short header line but is image-backed.
+        page = _FakePage(images=1)
+        assert _should_use_ocr("Page 1 of 60", page, ocr_enabled=True) is True
+
+    def test_image_dominated_page_triggers_even_with_text(self) -> None:
+        # Half-page image with some leaked text → coverage rule kicks in.
+        page = _FakePage(images=1, coverage_bbox=(0, 0, 100, 60))
+        leaked = "x" * 200  # over the sparse-text threshold
+        assert _should_use_ocr(leaked, page, ocr_enabled=True) is True
+
+    def test_clean_text_no_images_skips(self) -> None:
+        page = _FakePage(images=0)
+        assert _should_use_ocr("plenty of real text " * 20, page, ocr_enabled=True) is False
+
+    def test_garbled_printable_ratio_triggers(self) -> None:
+        page = _FakePage(images=0)
+        garbled = "\x01\x02\x03\x04\x05\x06" * 30
+        assert _should_use_ocr(garbled, page, ocr_enabled=True) is True
 
 
 class TestChunkPages:

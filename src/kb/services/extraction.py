@@ -23,6 +23,14 @@ log = logging.getLogger("kb.extraction")
 PageText = tuple[int, str]  # (page_number, text)
 
 
+class ScannedPdfError(ValueError):
+    """Raised when a PDF has no readable text and looks like a scan/image.
+
+    Distinct from a generic extraction failure so the import pipeline can tell
+    the user the file needs OCR rather than reporting an opaque error.
+    """
+
+
 def _try_import(module: str) -> Any:
     """Lazy-import an optional dependency, returning None if missing."""
     try:
@@ -34,12 +42,20 @@ def _try_import(module: str) -> Any:
 
 # ── PDF extraction ───────────────────────────────────────────────────────────
 
-def extract_pdf(path: Path, *, ocr_enabled: bool = True) -> list[PageText]:
+def extract_pdf(
+    path: Path,
+    *,
+    ocr_enabled: bool = True,
+    ocr_lang: str = "ch",
+    ocr_min_confidence: float = 0.5,
+) -> list[PageText]:
     fitz = _try_import("fitz")
     if fitz is None:
         raise ImportError("pymupdf is required for PDF extraction: pip install pymupdf")
 
     pages: list[PageText] = []
+    blank_pages = 0          # pages that yielded no usable text at all
+    image_only_pages = 0     # image-dominated pages we couldn't read as text
     doc = fitz.open(str(path))
     try:
         for page_num in range(len(doc)):
@@ -54,12 +70,15 @@ def extract_pdf(path: Path, *, ocr_enabled: bool = True) -> list[PageText]:
             if table_md:
                 text = f"{text}\n\n{table_md}" if text.strip() else table_md
 
-            if _should_use_ocr(text, page, ocr_enabled):
+            wanted_ocr = _should_use_ocr(text, page, ocr_enabled)
+            if wanted_ocr:
                 from kb.services.ocr import ocr_page_image
                 pix = page.get_pixmap(dpi=300)
                 img_bytes = pix.tobytes("png")
                 try:
-                    ocr_text = ocr_page_image(img_bytes)
+                    ocr_text = ocr_page_image(
+                        img_bytes, lang=ocr_lang, min_confidence=ocr_min_confidence
+                    )
                 except Exception as exc:  # noqa: BLE001 — OCR is best-effort
                     log.warning("OCR failed on page %d: %s", page_num + 1, exc)
                     ocr_text = ""
@@ -73,8 +92,29 @@ def extract_pdf(path: Path, *, ocr_enabled: bool = True) -> list[PageText]:
 
             if text.strip():
                 pages.append((page_num + 1, _clean_extracted_text(text)))
+            else:
+                blank_pages += 1
+                # No text AND the page carries images → it's a scan we couldn't
+                # read (OCR off, unavailable, or low-quality). Track separately
+                # so the caller can give the user an actionable message instead
+                # of a bare "No text extracted".
+                if _page_has_images(page):
+                    image_only_pages += 1
     finally:
         doc.close()
+
+    if blank_pages:
+        log.info(
+            "PDF %s: %d/%d page(s) yielded no text (%d image-only)",
+            path.name, blank_pages, len(doc), image_only_pages,
+        )
+    # Surface a likely-scanned document so the pipeline can advise on OCR rather
+    # than silently returning fewer documents than the source contains.
+    if not pages and image_only_pages:
+        raise ScannedPdfError(
+            f"No readable text in {path.name} — it appears to be a scanned/image PDF "
+            f"({image_only_pages} image page(s))."
+        )
     return pages
 
 
@@ -152,13 +192,53 @@ def _clean_extracted_text(text: str) -> str:
     return text
 
 
+def _page_has_images(page: Any) -> bool:
+    """Whether the page carries any embedded raster images."""
+    try:
+        return len(page.get_images(full=True)) > 0
+    except Exception:  # noqa: BLE001 — best-effort
+        return False
+
+
+def _image_coverage(page: Any) -> float:
+    """Fraction of the page area covered by embedded images (0.0–1.0).
+
+    A scanned page is typically one full-page image; a digital page with a
+    small logo is not. Used to OCR image-dominated pages even when the text
+    layer leaked some junk characters.
+    """
+    try:
+        page_area = abs(page.rect.width * page.rect.height)
+        if page_area <= 0:
+            return 0.0
+        img_area = 0.0
+        for info in page.get_image_info():
+            bbox = info.get("bbox")
+            if bbox:
+                x0, y0, x1, y1 = bbox
+                img_area += abs((x1 - x0) * (y1 - y0))
+        return min(img_area / float(page_area), 1.0)
+    except Exception:  # noqa: BLE001 — best-effort
+        return 0.0
+
+
+# Below this many extracted chars a page is treated as "text-sparse" — if it's
+# also image-dominated we OCR it. Higher than the old 50 so scanned pages that
+# leak a header/footer line still get OCR'd.
+_OCR_TEXT_THRESHOLD = 120
+
+
 def _should_use_ocr(text: str, page: Any, ocr_enabled: bool) -> bool:
     if not ocr_enabled:
         return False
     text_chars = len(text.strip())
-    image_list = page.get_images(full=True)
-    if text_chars < 50 and len(image_list) > 0:
+    has_images = _page_has_images(page)
+    # Sparse text on a page that has images → likely a scan with a thin text
+    # layer. Use coverage so a page that's mostly one big image is OCR'd even
+    # if a few stray characters were extracted.
+    if has_images and (text_chars < _OCR_TEXT_THRESHOLD or _image_coverage(page) >= 0.5):
         return True
+    # Text present but mostly non-printable → garbled extraction, re-OCR.
     if text_chars > 0:
         printable_ratio = sum(1 for c in text if c.isprintable() or c in "\n\r\t") / len(text)
         if printable_ratio < 0.7:
@@ -316,11 +396,18 @@ EXTRACTORS = {
 }
 
 
-def extract_file(path: Path, *, ocr_enabled: bool = True) -> list[PageText]:
+def extract_file(
+    path: Path,
+    *,
+    ocr_enabled: bool = True,
+    ocr_lang: str = "ch",
+    ocr_min_confidence: float = 0.5,
+) -> list[PageText]:
     """Extract text from a file, returning (page_number, text) pairs.
 
     Raises ImportError if the required library is not installed.
     Raises ValueError for unsupported file types.
+    Raises ScannedPdfError if a PDF has no readable text and looks like a scan.
     """
     suffix = path.suffix.lower().lstrip(".")
     extractor = EXTRACTORS.get(suffix)
@@ -328,5 +415,10 @@ def extract_file(path: Path, *, ocr_enabled: bool = True) -> list[PageText]:
         raise ValueError(f"Unsupported file type: {suffix}")
 
     if suffix == "pdf":
-        return extract_pdf(path, ocr_enabled=ocr_enabled)
+        return extract_pdf(
+            path,
+            ocr_enabled=ocr_enabled,
+            ocr_lang=ocr_lang,
+            ocr_min_confidence=ocr_min_confidence,
+        )
     return extractor(path)

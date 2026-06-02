@@ -21,7 +21,11 @@ docker compose up -d --build elasticsearch  # ES only (for local dev against hos
 uv run python -m kb --reload           # start dev server (port from KB_SERVER__PORT, default 8000)
 uv run python -m kb --port 8001 --reload  # explicit port override
 uv run uvicorn kb.main:app --reload --port 8000  # direct uvicorn (port not read from settings)
-uv run pytest tests/unit               # unit tests (no infra)
+uv run pytest tests/unit               # unit tests (no infra) — skips ingest tests if extras absent
+uv run --extra ingest pytest tests/unit  # full unit tests including PPTX/PDF extraction
+uv run --extra ingest --extra ocr pytest tests/unit  # includes OCR behaviour tests (requires libGL)
+# PPTX/PDF fixture files are generated on-the-fly by tests/unit/conftest.py from the seed CSVs —
+# no large binary test assets are committed to the repo.
 uv run pytest tests/integration -m integration  # needs Docker
 uv run ruff check src tests            # lint
 uv run mypy src                        # type check
