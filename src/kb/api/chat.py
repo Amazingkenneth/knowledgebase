@@ -59,8 +59,33 @@ async def _call_llm(settings, messages: list[dict], timeout: float = 20.0) -> st
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"LLM upstream returned {resp.status_code}",
         )
-    data = resp.json()
-    return data["choices"][0]["message"]["content"]
+    try:
+        data = resp.json()
+        return data["choices"][0]["message"]["content"]
+    except (ValueError, KeyError, IndexError, TypeError) as exc:
+        log.warning("LLM upstream returned an unparseable body: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="LLM upstream returned an unparseable response",
+        ) from exc
+
+
+def _canonical_taxonomy_value(value: object, valid: list[str]) -> str | None:
+    """Map an LLM-supplied value to its canonical taxonomy casing, or None.
+
+    The extraction LLM is told to emit exact taxonomy strings, but it can
+    hallucinate or mis-case them. An unknown value would otherwise become a
+    filter that silently matches nothing, so we drop it (and log) rather than
+    search on a value the taxonomy doesn't contain.
+    """
+    if not value or not isinstance(value, str):
+        return None
+    lowered = value.strip().lower()
+    for candidate in valid:
+        if candidate.lower() == lowered:
+            return candidate
+    log.info("Dropping LLM value %r — not in taxonomy", value)
+    return None
 
 
 def _strip_code_fence(text: str) -> str:
@@ -259,11 +284,13 @@ async def chat(
         last_user = next(
             (m.content for m in reversed(recent) if m.role == "user"), ""
         )
+        project = _canonical_taxonomy_value(extracted.get("project"), taxonomy.projects)
+        equipment = _canonical_taxonomy_value(extracted.get("equipment"), taxonomy.equipment)
         try:
             search_resp = await search_service.search(
                 SearchRequest(
-                    project=extracted.get("project"),
-                    equipment=extracted.get("equipment"),
+                    project=project,
+                    equipment=equipment,
                     knowledge_type=kt,
                     error_codes=extracted.get("error_codes") or [],
                     keywords=extracted.get("keywords") or [],
@@ -358,10 +385,10 @@ async def extract_params(
     try:
         parsed = json.loads(_strip_code_fence(raw))
         return ExtractResponse(
-            project=parsed.get("project"),
+            project=_canonical_taxonomy_value(parsed.get("project"), taxonomy.projects),
             knowledge_type=parsed.get("knowledge_type"),
             error_codes=parsed.get("error_codes") or [],
-            equipment=parsed.get("equipment"),
+            equipment=_canonical_taxonomy_value(parsed.get("equipment"), taxonomy.equipment),
             keywords=parsed.get("keywords") or [],
             is_sentence=bool(parsed.get("is_sentence", False)),
         )

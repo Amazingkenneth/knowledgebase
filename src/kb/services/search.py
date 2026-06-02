@@ -230,6 +230,7 @@ class SearchService:
                 total=0,
                 hits=[],
                 effective_params=_effective(req),
+                banner=NO_HIT_BANNER,
             )
 
         if total > cfg.strict_max_hits:
@@ -278,6 +279,7 @@ class SearchService:
                 total=0,
                 hits=[],
                 effective_params=_effective(req),
+                banner=NO_HIT_BANNER,
             )
         return SearchResponse(
             status=SearchStatus.LOOSE_HIT,

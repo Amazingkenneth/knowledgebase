@@ -11,7 +11,7 @@ import logging
 import re
 import uuid
 from datetime import UTC, datetime
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from pydantic import ValidationError
@@ -30,7 +30,7 @@ from kb.models.ingest import (
     StagedDocument,
 )
 from kb.models.taxonomy import KnowledgeType, Taxonomy
-from kb.services.embedding import EmbeddingClient, EmbeddingError
+from kb.services.embedding import EmbeddingClient
 from kb.services.extraction import ScannedPdfError, extract_file
 from kb.services.file_tracker import FileTracker, compute_bytes_hash
 from kb.services.indexing import IndexingError, _to_es_source, doc_id, validate_against_taxonomy
@@ -53,6 +53,10 @@ class ImportPipeline:
         self._taxonomy = taxonomy
         self._tracker = FileTracker(es)
         self._sessions: dict[str, ImportSession] = {}
+        # Strong references to in-flight background tasks. asyncio only holds a
+        # weak reference to a task, so without this set a processing task can be
+        # garbage-collected mid-run, silently aborting an import.
+        self._tasks: set[asyncio.Task[None]] = set()
 
     def refresh_taxonomy(self, taxonomy: Taxonomy) -> None:
         self._taxonomy = taxonomy
@@ -134,8 +138,11 @@ class ImportPipeline:
                     file_paths.append((info, None))
                     continue
 
-            # Persist file to disk
-            dest = upload_dir / f"{file_hash}_{filename}"
+            # Persist file to disk. The filename is attacker-controlled (raw
+            # multipart value), so reduce it to a safe basename and confirm the
+            # destination stays inside upload_dir before writing — otherwise a
+            # name like "../../etc/cron.d/x" would escape the upload directory.
+            dest = _safe_upload_path(upload_dir, file_hash, filename)
             dest.write_bytes(content)
 
             info = FileInfo(
@@ -150,11 +157,29 @@ class ImportPipeline:
                 file_path=str(dest), file_size=len(content), file_type=ext,
             )
 
-        # Process files asynchronously
-        asyncio.create_task(self._process_files(
+        # Process files asynchronously. Keep a strong reference so the task is
+        # not garbage-collected before it finishes, and surface any unhandled
+        # failure (one raised outside the per-file try in _process_files) on the
+        # session instead of losing it silently.
+        task = asyncio.create_task(self._process_files(
             session, file_paths, knowledge_type_hint, project_hint, equipment_hint,
         ))
+        self._tasks.add(task)
+        task.add_done_callback(lambda t: self._on_task_done(session, t))
         return session
+
+    def _on_task_done(self, session: ImportSession, task: asyncio.Task[None]) -> None:
+        self._tasks.discard(task)
+        if task.cancelled():
+            return
+        exc = task.exception()
+        if exc is not None:
+            log.error(
+                "Import processing task crashed for session %s: %s",
+                session.session_id, exc, exc_info=exc,
+            )
+            session.status = ImportStatus.FAILED
+            session.message = f"Processing failed: {exc}"
 
     async def start_scan(
         self,
@@ -350,7 +375,7 @@ class ImportPipeline:
                         [build_title_text(doc), build_body(doc)]
                     )
                     title_vec, body_vec = vecs[0], vecs[1]
-                except (EmbeddingError, Exception) as exc:
+                except Exception as exc:
                     log.warning(
                         "Embedding failed for %s: %s — no vectors", doc.title, exc,
                     )
@@ -422,6 +447,24 @@ class ImportPipeline:
             if f.file_name == source_file and f.file_hash:
                 return f.file_hash
         return None
+
+
+def _safe_upload_path(upload_dir: Path, file_hash: str, filename: str) -> Path:
+    """Build a write destination under upload_dir that a hostile filename can't escape.
+
+    The filename arrives verbatim from the multipart upload, so it may contain
+    directory separators or `..` segments. We collapse it to its basename
+    (dropping any POSIX or Windows path components), fall back to "upload" if
+    nothing usable remains, and assert the final path is contained in
+    upload_dir. The hash prefix keeps distinct uploads from colliding.
+    """
+    base = PurePosixPath(filename.replace("\\", "/")).name or "upload"
+    base = base.lstrip(".") or "upload"  # avoid hidden/".."-style names
+    dest = (upload_dir / f"{file_hash}_{base}").resolve()
+    root = upload_dir.resolve()
+    if not dest.is_relative_to(root):
+        raise ValueError(f"Unsafe upload filename: {filename!r}")
+    return dest
 
 
 # Tokenizer used for filename → taxonomy detection. Split on anything that's

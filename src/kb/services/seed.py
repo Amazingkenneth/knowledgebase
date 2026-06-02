@@ -15,7 +15,7 @@ import logging
 from datetime import UTC, datetime
 from typing import Any
 
-from elasticsearch.helpers import async_bulk
+from elasticsearch.helpers import async_bulk, async_scan
 
 from elasticsearch import AsyncElasticsearch
 from kb.config import Settings
@@ -25,7 +25,7 @@ from kb.es.mappings import alias_name
 from kb.models.document import KnowledgeDoc
 from kb.models.taxonomy import KnowledgeType, Taxonomy
 from kb.services.csv_loader import load_csv_documents
-from kb.services.embedding import EmbeddingClient, EmbeddingError
+from kb.services.embedding import EmbeddingClient
 from kb.services.indexing import doc_id, validate_against_taxonomy
 
 log = logging.getLogger("kb.seed")
@@ -81,7 +81,7 @@ async def seed(
         title_vecs = list(all_vecs[: len(all_docs)])
         body_vecs  = list(all_vecs[len(all_docs) :])
         log.info("seed: embeddings obtained for %d docs", len(all_docs))
-    except (EmbeddingError, Exception) as exc:
+    except Exception as exc:
         log.warning(
             "seed: embedding service unavailable (%s: %s) — docs indexed without vectors. "
             "Keyword (BM25) search is fully available. "
@@ -141,28 +141,30 @@ async def restore_imports(es: AsyncElasticsearch, settings: Settings) -> None:
     except Exception:
         return
 
+    # Scroll the full set of committed tracker rows rather than capping at a
+    # fixed size — a large KB can hold more than 10k imported files and each
+    # row may carry many committed docs, so a fixed `size` would silently drop
+    # everything beyond the cap.
+    actions: list[dict[str, Any]] = []
     try:
-        resp = await es.search(
+        async for hit in async_scan(
+            es,
             index=IMPORT_INDEX_NAME,
-            body={
+            query={
                 "query": {"term": {"import_status": "committed"}},
-                "size": 10000,
                 "_source": ["committed_docs"],
             },
-        )
+        ):
+            for doc_entry in hit["_source"].get("committed_docs", []):
+                actions.append({
+                    "_op_type": "index",
+                    "_index": doc_entry["_index"],
+                    "_id": doc_entry["_id"],
+                    "_source": doc_entry["_source"],
+                })
     except Exception as exc:
         log.warning("restore_imports: could not query import tracker — %s", exc)
         return
-
-    actions: list[dict[str, Any]] = []
-    for hit in resp["hits"]["hits"]:
-        for doc_entry in hit["_source"].get("committed_docs", []):
-            actions.append({
-                "_op_type": "index",
-                "_index": doc_entry["_index"],
-                "_id": doc_entry["_id"],
-                "_source": doc_entry["_source"],
-            })
 
     if not actions:
         log.debug("restore_imports: no imported documents to restore")

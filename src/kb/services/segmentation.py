@@ -107,8 +107,11 @@ async def _call_llm(
     if resp.status_code != 200:
         log.warning("LLM segmentation error %s: %s", resp.status_code, resp.text[:200])
         raise RuntimeError(f"LLM returned {resp.status_code}")
-    data = resp.json()
-    return data["choices"][0]["message"]["content"]
+    try:
+        data = resp.json()
+        return data["choices"][0]["message"]["content"]
+    except (ValueError, KeyError, IndexError, TypeError) as exc:
+        raise RuntimeError(f"LLM returned an unparseable response: {exc}") from exc
 
 
 def _strip_code_fence(text: str) -> str:

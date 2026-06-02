@@ -342,22 +342,26 @@ def extract_xlsx(path: Path) -> list[PageText]:
 
     from openpyxl import load_workbook
 
+    # read_only mode keeps the workbook file open until close(); use try/finally
+    # so an error mid-iteration still releases the handle.
     wb = load_workbook(str(path), read_only=True, data_only=True)
     pages: list[PageText] = []
-    for sheet_idx, sheet_name in enumerate(wb.sheetnames, start=1):
-        ws = wb[sheet_name]
-        rows: list[str] = []
-        # Tag with sheet name so the LLM can disambiguate when multiple sheets
-        # carry similar structure (e.g. "Alarms_EN" vs "Alarms_ZH").
-        rows.append(f"[Sheet: {sheet_name}]")
-        for row in ws.iter_rows(values_only=True):
-            cells = [str(c).strip() if c is not None else "" for c in row]
-            line = "| " + " | ".join(cells) + " |"
-            if any(c for c in cells):
-                rows.append(line)
-        if len(rows) > 1:  # more than just the sheet header
-            pages.append((sheet_idx, "\n".join(rows)))
-    wb.close()
+    try:
+        for sheet_idx, sheet_name in enumerate(wb.sheetnames, start=1):
+            ws = wb[sheet_name]
+            rows: list[str] = []
+            # Tag with sheet name so the LLM can disambiguate when multiple sheets
+            # carry similar structure (e.g. "Alarms_EN" vs "Alarms_ZH").
+            rows.append(f"[Sheet: {sheet_name}]")
+            for row in ws.iter_rows(values_only=True):
+                cells = [str(c).strip() if c is not None else "" for c in row]
+                line = "| " + " | ".join(cells) + " |"
+                if any(c for c in cells):
+                    rows.append(line)
+            if len(rows) > 1:  # more than just the sheet header
+                pages.append((sheet_idx, "\n".join(rows)))
+    finally:
+        wb.close()
     return pages
 
 
