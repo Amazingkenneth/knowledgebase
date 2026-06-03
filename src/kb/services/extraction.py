@@ -31,6 +31,21 @@ class ScannedPdfError(ValueError):
     """
 
 
+class ExtractionLimitError(ValueError):
+    """Raised when a file exceeds a configured extraction resource bound.
+
+    Bails out before allocating unbounded memory (e.g. a multi-thousand-page
+    PDF or a spreadsheet with millions of cells) so one hostile/huge upload
+    can't OOM the process.
+    """
+
+
+# Conservative defaults; the import pipeline passes the configured values
+# (ingest.pdf_max_pages / ingest.xlsx_max_cells) through.
+_DEFAULT_PDF_MAX_PAGES = 2000
+_DEFAULT_XLSX_MAX_CELLS = 2_000_000
+
+
 def _try_import(module: str) -> Any:
     """Lazy-import an optional dependency, returning None if missing."""
     try:
@@ -48,6 +63,7 @@ def extract_pdf(
     ocr_enabled: bool = True,
     ocr_lang: str = "ch",
     ocr_min_confidence: float = 0.5,
+    max_pages: int = _DEFAULT_PDF_MAX_PAGES,
 ) -> list[PageText]:
     fitz = _try_import("fitz")
     if fitz is None:
@@ -57,6 +73,13 @@ def extract_pdf(
     blank_pages = 0          # pages that yielded no usable text at all
     image_only_pages = 0     # image-dominated pages we couldn't read as text
     doc = fitz.open(str(path))
+    if len(doc) > max_pages:
+        page_count = len(doc)
+        doc.close()
+        raise ExtractionLimitError(
+            f"{path.name} has {page_count} pages, exceeding the limit of {max_pages}. "
+            "Split the file or raise KB_INGEST__PDF_MAX_PAGES."
+        )
     try:
         for page_num in range(len(doc)):
             page = doc[page_num]
@@ -335,7 +358,7 @@ def _render_office_table(rows: list[list[str]]) -> str:
 
 # ── XLSX / XLS extraction ───────────────────────────────────────────────────
 
-def extract_xlsx(path: Path) -> list[PageText]:
+def extract_xlsx(path: Path, *, max_cells: int = _DEFAULT_XLSX_MAX_CELLS) -> list[PageText]:
     openpyxl = _try_import("openpyxl")
     if openpyxl is None:
         raise ImportError("openpyxl is required for XLSX extraction: pip install openpyxl")
@@ -346,6 +369,7 @@ def extract_xlsx(path: Path) -> list[PageText]:
     # so an error mid-iteration still releases the handle.
     wb = load_workbook(str(path), read_only=True, data_only=True)
     pages: list[PageText] = []
+    cell_count = 0
     try:
         for sheet_idx, sheet_name in enumerate(wb.sheetnames, start=1):
             ws = wb[sheet_name]
@@ -354,6 +378,14 @@ def extract_xlsx(path: Path) -> list[PageText]:
             # carry similar structure (e.g. "Alarms_EN" vs "Alarms_ZH").
             rows.append(f"[Sheet: {sheet_name}]")
             for row in ws.iter_rows(values_only=True):
+                # Bail before materializing more rows than the cap allows, so a
+                # pathological sheet (millions of cells) can't exhaust memory.
+                cell_count += len(row)
+                if cell_count > max_cells:
+                    raise ExtractionLimitError(
+                        f"{path.name} exceeds the cell limit of {max_cells}. "
+                        "Trim the workbook or raise KB_INGEST__XLSX_MAX_CELLS."
+                    )
                 cells = [str(c).strip() if c is not None else "" for c in row]
                 line = "| " + " | ".join(cells) + " |"
                 if any(c for c in cells):
@@ -406,12 +438,15 @@ def extract_file(
     ocr_enabled: bool = True,
     ocr_lang: str = "ch",
     ocr_min_confidence: float = 0.5,
+    pdf_max_pages: int = _DEFAULT_PDF_MAX_PAGES,
+    xlsx_max_cells: int = _DEFAULT_XLSX_MAX_CELLS,
 ) -> list[PageText]:
     """Extract text from a file, returning (page_number, text) pairs.
 
     Raises ImportError if the required library is not installed.
     Raises ValueError for unsupported file types.
     Raises ScannedPdfError if a PDF has no readable text and looks like a scan.
+    Raises ExtractionLimitError if the file exceeds a configured resource bound.
     """
     suffix = path.suffix.lower().lstrip(".")
     extractor = EXTRACTORS.get(suffix)
@@ -424,5 +459,8 @@ def extract_file(
             ocr_enabled=ocr_enabled,
             ocr_lang=ocr_lang,
             ocr_min_confidence=ocr_min_confidence,
+            max_pages=pdf_max_pages,
         )
+    if suffix in ("xlsx", "xls"):
+        return extract_xlsx(path, max_cells=xlsx_max_cells)
     return extractor(path)

@@ -10,6 +10,7 @@ import httpx
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from kb.config import EmbeddingConfig
+from kb.observability import metrics
 
 
 class EmbeddingError(RuntimeError):
@@ -43,10 +44,11 @@ class EmbeddingClient:
         # OpenAI-compatible embeddings protocol:
         # POST /embeddings  {"model": "...", "input": [...]}
         # -> {"data": [{"index": i, "embedding": [float, ...]}, ...]}
-        resp = await self._http.post(
-            "embeddings",
-            json={"model": self._cfg.model, "input": batch},
-        )
+        with metrics.measure_upstream("embedding"):
+            resp = await self._http.post(
+                "embeddings",
+                json={"model": self._cfg.model, "input": batch},
+            )
         if resp.status_code >= 500:
             raise EmbeddingError(f"embedding server {resp.status_code}: {resp.text[:200]}")
         if resp.status_code != 200:

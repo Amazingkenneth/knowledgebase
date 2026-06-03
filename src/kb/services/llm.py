@@ -99,7 +99,7 @@ class LLMClient:
                 retry=retry_if_exception_type((httpx.HTTPError, _TransientLLMError)),
                 reraise=True,
             ):
-                with attempt:
+                with attempt, metrics.measure_upstream("llm"):
                     return await self._post(messages, timeout, max_tokens)
         except httpx.HTTPError as exc:
             metrics.record_upstream_error("llm")

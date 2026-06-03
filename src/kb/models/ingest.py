@@ -145,3 +145,7 @@ class CommitResponse(BaseModel):
     # Documents indexed without vectors because the embedding service was
     # unavailable at commit time (they remain BM25-searchable).
     vectors_skipped: int = 0
+    # Documents indexed into ES but whose import-tracker row failed to update.
+    # They are searchable now but would be dropped on the next startup reseed
+    # (restore_imports reads the tracker), so the user should re-import them.
+    tracking_failed: int = 0

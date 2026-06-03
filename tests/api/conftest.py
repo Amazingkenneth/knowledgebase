@@ -80,6 +80,8 @@ def make_client(monkeypatch: pytest.MonkeyPatch):
         search: Any = None,
         pipeline: Any = None,
         settings: Settings | None = None,
+        embedder: Any = None,
+        raise_server_exceptions: bool = True,
     ) -> TestClient:
         cfg = settings or Settings()
         cfg.llm.api_key = "test-key"  # configured by default
@@ -92,7 +94,7 @@ def make_client(monkeypatch: pytest.MonkeyPatch):
         async def _lifespan(app: FastAPI):
             app.state.settings = cfg
             app.state.taxonomy_store = SimpleNamespace(current=_taxonomy())
-            app.state.embedder = SimpleNamespace()
+            app.state.embedder = embedder if embedder is not None else SimpleNamespace()
             app.state.llm = llm or FakeLLM([])
             app.state.search = search or FakeSearch()
             app.state.import_pipeline = pipeline or SimpleNamespace()
@@ -100,7 +102,9 @@ def make_client(monkeypatch: pytest.MonkeyPatch):
             yield
 
         app = create_app(lifespan_override=_lifespan)
-        return TestClient(app)
+        # raise_server_exceptions=False lets tests observe the 500 produced by
+        # the catch-all exception handler instead of re-raising into the test.
+        return TestClient(app, raise_server_exceptions=raise_server_exceptions)
 
     return _make
 

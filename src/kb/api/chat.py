@@ -14,7 +14,7 @@ import json
 import logging
 
 from fastapi import APIRouter, HTTPException, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from kb.api.deps import LLMDep, SearchDep, SettingsDep, TaxonomyDep
 from kb.models.search import DocHit, EffectiveParams, SearchRequest, SearchStatus
@@ -32,9 +32,17 @@ _MAX_RESULTS_IN_CONTEXT = 2
 
 # ── Shared helpers ────────────────────────────────────────────────────────────
 
+# Per-message and per-conversation caps. Generous for real chats but bound the
+# payload so a caller can't drive unbounded memory / LLM token cost. The chat
+# handler already trims to the most recent _MAX_HISTORY turns; this caps the
+# raw request before it's parsed.
+_MAX_MESSAGE_CHARS = 20_000
+_MAX_MESSAGES = 200
+
+
 class _Message(BaseModel):
-    role: str
-    content: str
+    role: str = Field(max_length=32)
+    content: str = Field(max_length=_MAX_MESSAGE_CHARS)
 
 
 def _http_from_llm_error(exc: Exception) -> HTTPException:
@@ -81,7 +89,7 @@ def _strip_code_fence(text: str) -> str:
 
 
 class ChatRequest(BaseModel):
-    messages: list[_Message]
+    messages: list[_Message] = Field(min_length=1, max_length=_MAX_MESSAGES)
     # Echo of effective_params from the previous response.  When present the
     # extraction LLM treats it as the current search state and modifies it;
     # when absent params are extracted fresh from the conversation.
@@ -335,7 +343,7 @@ async def chat(
 
 
 class ExtractRequest(BaseModel):
-    query: str
+    query: str = Field(min_length=1, max_length=_MAX_MESSAGE_CHARS)
 
 
 class ExtractResponse(BaseModel):

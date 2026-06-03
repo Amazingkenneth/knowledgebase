@@ -83,6 +83,10 @@ class ImportPipeline:
         )
         return sessions[:limit]
 
+    def evict_expired_sessions(self) -> None:
+        """Public entry point for the background sweeper (see ``main.lifespan``)."""
+        self._evict_expired_sessions()
+
     def _evict_expired_sessions(self) -> None:
         """Drop expired sessions so the in-memory ``_sessions`` dict stays bounded.
 
@@ -285,6 +289,8 @@ class ImportPipeline:
                     ocr_enabled=ocr_enabled,
                     ocr_lang=self._settings.ingest.ocr_lang,
                     ocr_min_confidence=self._settings.ingest.ocr_min_confidence,
+                    pdf_max_pages=self._settings.ingest.pdf_max_pages,
+                    xlsx_max_cells=self._settings.ingest.xlsx_max_cells,
                 )
                 if not pages:
                     info.status = FileStatus.FAILED
@@ -513,17 +519,32 @@ class ImportPipeline:
                 file_committed.setdefault(file_hash, []).append({
                     "_index": index_name, "_id": _id, "_source": source,
                 })
+        tracking_failed = 0
         for file_hash, docs in file_committed.items():
             try:
                 await self._tracker.record_committed(file_hash, docs)
             except Exception as exc:
+                # The docs ARE in ES, but the tracker row that drives
+                # restore_imports() didn't update — so the next startup reseed
+                # would silently drop them. Surface it instead of only logging.
+                tracking_failed += len(docs)
                 log.error("Failed to update tracker for %s: %s", file_hash[:12], exc)
+                errors.append({
+                    "error": (
+                        f"Indexed {len(docs)} doc(s) but failed to record them "
+                        f"for restore: {exc}"
+                    ),
+                    "hint": (
+                        "Documents are searchable now but won't survive a server "
+                        "restart/reseed. Re-import this file to make it durable."
+                    ),
+                })
 
         # A clean or partial run is COMMITTED (errors list carries what dropped);
         # only a run where nothing landed is FAILED.
         session.status = ImportStatus.FAILED if committed == 0 else ImportStatus.COMMITTED
         return {"committed": committed, "skipped": skipped, "errors": errors,
-                "vectors_skipped": vectors_skipped}
+                "vectors_skipped": vectors_skipped, "tracking_failed": tracking_failed}
 
     def _find_file_hash(self, session: ImportSession, source_file: str) -> str | None:
         for f in session.files:

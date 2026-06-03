@@ -1,11 +1,16 @@
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
 
 from kb.models.taxonomy import KnowledgeType
+
+# Bounded scalar aliases so a single oversized term can't bloat an ES query or
+# LLM context. Caps are generous for real queries but reject abuse.
+_Keyword = Annotated[str, Field(max_length=200)]
+_ErrorCode = Annotated[str, Field(max_length=64)]
 
 
 class SearchStatus(StrEnum):
@@ -37,11 +42,11 @@ class SearchRequest(BaseModel):
     """
 
     knowledge_type: KnowledgeType | None = None
-    project: str | None = None
-    equipment: str | None = None
-    error_codes: list[str] = Field(default_factory=list)
-    keywords: list[str] = Field(default_factory=list)
-    query_text: str | None = None
+    project: str | None = Field(default=None, max_length=200)
+    equipment: str | None = Field(default=None, max_length=200)
+    error_codes: list[_ErrorCode] = Field(default_factory=list, max_length=64)
+    keywords: list[_Keyword] = Field(default_factory=list, max_length=64)
+    query_text: str | None = Field(default=None, max_length=4000)
     mode: SearchMode = "auto"
     size: int = Field(default=10, ge=1, le=50)
     from_: int = Field(default=0, ge=0)

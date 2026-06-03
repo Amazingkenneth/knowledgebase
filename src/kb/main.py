@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -8,11 +9,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import yaml
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Query, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse, Response
 
-from elasticsearch import AsyncElasticsearch
+from elasticsearch import ApiError, AsyncElasticsearch, TransportError
 from kb.api import chat, documents, facets, ingest, search
 from kb.config import Settings, get_settings
 from kb.es.client import close_es, get_es
@@ -21,7 +22,7 @@ from kb.es.mappings import alias_name, all_alias_pattern
 from kb.es.migrations import create_one
 from kb.models.taxonomy import KnowledgeType
 from kb.observability import metrics
-from kb.observability.logging_config import configure_logging
+from kb.observability.logging_config import configure_logging, request_id_var
 from kb.observability.middleware import MetricsMiddleware, RequestContextMiddleware
 from kb.services.embedding import EmbeddingClient
 from kb.services.import_pipeline import ImportPipeline
@@ -34,6 +35,30 @@ from kb.services.taxonomy import TaxonomyStore
 log = logging.getLogger("kb")
 
 _FRONTEND_HTML = Path("Knowledge Base Search.html")
+
+
+def _request_id(request: Request) -> str:
+    """Recover the current request id for an error body.
+
+    Prefers the scope-backed ``request.state`` (set by RequestContextMiddleware and
+    still readable in the outer ServerErrorMiddleware where the contextvar has
+    already been reset), falling back to the contextvar, then ``-``.
+    """
+    rid = getattr(request.state, "request_id", None)
+    return rid or request_id_var.get()
+
+
+async def _probe_embedding(app: FastAPI) -> bool:
+    """Best-effort reachability check for the embedding service (deep /readyz)."""
+    embedder = getattr(app.state, "embedder", None)
+    if embedder is None or not hasattr(embedder, "embed"):
+        return False
+    try:
+        await embedder.embed(["ok"])
+        return True
+    except Exception as exc:  # noqa: BLE001 — probe must never raise
+        log.warning("readyz deep probe: embedding unreachable — %s", exc)
+        return False
 
 
 async def _sync_taxonomy_from_es(
@@ -125,6 +150,25 @@ async def _wait_for_es(es: AsyncElasticsearch, attempts: int = 5) -> bool:
     return False
 
 
+async def _session_evictor(app: FastAPI, settings: Settings) -> None:
+    """Periodically reclaim expired import sessions.
+
+    Eviction otherwise only runs when a new upload arrives, so an idle server
+    would pin abandoned preview sessions in memory indefinitely. Runs until the
+    task is cancelled on shutdown.
+    """
+    interval = settings.ingest.session_evict_interval_minutes * 60
+    while True:
+        await asyncio.sleep(interval)
+        pipeline = getattr(app.state, "import_pipeline", None)
+        if pipeline is None:
+            continue
+        try:
+            pipeline.evict_expired_sessions()
+        except Exception as exc:  # noqa: BLE001 — sweeper must never die
+            log.warning("session evictor: eviction failed — %s", exc)
+
+
 async def _ensure_import_index(es) -> None:
     """Create the import file tracking index if it doesn't exist."""
     try:
@@ -187,9 +231,13 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     log.info("kb up: taxonomy version=%s, es=%s", taxonomy_store.current.version,
              "ok" if es_ok else "down")
+    evict_task = asyncio.create_task(_session_evictor(app, settings))
     try:
         yield
     finally:
+        evict_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await evict_task
         await embedder.aclose()
         await llm.aclose()
         await close_es()
@@ -223,17 +271,59 @@ def create_app(lifespan_override: object | None = None) -> FastAPI:
             content={"detail": exc.errors()},
         )
 
+    @app.exception_handler(TransportError)
+    async def _es_transport_exc(request: Request, exc: TransportError) -> JSONResponse:
+        """Elasticsearch is unreachable (connection refused / timeout) → 503.
+
+        Without this, a transient ES outage surfaces to the client as an opaque,
+        unlogged 500. Map it to a clear, logged 503 so callers (and orchestrators)
+        can distinguish "backend down, retry" from a real server bug.
+        """
+        rid = _request_id(request)
+        log.error("Elasticsearch transport error [%s]: %s", rid, exc, exc_info=exc)
+        metrics.record_upstream_error("es")
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"detail": "search backend unavailable", "request_id": rid},
+        )
+
+    @app.exception_handler(ApiError)
+    async def _es_api_exc(request: Request, exc: ApiError) -> JSONResponse:
+        """Elasticsearch reachable but rejected/failed the request → 502."""
+        rid = _request_id(request)
+        log.error("Elasticsearch API error [%s]: %s", rid, exc, exc_info=exc)
+        metrics.record_upstream_error("es")
+        return JSONResponse(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            content={"detail": "search backend error", "request_id": rid},
+        )
+
+    @app.exception_handler(Exception)
+    async def _unhandled_exc(request: Request, exc: Exception) -> JSONResponse:
+        """Last-resort handler: never let an unforeseen error escape unlogged."""
+        rid = _request_id(request)
+        log.error("Unhandled error [%s]: %s", rid, exc, exc_info=exc)
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "internal server error", "request_id": rid},
+        )
+
     @app.get("/healthz", tags=["meta"])
     async def healthz() -> dict[str, str]:
         """Liveness: the process is up. Does not probe dependencies."""
         return {"status": "ok"}
 
     @app.get("/readyz", tags=["meta"])
-    async def readyz() -> JSONResponse:
+    async def readyz(deep: bool = Query(default=False)) -> JSONResponse:
         """Readiness: probe Elasticsearch and report subsystem availability.
 
         Returns 503 when ES is unreachable so an orchestrator / Docker
         healthcheck can route around or restart a degraded container.
+
+        ``?deep=true`` additionally round-trips the embedding service (when
+        configured) so the report reflects real reachability, not just whether
+        a key is set. The default probe stays cheap (ES ping only) — deep checks
+        cost an upstream call and shouldn't run on every healthcheck tick.
         """
         cfg = getattr(app.state, "settings", None) or get_settings()
         es = get_es(cfg)
@@ -241,10 +331,18 @@ def create_app(lifespan_override: object | None = None) -> FastAPI:
             es_ok = bool(await es.ping())
         except Exception:  # noqa: BLE001 — probe must never raise
             es_ok = False
+
+        if not cfg.embedding.api_key:
+            embedding = "disabled"
+        elif not deep:
+            embedding = "configured"
+        else:
+            embedding = "ok" if await _probe_embedding(app) else "down"
+
         body = {
             "status": "ok" if es_ok else "degraded",
             "es": "ok" if es_ok else "down",
-            "embedding": "configured" if cfg.embedding.api_key else "disabled",
+            "embedding": embedding,
             "llm": "configured" if cfg.llm.api_key else "disabled",
         }
         return JSONResponse(

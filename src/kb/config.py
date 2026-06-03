@@ -88,6 +88,11 @@ class IngestConfig(BaseModel):
     allowed_extensions: list[str] = Field(
         default=["pdf", "xlsx", "xls", "csv", "pptx", "docx"]
     )
+    # Guards against pathological/oversized files exhausting memory during
+    # extraction. A document beyond these bounds is rejected with a clear error
+    # rather than risking an OOM that takes the whole process down.
+    pdf_max_pages: int = Field(default=2000, ge=1, le=50000)
+    xlsx_max_cells: int = Field(default=2_000_000, ge=1000)
     ocr_enabled: bool = True
     # PaddleOCR language model. "ch" also reads Latin script (English model
     # numbers/units); use "en" for English-only documents.
@@ -104,6 +109,9 @@ class IngestConfig(BaseModel):
     # Hard TTL: evict *any* session (including in-flight / under-review) this
     # long after creation, bounding memory against abandoned preview sessions.
     session_hard_ttl_minutes: int = Field(default=480, ge=10, le=10080)
+    # How often the background sweeper reclaims expired sessions, so an idle
+    # server (no new uploads to trigger eviction) doesn't pin abandoned ones.
+    session_evict_interval_minutes: int = Field(default=15, ge=1, le=1440)
 
 
 class Settings(BaseSettings):

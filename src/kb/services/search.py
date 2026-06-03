@@ -225,7 +225,8 @@ class SearchService:
                 log.warning("vector rescore unavailable, falling back to BM25: %s", exc)
                 metrics.record_upstream_error("embedding")
 
-        resp = await self._es.search(index=index, body=body)
+        with metrics.measure_upstream("es"):
+            resp = await self._es.search(index=index, body=body)
         total = int(resp["hits"]["total"]["value"])
         raw_hits = resp["hits"]["hits"]
 
@@ -277,7 +278,8 @@ class SearchService:
                 log.warning("vector rescore unavailable, falling back to BM25: %s", exc)
                 metrics.record_upstream_error("embedding")
 
-        resp = await self._es.search(index=index, body=body)
+        with metrics.measure_upstream("es"):
+            resp = await self._es.search(index=index, body=body)
         total = int(resp["hits"]["total"]["value"])
         if total == 0:
             return SearchResponse(
@@ -327,7 +329,8 @@ class SearchService:
                 "filter": _filters(req),
             },
         }
-        resp = await self._es.search(index=index, body=body)
+        with metrics.measure_upstream("es"):
+            resp = await self._es.search(index=index, body=body)
         total = int(resp["hits"]["total"]["value"])
         if total == 0:
             return SearchResponse(
@@ -363,7 +366,8 @@ class SearchService:
                 "error_codes": {"terms": {"field": "error_codes", "size": 20}},
             },
         }
-        resp = await self._es.search(index=index, body=body)
+        with metrics.measure_upstream("es"):
+            resp = await self._es.search(index=index, body=body)
         out: dict[str, dict[str, int]] = {}
         for key in ("project", "equipment", "error_codes"):
             buckets = resp.get("aggregations", {}).get(key, {}).get("buckets", [])

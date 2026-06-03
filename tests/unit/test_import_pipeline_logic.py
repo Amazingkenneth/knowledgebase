@@ -20,7 +20,7 @@ import pytest
 from fastapi import HTTPException
 
 from kb.config import Settings
-from kb.models.ingest import ImportSession, ImportStatus, StagedDocument
+from kb.models.ingest import FileInfo, FileStatus, ImportSession, ImportStatus, StagedDocument
 from kb.models.taxonomy import KnowledgeType
 from kb.services import import_pipeline as ip
 from kb.services.indexing import IndexingError
@@ -122,6 +122,37 @@ async def test_commit_clean_run_is_committed(stub_pipeline: ip.ImportPipeline):
 
     assert result["committed"] == 2
     assert result["errors"] == []
+    assert session.status == ImportStatus.COMMITTED
+
+
+# ── A3 (data loss): a tracker write failure after a successful index is surfaced ──
+
+async def test_commit_surfaces_tracker_failure(stub_pipeline: ip.ImportPipeline):
+    """Docs land in ES but the import-tracker row fails to update. They are
+    searchable now yet would be dropped on the next reseed (restore_imports
+    reads the tracker), so the response must flag tracking_failed + an error."""
+    from unittest.mock import AsyncMock
+
+    session = ImportSession(
+        session_id="s-track",
+        documents=[_staged(0, "ok-a"), _staged(1, "ok-b")],
+        files=[FileInfo(
+            file_name="f.pptx", file_hash="hash123", file_type="pptx",
+            status=FileStatus.DONE,
+        )],
+        created_at=datetime.now(UTC),
+    )
+    stub_pipeline._sessions["s-track"] = session
+    stub_pipeline._tracker.record_committed = AsyncMock(  # type: ignore[method-assign]
+        side_effect=RuntimeError("tracker write failed")
+    )
+
+    result = await stub_pipeline.commit_session("s-track")
+
+    assert result["committed"] == 2
+    assert result["tracking_failed"] == 2
+    assert any("won't survive" in e.get("hint", "") for e in result["errors"])
+    # The docs DID index, so the session is still COMMITTED (not FAILED).
     assert session.status == ImportStatus.COMMITTED
 
 

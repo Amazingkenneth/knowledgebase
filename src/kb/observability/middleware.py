@@ -21,6 +21,10 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next: _Next) -> Response:
         rid = request.headers.get("x-request-id") or uuid.uuid4().hex[:16]
+        # Stash on scope-backed state too, so exception handlers running in the
+        # outer ServerErrorMiddleware (after the contextvar is reset below) can
+        # still recover the id for the error body.
+        request.state.request_id = rid
         token = request_id_var.set(rid)
         try:
             response = await call_next(request)
