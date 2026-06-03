@@ -78,7 +78,7 @@ RUN mkdir -p data/uploads
 EXPOSE 8000
 
 HEALTHCHECK --interval=15s --timeout=5s --start-period=40s --retries=5 \
-    CMD curl -fs http://localhost:8000/healthz || exit 1
+    CMD curl -fs http://localhost:8000/readyz || exit 1
 
 ENTRYPOINT ["tini", "--"]
 CMD ["python", "-m", "kb", "--host", "0.0.0.0", "--port", "8000"]

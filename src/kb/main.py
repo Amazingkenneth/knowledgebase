@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -9,7 +10,7 @@ from pathlib import Path
 import yaml
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 
 from elasticsearch import AsyncElasticsearch
 from kb.api import chat, documents, facets, ingest, search
@@ -19,9 +20,13 @@ from kb.es.import_mappings import IMPORT_INDEX_BODY, IMPORT_INDEX_NAME
 from kb.es.mappings import alias_name, all_alias_pattern
 from kb.es.migrations import create_one
 from kb.models.taxonomy import KnowledgeType
+from kb.observability import metrics
+from kb.observability.logging_config import configure_logging
+from kb.observability.middleware import MetricsMiddleware, RequestContextMiddleware
 from kb.services.embedding import EmbeddingClient
 from kb.services.import_pipeline import ImportPipeline
 from kb.services.indexing import IndexingService
+from kb.services.llm import LLMClient
 from kb.services.search import SearchService
 from kb.services.seed import restore_imports, seed
 from kb.services.taxonomy import TaxonomyStore
@@ -104,6 +109,22 @@ async def _ensure_indices(es, settings) -> None:
             log.warning("could not create index for %s: %s", kt.value, exc)
 
 
+async def _wait_for_es(es: AsyncElasticsearch, attempts: int = 5) -> bool:
+    """Ping ES with a short exponential backoff so a slow-to-start cluster gives
+    a clear log line instead of a stack trace mid-seed. Returns reachability."""
+    delay = 0.5
+    for attempt in range(1, attempts + 1):
+        try:
+            if await es.ping():
+                return True
+        except Exception as exc:  # noqa: BLE001 — connectivity probe
+            log.warning("ES ping attempt %d/%d failed: %s", attempt, attempts, exc)
+        if attempt < attempts:
+            await asyncio.sleep(delay)
+            delay = min(delay * 2, 4.0)
+    return False
+
+
 async def _ensure_import_index(es) -> None:
     """Create the import file tracking index if it doesn't exist."""
     try:
@@ -121,37 +142,74 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     taxonomy_store = TaxonomyStore(settings.taxonomy.path)
     es = get_es(settings)
     embedder = EmbeddingClient(settings.embedding)
+    llm = LLMClient(settings.llm)
 
     app.state.settings = settings
     app.state.taxonomy_store = taxonomy_store
     app.state.embedder = embedder
+    app.state.llm = llm
     app.state.indexing = IndexingService(es, settings, embedder, taxonomy_store.current)
     app.state.search = SearchService(es, settings, embedder)
+    app.state.import_pipeline = ImportPipeline(
+        es, settings, embedder, taxonomy_store.current, llm
+    )
 
-    # Auto-create indices and reseed from CSV on every start.
-    await _ensure_indices(es, settings)
-    await _ensure_import_index(es)
-    await seed(es, settings, embedder, taxonomy_store.current)
+    # Surface degraded modes loudly so operators aren't left guessing.
+    if not settings.llm.api_key:
+        log.warning("KB_LLM__API_KEY not set — /chat and /extract will return 503.")
+    if not settings.embedding.api_key:
+        log.warning("KB_EMBEDDING__API_KEY not set — vector search disabled (BM25-only).")
 
-    # Re-index previously imported documents that were wiped by seed's clear.
-    await restore_imports(es, settings)
+    # Wait for ES before the (destructive) seed so a slow cluster doesn't crash
+    # startup mid-reseed. If it never comes up, start degraded rather than hang.
+    es_ok = await _wait_for_es(es)
+    if es_ok:
+        # Auto-create indices and reseed from CSV on every start.
+        await _ensure_indices(es, settings)
+        await _ensure_import_index(es)
+        await seed(es, settings, embedder, taxonomy_store.current)
 
-    # Sync taxonomy with whatever project/equipment values actually exist in ES,
-    # then rebuild the indexing service so it validates against the up-to-date taxonomy.
-    await _sync_taxonomy_from_es(es, settings, taxonomy_store)
-    app.state.indexing = IndexingService(es, settings, embedder, taxonomy_store.current)
-    app.state.import_pipeline = ImportPipeline(es, settings, embedder, taxonomy_store.current)
+        # Re-index previously imported documents that were wiped by seed's clear.
+        await restore_imports(es, settings)
 
-    log.info("kb up: taxonomy version=%s", taxonomy_store.current.version)
+        # Sync taxonomy with whatever values actually exist in ES, then rebuild
+        # the services so they validate against the up-to-date taxonomy.
+        await _sync_taxonomy_from_es(es, settings, taxonomy_store)
+        app.state.indexing = IndexingService(es, settings, embedder, taxonomy_store.current)
+        app.state.import_pipeline = ImportPipeline(
+            es, settings, embedder, taxonomy_store.current, llm
+        )
+    else:
+        log.error(
+            "Elasticsearch unreachable at %s — starting in DEGRADED mode; "
+            "search and indexing will fail until it recovers.", settings.es.url,
+        )
+
+    log.info("kb up: taxonomy version=%s, es=%s", taxonomy_store.current.version,
+             "ok" if es_ok else "down")
     try:
         yield
     finally:
         await embedder.aclose()
+        await llm.aclose()
         await close_es()
 
 
-def create_app() -> FastAPI:
-    app = FastAPI(title="Knowledge Base", version="0.1.0", lifespan=lifespan)
+def create_app(lifespan_override: object | None = None) -> FastAPI:
+    settings = get_settings()
+    configure_logging(settings.observability)
+
+    app = FastAPI(
+        title="Knowledge Base",
+        version="0.1.0",
+        lifespan=lifespan_override or lifespan,  # type: ignore[arg-type]
+    )
+
+    # Outermost: request-id context (so every log line / inner metric carries it).
+    app.add_middleware(RequestContextMiddleware)
+    if settings.observability.metrics_enabled:
+        app.add_middleware(MetricsMiddleware)
+
     app.include_router(documents.router)
     app.include_router(search.router)
     app.include_router(facets.router)
@@ -167,7 +225,39 @@ def create_app() -> FastAPI:
 
     @app.get("/healthz", tags=["meta"])
     async def healthz() -> dict[str, str]:
+        """Liveness: the process is up. Does not probe dependencies."""
         return {"status": "ok"}
+
+    @app.get("/readyz", tags=["meta"])
+    async def readyz() -> JSONResponse:
+        """Readiness: probe Elasticsearch and report subsystem availability.
+
+        Returns 503 when ES is unreachable so an orchestrator / Docker
+        healthcheck can route around or restart a degraded container.
+        """
+        cfg = getattr(app.state, "settings", None) or get_settings()
+        es = get_es(cfg)
+        try:
+            es_ok = bool(await es.ping())
+        except Exception:  # noqa: BLE001 — probe must never raise
+            es_ok = False
+        body = {
+            "status": "ok" if es_ok else "degraded",
+            "es": "ok" if es_ok else "down",
+            "embedding": "configured" if cfg.embedding.api_key else "disabled",
+            "llm": "configured" if cfg.llm.api_key else "disabled",
+        }
+        return JSONResponse(
+            status_code=status.HTTP_200_OK if es_ok else status.HTTP_503_SERVICE_UNAVAILABLE,
+            content=body,
+        )
+
+    @app.get("/metrics", include_in_schema=False)
+    async def metrics_endpoint() -> Response:
+        if not get_settings().observability.metrics_enabled:
+            return Response(status_code=status.HTTP_404_NOT_FOUND)
+        body, content_type = metrics.render()
+        return Response(content=body, media_type=content_type)
 
     @app.get("/", include_in_schema=False)
     async def frontend() -> FileResponse:

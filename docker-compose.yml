@@ -45,7 +45,7 @@ services:
       # Persist uploaded/imported files across container recreation.
       - ./data/uploads:/app/data/uploads
     healthcheck:
-      test: ["CMD-SHELL", "curl -fs http://localhost:8000/healthz || exit 1"]
+      test: ["CMD-SHELL", "curl -fs http://localhost:8000/readyz || exit 1"]
       interval: 15s
       timeout: 5s
       start_period: 40s

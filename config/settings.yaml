@@ -49,3 +49,17 @@ ingest:
   segmentation_max_tokens: 8000
   segmentation_chunk_chars: 12000
   session_ttl_minutes: 120
+  # Evict any session (including in-flight/under-review) after this long.
+  session_hard_ttl_minutes: 480
+
+llm:
+  # api_url / api_key / model come from env (.env) — never commit secrets.
+  max_tokens: 1200
+  timeout_s: 20          # default chat read-timeout (seconds)
+  extract_timeout_s: 10  # shorter budget for /extract
+  max_retries: 2         # retries on transient 429 / 5xx / timeout
+
+observability:
+  metrics_enabled: true  # expose GET /metrics (Prometheus text)
+  json_logs: false       # set true for one-JSON-object-per-line logs
+  log_level: "INFO"

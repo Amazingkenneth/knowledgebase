@@ -13,13 +13,14 @@ from __future__ import annotations
 import json
 import logging
 
-import httpx
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
-from kb.api.deps import SearchDep, SettingsDep, TaxonomyDep
+from kb.api.deps import LLMDep, SearchDep, SettingsDep, TaxonomyDep
 from kb.models.search import DocHit, EffectiveParams, SearchRequest, SearchStatus
 from kb.models.taxonomy import KnowledgeType
+from kb.observability import metrics
+from kb.services.llm import LLMClient, LLMError, LLMNotConfiguredError
 
 log = logging.getLogger("kb.chat")
 
@@ -36,38 +37,18 @@ class _Message(BaseModel):
     content: str
 
 
-async def _call_llm(settings, messages: list[dict], timeout: float = 20.0) -> str:
-    if not settings.llm.api_key:
-        raise HTTPException(
+def _http_from_llm_error(exc: Exception) -> HTTPException:
+    """Translate an LLM client failure into the right HTTP status."""
+    if isinstance(exc, LLMNotConfiguredError):
+        return HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="LLM not configured — set KB_LLM__API_KEY environment variable.",
         )
-    async with httpx.AsyncClient(timeout=timeout) as client:
-        resp = await client.post(
-            settings.llm.api_url,
-            headers={"Authorization": f"Bearer {settings.llm.api_key}"},
-            json={
-                "model": settings.llm.model,
-                "messages": messages,
-                "max_tokens": settings.llm.max_tokens,
-                "stream": False,
-            },
-        )
-    if resp.status_code != 200:
-        log.warning("LLM upstream error %s: %s", resp.status_code, resp.text[:200])
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"LLM upstream returned {resp.status_code}",
-        )
-    try:
-        data = resp.json()
-        return data["choices"][0]["message"]["content"]
-    except (ValueError, KeyError, IndexError, TypeError) as exc:
-        log.warning("LLM upstream returned an unparseable body: %s", exc)
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="LLM upstream returned an unparseable response",
-        ) from exc
+    log.warning("LLM call failed: %s", exc)
+    return HTTPException(
+        status_code=status.HTTP_502_BAD_GATEWAY,
+        detail="LLM upstream error",
+    )
 
 
 def _canonical_taxonomy_value(value: object, valid: list[str]) -> str | None:
@@ -112,6 +93,10 @@ class ChatResponse(BaseModel):
     search_results: list[DocHit] | None = None
     search_status: SearchStatus | None = None
     effective_params: EffectiveParams | None = None
+    # True when the KB search raised (e.g. Elasticsearch unreachable) rather
+    # than legitimately returning no hits — lets the UI show a "retry" hint
+    # instead of a "no knowledge found" message.
+    search_error: bool = False
 
 
 def _format_results_for_llm(hits: list[DocHit]) -> str:
@@ -136,6 +121,7 @@ def _build_chat_system(
     search_status: SearchStatus | None,
     total: int = 0,
     history_summary: str = "",
+    search_failed: bool = False,
 ) -> str:
     base = (
         "你是半导体制造设备知识库助手。\n"
@@ -144,6 +130,14 @@ def _build_chat_system(
     )
     if history_summary:
         base += f"\n\n【早期对话摘要】{history_summary}"
+
+    if search_failed:
+        # ES error, not a genuine no-hit — don't imply the KB is empty.
+        return (
+            base
+            + "\n\n检索服务暂时不可用，无法查询知识库。请告知用户稍后重试，"
+            "不要凭空作答或编造内容。"
+        )
 
     if search_status == SearchStatus.TOO_MANY:
         return (
@@ -179,7 +173,9 @@ def _sufficient_params(p: dict) -> bool:
     return has_field or has_kw
 
 
-async def _summarize_older_history(settings, older: list[_Message]) -> str:
+async def _summarize_older_history(
+    llm: LLMClient, settings, older: list[_Message]
+) -> str:
     turns = "\n".join(f"[{m.role}]: {m.content}" for m in older)
     prompt = (
         f"以下是对话历史（较早部分）：\n{turns}\n\n"
@@ -187,13 +183,17 @@ async def _summarize_older_history(settings, older: list[_Message]) -> str:
         "并用2-3句话概括本段对话的主题和结论。只输出摘要文本，不要JSON。"
     )
     try:
-        return (await _call_llm(settings, [{"role": "user", "content": prompt}], timeout=10.0)).strip()
+        raw = await llm.complete(
+            [{"role": "user", "content": prompt}], timeout=settings.llm.extract_timeout_s
+        )
+        return raw.strip()
     except Exception as exc:
         log.warning("chat: history summarization failed — %s", exc)
         return ""
 
 
 async def _extract_from_conversation(
+    llm: LLMClient,
     settings,
     taxonomy,
     messages: list[_Message],
@@ -228,14 +228,14 @@ async def _extract_from_conversation(
         query = f"【早期对话摘要】{history_summary}\n\n{query}"
 
     try:
-        raw = await _call_llm(
-            settings,
+        raw = await llm.complete(
             [{"role": "system", "content": system}, {"role": "user", "content": query}],
-            timeout=8.0,
+            timeout=settings.llm.extract_timeout_s,
         )
         return json.loads(_strip_code_fence(raw))
-    except HTTPException:
-        raise
+    except LLMNotConfiguredError:
+        # No key — let the final chat() call surface the 503 cleanly.
+        return {}
     except Exception as exc:
         log.warning("chat: param extraction failed — %s", exc)
         return {}
@@ -247,6 +247,7 @@ async def chat(
     settings: SettingsDep,
     taxonomy_store: TaxonomyDep,
     search_service: SearchDep,
+    llm: LLMDep,
 ) -> ChatResponse:
     """Conversational KB search.
 
@@ -260,19 +261,20 @@ async def chat(
     history_summary = ""
     if len(body.messages) > _MAX_HISTORY:
         older = body.messages[:-_MAX_HISTORY]
-        history_summary = await _summarize_older_history(settings, older)
+        history_summary = await _summarize_older_history(llm, settings, older)
 
     # 1. Extract search params from recent conversation (with historical context).
     # last_search_params, if provided, enables update mode so the LLM can
     # add/remove/modify individual fields rather than re-extracting from scratch.
     taxonomy = taxonomy_store.current
     extracted = await _extract_from_conversation(
-        settings, taxonomy, recent, history_summary,
+        llm, settings, taxonomy, recent, history_summary,
         last_params=body.last_search_params,
     )
 
     # 2. Search if params are sufficient
     search_resp = None
+    search_failed = False
     if _sufficient_params(extracted):
         kt = None
         if kt_str := extracted.get("knowledge_type"):
@@ -299,24 +301,33 @@ async def chat(
                 )
             )
         except Exception as exc:
+            # An exception here means the search backend failed (e.g. ES
+            # unreachable) — distinct from a legitimate no-hit. Flag it so the
+            # model is told retrieval is down rather than answering from nothing.
             log.warning("chat: search failed — %s", exc)
+            metrics.record_upstream_error("es")
+            search_failed = True
 
     # 3. Build system prompt with search context
     hits = search_resp.hits if search_resp else None
     ss = search_resp.status if search_resp else None
     total = search_resp.total if search_resp else 0
-    system = _build_chat_system(hits, ss, total, history_summary)
+    system = _build_chat_system(hits, ss, total, history_summary, search_failed)
 
     # 4. LLM call with recent history
     msgs: list[dict] = [{"role": "system", "content": system}]
     msgs.extend(m.model_dump() for m in recent)
-    content = await _call_llm(settings, msgs)
+    try:
+        content = await llm.complete(msgs, timeout=settings.llm.timeout_s)
+    except (LLMNotConfiguredError, LLMError) as exc:
+        raise _http_from_llm_error(exc) from exc
 
     return ChatResponse(
         content=content,
         search_results=search_resp.hits if search_resp and search_resp.hits else None,
         search_status=ss,
         effective_params=search_resp.effective_params if search_resp else None,
+        search_error=search_failed,
     )
 
 
@@ -373,6 +384,7 @@ async def extract_params(
     body: ExtractRequest,
     settings: SettingsDep,
     taxonomy_store: TaxonomyDep,
+    llm: LLMDep,
 ) -> ExtractResponse:
     """Use the LLM to extract structured search parameters from a free-text query."""
     taxonomy = taxonomy_store.current
@@ -381,7 +393,10 @@ async def extract_params(
         {"role": "system", "content": system},
         {"role": "user", "content": body.query},
     ]
-    raw = await _call_llm(settings, messages, timeout=8.0)
+    try:
+        raw = await llm.complete(messages, timeout=settings.llm.extract_timeout_s)
+    except (LLMNotConfiguredError, LLMError) as exc:
+        raise _http_from_llm_error(exc) from exc
     try:
         parsed = json.loads(_strip_code_fence(raw))
         return ExtractResponse(

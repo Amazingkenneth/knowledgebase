@@ -291,3 +291,29 @@ async def test_no_entries_surfaces_friendly_hint():
     assert docs == []
     assert any(s.reason == "no_entries" for s in skipped)
     assert any("alarm" in s.hint for s in skipped)
+
+
+@pytest.mark.asyncio
+async def test_unparseable_single_page_surfaces_parse_failed():
+    """When a 1-page chunk can't be parsed (LLM keeps erroring), the dropped page
+    is reported as a `parse_failed` SkippedChunk instead of vanishing silently."""
+    s = _settings()
+    s.llm.max_retries = 0  # fail fast — no backoff sleeps in the test
+    pages = [(1, "1030 alarm content the model keeps failing to parse")]
+
+    async def fake_post(self, url, **kwargs):  # noqa: ARG001
+        # Locked type bypasses the classifier; the segmentation call 500s.
+        resp = type("R", (), {})()
+        resp.status_code = 500
+        resp.json = lambda: {}
+        resp.text = "upstream boom"
+        return resp
+
+    with patch("httpx.AsyncClient.post", new=fake_post):
+        docs, skipped = await segment_text(
+            s, pages, knowledge_type=KnowledgeType.ALARM, file_name="bad.pdf",
+        )
+    assert docs == []
+    assert any(sk.reason == "parse_failed" for sk in skipped)
+    # The page is not double-reported as "no entries".
+    assert not any(sk.reason == "no_entries" for sk in skipped)

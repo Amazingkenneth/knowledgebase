@@ -30,12 +30,11 @@ import re
 from collections.abc import Callable
 from typing import Any
 
-import httpx
-
 from kb.config import Settings
 from kb.models.ingest import SkippedChunk, StagedDocument
 from kb.models.taxonomy import KnowledgeType
 from kb.services.extraction import PageText
+from kb.services.llm import LLMClient
 from kb.services.spec import (
     TypeSpec,
     load_specs,
@@ -85,33 +84,19 @@ def _estimate_timeout(messages: list[dict[str, str]], max_tokens: int) -> float:
 
 
 async def _call_llm(
+    llm: LLMClient,
     settings: Settings,
     messages: list[dict[str, str]],
     max_tokens: int | None = None,
 ) -> str:
-    if not settings.llm.api_key:
-        raise RuntimeError("LLM not configured — set KB_LLM__API_KEY")
+    """Segmentation LLM call with a payload-derived read-timeout.
+
+    Delegates transport/retry to the shared ``LLMClient``; the only segmentation
+    specialization is the adaptive timeout (large chunks need a longer budget).
+    """
     resolved_max_tokens = max_tokens or settings.ingest.segmentation_max_tokens
     timeout = _estimate_timeout(messages, resolved_max_tokens)
-    async with httpx.AsyncClient(timeout=timeout) as client:
-        resp = await client.post(
-            settings.llm.api_url,
-            headers={"Authorization": f"Bearer {settings.llm.api_key}"},
-            json={
-                "model": settings.llm.model,
-                "messages": messages,
-                "max_tokens": resolved_max_tokens,
-                "stream": False,
-            },
-        )
-    if resp.status_code != 200:
-        log.warning("LLM segmentation error %s: %s", resp.status_code, resp.text[:200])
-        raise RuntimeError(f"LLM returned {resp.status_code}")
-    try:
-        data = resp.json()
-        return data["choices"][0]["message"]["content"]
-    except (ValueError, KeyError, IndexError, TypeError) as exc:
-        raise RuntimeError(f"LLM returned an unparseable response: {exc}") from exc
+    return await llm.complete(messages, timeout=timeout, max_tokens=resolved_max_tokens)
 
 
 def _strip_code_fence(text: str) -> str:
@@ -509,6 +494,7 @@ async def classify_chunk_types(
     settings: Settings,
     chunk_text: str,
     specs: dict[KnowledgeType, TypeSpec] | None = None,
+    llm: LLMClient | None = None,
 ) -> list[KnowledgeType]:
     """Classify a chunk → list of knowledge types present (may be more than one).
 
@@ -516,6 +502,9 @@ async def classify_chunk_types(
     Returns multiple types when the chunk legitimately mixes types — e.g. an
     alarm description followed by its setup/calibration steps on the same page.
     The caller should then run each type's segmenter on the same chunk.
+
+    ``llm`` is the shared client; when omitted a short-lived one is built from
+    ``settings`` and closed before returning (used by standalone/test callers).
     """
     specs = specs or load_specs()
     sample = chunk_text[:2400]
@@ -523,12 +512,17 @@ async def classify_chunk_types(
         {"role": "system", "content": render_router_prompt(specs)},
         {"role": "user", "content": sample},
     ]
+    owns_llm = llm is None
+    client = llm or LLMClient(settings.llm)
     try:
-        raw = await _call_llm(settings, messages, max_tokens=60)
+        raw = await _call_llm(client, settings, messages, max_tokens=60)
         parsed = json.loads(_strip_code_fence(raw))
     except Exception as exc:  # noqa: BLE001 — best-effort classification
         log.warning("Chunk classification failed: %s — defaulting to experience", exc)
         return [KnowledgeType.EXPERIENCE]
+    finally:
+        if owns_llm:
+            await client.aclose()
 
     # Accept both the multi-type shape {"types": [...]} and the legacy
     # single-type shape {"type": "..."}. Either way, normalize to a list.
@@ -558,10 +552,11 @@ async def classify_chunk_type(
     settings: Settings,
     chunk_text: str,
     specs: dict[KnowledgeType, TypeSpec] | None = None,
+    llm: LLMClient | None = None,
 ) -> KnowledgeType | None:
     """Back-compat single-type classifier. Returns the first detected type,
     or None for skip. New callers should prefer `classify_chunk_types`."""
-    types = await classify_chunk_types(settings, chunk_text, specs)
+    types = await classify_chunk_types(settings, chunk_text, specs, llm)
     return types[0] if types else None
 
 
@@ -569,6 +564,7 @@ async def detect_knowledge_type(
     settings: Settings,
     sample_text: str,
     pages: list[PageText] | None = None,
+    llm: LLMClient | None = None,
 ) -> KnowledgeType:
     """Detect the dominant document type. Used as a hint for the UI; the
     per-chunk classifier in segment_text is the actual source of truth when
@@ -578,7 +574,7 @@ async def detect_knowledge_type(
         _build_type_detection_sample(pages, char_budget=2400)
         if pages else sample_text[:2000]
     )
-    types = await classify_chunk_types(settings, sample)
+    types = await classify_chunk_types(settings, sample, llm=llm)
     return types[0] if types else KnowledgeType.EXPERIENCE
 
 
@@ -607,6 +603,7 @@ async def segment_text(
     project_hint: str | None = None,
     equipment_hint: str | None = None,
     on_chunk_progress: Callable[[int, int], None] | None = None,
+    llm: LLMClient | None = None,
 ) -> tuple[list[StagedDocument], list[SkippedChunk]]:
     """Segment extracted text into structured documents.
 
@@ -616,6 +613,9 @@ async def segment_text(
     alarm / setup / experience / skip. Mixed-type files are supported and
     non-content pages (covers, TOCs, prefaces) are skipped with a friendly
     reason returned alongside.
+
+    ``llm`` is the shared client; when omitted a short-lived one is built from
+    ``settings`` and closed before returning.
     """
     if not pages:
         return [], []
@@ -630,67 +630,78 @@ async def segment_text(
     # Per-type buckets so dedup operates per knowledge type.
     parsed_by_type: dict[KnowledgeType, list[tuple[dict[str, Any], str]]] = {}
     skipped: list[SkippedChunk] = []
+    # Pages the deep fallback gave up on — surfaced so the reviewer sees the
+    # data loss instead of it vanishing into a log line.
+    parse_failures: list[SkippedChunk] = []
     total_chunks = len(chunks)
 
-    for chunk_idx, chunk in enumerate(chunks):
-        if on_chunk_progress:
-            on_chunk_progress(chunk_idx + 1, total_chunks)
+    owns_llm = llm is None
+    client = llm or LLMClient(settings.llm)
+    try:
+        for chunk_idx, chunk in enumerate(chunks):
+            if on_chunk_progress:
+                on_chunk_progress(chunk_idx + 1, total_chunks)
 
-        page_range = _page_range(chunk)
-        chunk_text = "\n\n".join(text for _, text in chunk)
+            page_range = _page_range(chunk)
+            chunk_text = "\n\n".join(text for _, text in chunk)
 
-        # Routing: when locked, every chunk goes through that single type.
-        # Otherwise classify and possibly route to several types on the
-        # SAME chunk (mixed-type chunks are real — e.g. an alarm with its
-        # calibration steps inline).
-        if knowledge_type is not None:
-            chunk_types: list[KnowledgeType] = [knowledge_type]
-        else:
-            chunk_types = await classify_chunk_types(settings, chunk_text, specs)
+            # Routing: when locked, every chunk goes through that single type.
+            # Otherwise classify and possibly route to several types on the
+            # SAME chunk (mixed-type chunks are real — e.g. an alarm with its
+            # calibration steps inline).
+            if knowledge_type is not None:
+                chunk_types: list[KnowledgeType] = [knowledge_type]
+            else:
+                chunk_types = await classify_chunk_types(settings, chunk_text, specs, client)
 
-        if not chunk_types:
-            skipped.append(SkippedChunk(
-                source_file=file_name,
-                page_range=page_range,
-                reason="non_content",
-                hint=(
-                    "Looks like a cover, table of contents, preface, or other "
-                    "non-content page — nothing to extract here."
-                ),
-            ))
-            log.info("Skipping non-content chunk %s in %s", page_range, file_name)
-            continue
+            if not chunk_types:
+                skipped.append(SkippedChunk(
+                    source_file=file_name,
+                    page_range=page_range,
+                    reason="non_content",
+                    hint=(
+                        "Looks like a cover, table of contents, preface, or other "
+                        "non-content page — nothing to extract here."
+                    ),
+                ))
+                log.info("Skipping non-content chunk %s in %s", page_range, file_name)
+                continue
 
-        per_type_results: dict[KnowledgeType, int] = {}
-        for kt in chunk_types:
-            entries = await _segment_chunk_with_fallback(
-                settings, chunk, kt, file_name,
-                project_hint, equipment_hint,
-                spec=specs[kt],
-                chunk_chars=chunk_chars,
-            )
-            per_type_results[kt] = len(entries)
-            if entries:
-                parsed_by_type.setdefault(kt, []).extend(entries)
+            pf_before = len(parse_failures)
+            per_type_results: dict[KnowledgeType, int] = {}
+            for kt in chunk_types:
+                entries = await _segment_chunk_with_fallback(
+                    client, settings, chunk, kt, file_name,
+                    project_hint, equipment_hint,
+                    spec=specs[kt],
+                    chunk_chars=chunk_chars,
+                    parse_failures=parse_failures,
+                )
+                per_type_results[kt] = len(entries)
+                if entries:
+                    parsed_by_type.setdefault(kt, []).extend(entries)
 
-        # Whole-chunk no-entry hint only if EVERY routed type came back empty.
-        # With validation now dropping skeleton/low-confidence noise upstream,
-        # a routed-type that returns 0 here is genuinely empty — but if the
-        # router fanned out to multiple types and at least one produced
-        # entries, the empty types are router false-positives and surfacing
-        # them as "no entries" warnings just confuses the reviewer.
-        if all(n == 0 for n in per_type_results.values()):
-            missed = "/".join(kt.value for kt in chunk_types)
-            skipped.append(SkippedChunk(
-                source_file=file_name,
-                page_range=page_range,
-                reason="no_entries",
-                hint=(
-                    f"AI thought these pages were {missed} but found no entries. "
-                    "If you expected some, try setting a knowledge-type hint on "
-                    "re-upload, or lower the chunk size in settings."
-                ),
-            ))
+            # Whole-chunk no-entry hint only if EVERY routed type came back empty
+            # AND no page was lost to a parse failure (that's reported separately
+            # as `parse_failed`, so don't also call it "no entries").
+            chunk_had_parse_failure = len(parse_failures) > pf_before
+            if all(n == 0 for n in per_type_results.values()) and not chunk_had_parse_failure:
+                missed = "/".join(kt.value for kt in chunk_types)
+                skipped.append(SkippedChunk(
+                    source_file=file_name,
+                    page_range=page_range,
+                    reason="no_entries",
+                    hint=(
+                        f"AI thought these pages were {missed} but found no entries. "
+                        "If you expected some, try setting a knowledge-type hint on "
+                        "re-upload, or lower the chunk size in settings."
+                    ),
+                ))
+    finally:
+        if owns_llm:
+            await client.aclose()
+
+    skipped.extend(parse_failures)
 
     # Dedup per type, then assemble.
     docs: list[StagedDocument] = []
@@ -717,6 +728,7 @@ def _page_range(chunk: list[PageText]) -> str:
 
 
 async def _segment_chunk_with_fallback(
+    llm: LLMClient,
     settings: Settings,
     chunk: list[PageText],
     knowledge_type: KnowledgeType,
@@ -727,6 +739,7 @@ async def _segment_chunk_with_fallback(
     *,
     spec: TypeSpec | None = None,
     repair_attempt: bool = False,
+    parse_failures: list[SkippedChunk],
 ) -> list[tuple[dict[str, Any], str]]:
     """Segment a single chunk with three layers of recovery.
 
@@ -754,17 +767,18 @@ async def _segment_chunk_with_fallback(
     ]
 
     try:
-        raw_response = await _call_llm(settings, messages)
+        raw_response = await _call_llm(llm, settings, messages)
     except Exception as exc:  # noqa: BLE001
         log.warning(
             "LLM call failed for pages %s: %s: %s",
             page_range, type(exc).__name__, exc,
         )
         return await _binary_split_recover(
-            settings, chunk, knowledge_type, file_name,
+            llm, settings, chunk, knowledge_type, file_name,
             project_hint, equipment_hint, chunk_chars,
             spec=spec,
             reason=f"call failure: {exc}",
+            parse_failures=parse_failures,
         )
 
     try:
@@ -798,7 +812,7 @@ async def _segment_chunk_with_fallback(
     # Layer 2: repair-prompt retry, but only once per chunk.
     if not repair_attempt:
         repaired = await _try_repair_json(
-            settings, messages, raw_response,
+            llm, settings, messages, raw_response,
         )
         if repaired is not None:
             valid = _filter_valid_entries(repaired, spec, knowledge_type, page_range)
@@ -815,10 +829,11 @@ async def _segment_chunk_with_fallback(
 
     # Layer 3: binary-split recursion.
     return await _binary_split_recover(
-        settings, chunk, knowledge_type, file_name,
+        llm, settings, chunk, knowledge_type, file_name,
         project_hint, equipment_hint, chunk_chars,
         spec=spec,
         reason="json parse failure after repair",
+        parse_failures=parse_failures,
     )
 
 
@@ -893,6 +908,7 @@ def _build_user_message(
 
 
 async def _try_repair_json(
+    llm: LLMClient,
     settings: Settings,
     original_messages: list[dict[str, str]],
     bad_response: str,
@@ -918,7 +934,7 @@ async def _try_repair_json(
         },
     ]
     try:
-        repaired_raw = await _call_llm(settings, repair_messages)
+        repaired_raw = await _call_llm(llm, settings, repair_messages)
     except Exception as exc:  # noqa: BLE001
         log.warning("Repair LLM call failed: %s", exc)
         return None
@@ -933,6 +949,7 @@ async def _try_repair_json(
 
 
 async def _binary_split_recover(
+    llm: LLMClient,
     settings: Settings,
     chunk: list[PageText],
     knowledge_type: KnowledgeType,
@@ -943,12 +960,13 @@ async def _binary_split_recover(
     *,
     spec: TypeSpec | None = None,
     reason: str,
+    parse_failures: list[SkippedChunk],
 ) -> list[tuple[dict[str, Any], str]]:
     """Split a failed chunk on a page boundary and re-segment each half.
 
-    Floor at _MIN_SUBCHUNK_PAGES — if we're already there, give up cleanly.
-    A 1-page chunk that's still too large for the model has already been
-    structurally subdivided in chunk_pages, so we'd just thrash.
+    Floor at _MIN_SUBCHUNK_PAGES — if we're already there, give up but record
+    a `parse_failed` SkippedChunk so the dropped page is surfaced to the
+    reviewer instead of vanishing into a log line.
     """
     if len(chunk) <= _MIN_SUBCHUNK_PAGES:
         page_range = str(chunk[0][0]) if chunk else "?"
@@ -956,6 +974,15 @@ async def _binary_split_recover(
             "Giving up on chunk page %s (%s) — single-page chunk could not be parsed",
             page_range, reason,
         )
+        parse_failures.append(SkippedChunk(
+            source_file=file_name,
+            page_range=page_range,
+            reason="parse_failed",
+            hint=(
+                "The AI couldn't parse this page after repair and retry. "
+                "Review it manually and add any entries by hand if needed."
+            ),
+        ))
         return []
 
     mid = len(chunk) // 2
@@ -972,13 +999,14 @@ async def _binary_split_recover(
     for sub in (first_half, second_half):
         out.extend(
             await _segment_chunk_with_fallback(
-                settings, sub, knowledge_type, file_name,
+                llm, settings, sub, knowledge_type, file_name,
                 project_hint, equipment_hint, chunk_chars,
                 spec=spec,
                 # repair_attempt=True suppresses a second repair-prompt on the
                 # already-narrower sub-chunks; binary split is the better tool
                 # at this depth.
                 repair_attempt=True,
+                parse_failures=parse_failures,
             )
         )
     return out

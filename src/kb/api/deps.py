@@ -5,11 +5,11 @@ from typing import Annotated
 from fastapi import Depends, Request
 
 from elasticsearch import AsyncElasticsearch
-
 from kb.config import Settings
 from kb.es.client import get_es
 from kb.services.embedding import EmbeddingClient
 from kb.services.indexing import IndexingService
+from kb.services.llm import LLMClient
 from kb.services.search import SearchService
 from kb.services.taxonomy import TaxonomyStore
 
@@ -40,9 +40,14 @@ def _search(request: Request) -> SearchService:
     return request.app.state.search
 
 
+def _llm(request: Request) -> LLMClient:
+    return request.app.state.llm
+
+
 ESDep = Annotated[AsyncElasticsearch, Depends(_es)]
 SettingsDep = Annotated[Settings, Depends(_settings)]
 TaxonomyDep = Annotated[TaxonomyStore, Depends(_taxonomy_store)]
 EmbedderDep = Annotated[EmbeddingClient, Depends(_embedder)]
 IndexingDep = Annotated[IndexingService, Depends(_indexing)]
 SearchDep = Annotated[SearchService, Depends(_search)]
+LLMDep = Annotated[LLMClient, Depends(_llm)]

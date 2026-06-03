@@ -33,6 +33,7 @@ from kb.models.search import (
 from kb.models.taxonomy import KnowledgeType
 import httpx
 
+from kb.observability import metrics
 from kb.services.embedding import EmbeddingClient, EmbeddingError
 
 log = logging.getLogger("kb.search")
@@ -222,6 +223,7 @@ class SearchService:
                 body["rescore"] = _rescore_clause(qvec, cfg.rrf_window, cfg.vector_weight)
             except (EmbeddingError, httpx.HTTPError) as exc:
                 log.warning("vector rescore unavailable, falling back to BM25: %s", exc)
+                metrics.record_upstream_error("embedding")
 
         resp = await self._es.search(index=index, body=body)
         total = int(resp["hits"]["total"]["value"])
@@ -273,6 +275,7 @@ class SearchService:
                 body["rescore"] = _rescore_clause(qvec, cfg.rrf_window, cfg.vector_weight)
             except (EmbeddingError, httpx.HTTPError) as exc:
                 log.warning("vector rescore unavailable, falling back to BM25: %s", exc)
+                metrics.record_upstream_error("embedding")
 
         resp = await self._es.search(index=index, body=body)
         total = int(resp["hits"]["total"]["value"])
@@ -309,6 +312,7 @@ class SearchService:
             qvec = (await self._embedder.embed([req.query_text]))[0]
         except (EmbeddingError, httpx.HTTPError) as exc:
             log.warning("vector-only search unavailable (embedding down): %s", exc)
+            metrics.record_upstream_error("embedding")
             return SearchResponse(
                 status=SearchStatus.NO_HIT,
                 total=0,

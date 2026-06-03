@@ -17,6 +17,7 @@ from typing import Any
 from pydantic import ValidationError
 
 from elasticsearch import AsyncElasticsearch
+from elasticsearch.helpers import async_bulk
 from kb.config import Settings
 from kb.es.body_builder import build_body, build_title_text
 from kb.es.mappings import alias_name
@@ -30,10 +31,11 @@ from kb.models.ingest import (
     StagedDocument,
 )
 from kb.models.taxonomy import KnowledgeType, Taxonomy
-from kb.services.embedding import EmbeddingClient
+from kb.services.embedding import EmbeddingClient, EmbeddingError
 from kb.services.extraction import ScannedPdfError, extract_file
 from kb.services.file_tracker import FileTracker, compute_bytes_hash
 from kb.services.indexing import IndexingError, _to_es_source, doc_id, validate_against_taxonomy
+from kb.services.llm import LLMClient
 from kb.services.segmentation import segment_text
 
 log = logging.getLogger("kb.import_pipeline")
@@ -46,11 +48,16 @@ class ImportPipeline:
         settings: Settings,
         embedder: EmbeddingClient,
         taxonomy: Taxonomy,
+        llm: LLMClient | None = None,
     ):
         self._es = es
         self._settings = settings
         self._embedder = embedder
         self._taxonomy = taxonomy
+        # Shared LLM client for segmentation. Optional so existing tests that
+        # construct the pipeline without one still work (segment_text builds a
+        # short-lived client from settings when none is passed).
+        self._llm = llm
         self._tracker = FileTracker(es)
         self._sessions: dict[str, ImportSession] = {}
         # Strong references to in-flight background tasks. asyncio only holds a
@@ -77,20 +84,26 @@ class ImportPipeline:
         return sessions[:limit]
 
     def _evict_expired_sessions(self) -> None:
-        """Drop finished sessions older than the configured TTL.
+        """Drop expired sessions so the in-memory ``_sessions`` dict stays bounded.
 
-        Sessions live in memory for the process lifetime, so without this the
-        ``_sessions`` dict grows unbounded. Only terminal sessions
-        (COMMITTED/FAILED) are evicted — an in-flight or under-review session is
-        never removed out from under a user.
+        Two TTLs:
+          * soft (``session_ttl_minutes``): evict terminal (COMMITTED/FAILED)
+            sessions — their work is done.
+          * hard (``session_hard_ttl_minutes``): evict *any* session, including
+            EXTRACTING/READY ones, so an abandoned preview can't pin memory
+            forever. The hard TTL is longer, giving real reviews time to finish.
         """
-        ttl = timedelta(minutes=self._settings.ingest.session_ttl_minutes)
-        cutoff = datetime.now(UTC) - ttl
+        now = datetime.now(UTC)
+        soft_cutoff = now - timedelta(minutes=self._settings.ingest.session_ttl_minutes)
+        hard_cutoff = now - timedelta(minutes=self._settings.ingest.session_hard_ttl_minutes)
         terminal = {ImportStatus.COMMITTED, ImportStatus.FAILED}
-        expired = [
-            sid for sid, s in self._sessions.items()
-            if s.status in terminal and (s.created_at or datetime.now(UTC)) < cutoff
-        ]
+        expired = []
+        for sid, s in self._sessions.items():
+            created = s.created_at or now
+            if s.status in terminal and created < soft_cutoff:
+                expired.append(sid)
+            elif created < hard_cutoff:
+                expired.append(sid)
         for sid in expired:
             del self._sessions[sid]
         if expired:
@@ -325,6 +338,7 @@ class ImportPipeline:
                     self._settings, pages, seg_type, info.file_name,
                     effective_project, effective_equipment,
                     on_chunk_progress=_on_progress,
+                    llm=self._llm,
                 )
 
                 # Resolve project/equipment against the taxonomy. Entry values
@@ -386,51 +400,20 @@ class ImportPipeline:
             raise ValueError(f"Session not found: {session_id}")
 
         accepted = [d for d in session.documents if d.accepted]
-        if not accepted:
-            return {"committed": 0, "skipped": len(session.documents), "errors": []}
-
-        committed = 0
         skipped = len(session.documents) - len(accepted)
-        errors: list[dict[str, Any]] = []
-        # Group committed ES actions by source file hash for tracker
-        file_committed: dict[str, list[dict[str, Any]]] = {}
+        if not accepted:
+            return {"committed": 0, "skipped": skipped, "errors": [], "vectors_skipped": 0}
 
+        errors: list[dict[str, Any]] = []
+
+        # Phase 1 — convert + validate every accepted doc before touching ES, so
+        # a bad doc surfaces a clear error rather than a half-committed batch.
+        prepared: list[tuple[StagedDocument, KnowledgeDoc]] = []
         for staged in accepted:
             try:
                 doc = _staged_to_knowledge_doc(staged)
                 validate_against_taxonomy(doc, self._taxonomy)
-
-                title_vec, body_vec = None, None
-                try:
-                    vecs = await self._embedder.embed(
-                        [build_title_text(doc), build_body(doc)]
-                    )
-                    title_vec, body_vec = vecs[0], vecs[1]
-                except Exception as exc:
-                    log.warning(
-                        "Embedding failed for %s: %s — no vectors", doc.title, exc,
-                    )
-
-                _id = doc_id(doc)
-                source = _to_es_source(doc, title_vec, body_vec)
-                index_name = alias_name(self._settings.es.index_prefix, doc.knowledge_type)
-
-                await self._es.index(
-                    index=index_name, id=_id,
-                    document=source, refresh="wait_for",
-                )
-
-                # Track for file_tracker
-                file_hash = self._find_file_hash(session, staged.source_file)
-                if file_hash:
-                    file_committed.setdefault(file_hash, []).append({
-                        "_index": index_name,
-                        "_id": _id,
-                        "_source": source,
-                    })
-
-                committed += 1
-
+                prepared.append((staged, doc))
             except ValidationError as exc:
                 errors.append({
                     "index": staged.index,
@@ -438,7 +421,6 @@ class ImportPipeline:
                     "error": _friendly_validation_message(exc),
                     "hint": "Edit this document in the preview and click Save, then commit again.",
                 })
-                continue
             except (IndexingError, ValueError) as exc:
                 msg = str(exc)
                 hint = (
@@ -452,7 +434,6 @@ class ImportPipeline:
                     "error": msg,
                     "hint": hint,
                 })
-                continue
             except Exception as exc:
                 errors.append({
                     "index": staged.index,
@@ -461,23 +442,88 @@ class ImportPipeline:
                     "hint": "This is a server-side issue. Check server logs for details.",
                 })
                 log.error("Commit failed for doc %d: %s", staged.index, exc, exc_info=True)
-                continue
 
-        # Update file tracker with committed docs
+        if not prepared:
+            session.status = ImportStatus.FAILED
+            return {"committed": 0, "skipped": skipped, "errors": errors, "vectors_skipped": 0}
+
+        # Phase 2 — embed all docs in one batched call. Vectors are best-effort:
+        # if the embedding service is down we still index (BM25-only) and report
+        # how many docs went in without vectors.
+        vectors_skipped = 0
+        texts: list[str] = []
+        for _, doc in prepared:
+            texts.append(build_title_text(doc))
+            texts.append(build_body(doc))
+        vectors: list[list[float] | None]
+        try:
+            embedded = await self._embedder.embed(texts)
+            vectors = list(embedded)
+        except (EmbeddingError, OSError, RuntimeError) as exc:
+            log.warning("Batch embedding failed during commit: %s — indexing without vectors", exc)
+            vectors = [None] * len(texts)
+            vectors_skipped = len(prepared)
+
+        # Phase 3 — bulk index in one request (single refresh) and map any
+        # per-doc rejections back to a friendly error.
+        actions: list[dict[str, Any]] = []
+        meta: list[tuple[StagedDocument, str, str, dict[str, Any]]] = []
+        for i, (staged, doc) in enumerate(prepared):
+            _id = doc_id(doc)
+            source = _to_es_source(doc, vectors[2 * i], vectors[2 * i + 1])
+            index_name = alias_name(self._settings.es.index_prefix, doc.knowledge_type)
+            actions.append({"_index": index_name, "_id": _id, "_source": source})
+            meta.append((staged, _id, index_name, source))
+
+        try:
+            success, bulk_errors = await async_bulk(
+                self._es, actions, raise_on_error=False, refresh="wait_for"
+            )
+        except Exception as exc:
+            log.error("Bulk index failed during commit: %s", exc, exc_info=True)
+            session.status = ImportStatus.FAILED
+            errors.append({
+                "error": f"Bulk index failed: {exc}",
+                "hint": "This is a server-side issue. Check server logs / Elasticsearch.",
+            })
+            return {"committed": 0, "skipped": skipped, "errors": errors,
+                    "vectors_skipped": vectors_skipped}
+
+        # async_bulk returns the error list when stats_only is False (the default);
+        # the int form only appears with stats_only=True, so guard for the type.
+        failed_ids: set[str] = set()
+        for be in bulk_errors if isinstance(bulk_errors, list) else []:
+            op = next(iter(be.values())) if isinstance(be, dict) else {}
+            fid = op.get("_id", "")
+            failed_ids.add(fid)
+            errors.append({
+                "error": str(op.get("error") or be),
+                "hint": "Elasticsearch rejected this document. Check server logs.",
+            })
+
+        committed = int(success)
+
+        # Track committed docs per source file for restore_imports().
+        file_committed: dict[str, list[dict[str, Any]]] = {}
+        for staged, _id, index_name, source in meta:
+            if _id in failed_ids:
+                continue
+            file_hash = self._find_file_hash(session, staged.source_file)
+            if file_hash:
+                file_committed.setdefault(file_hash, []).append({
+                    "_index": index_name, "_id": _id, "_source": source,
+                })
         for file_hash, docs in file_committed.items():
             try:
                 await self._tracker.record_committed(file_hash, docs)
             except Exception as exc:
                 log.error("Failed to update tracker for %s: %s", file_hash[:12], exc)
 
-        # Status reflects the actual outcome: a clean run is COMMITTED; if every
-        # document failed it's FAILED; a partial run stays COMMITTED but carries the
-        # populated `errors` list so callers can surface what was dropped.
-        if errors and committed == 0:
-            session.status = ImportStatus.FAILED
-        else:
-            session.status = ImportStatus.COMMITTED
-        return {"committed": committed, "skipped": skipped, "errors": errors}
+        # A clean or partial run is COMMITTED (errors list carries what dropped);
+        # only a run where nothing landed is FAILED.
+        session.status = ImportStatus.FAILED if committed == 0 else ImportStatus.COMMITTED
+        return {"committed": committed, "skipped": skipped, "errors": errors,
+                "vectors_skipped": vectors_skipped}
 
     def _find_file_hash(self, session: ImportSession, source_file: str) -> str | None:
         for f in session.files:
@@ -597,6 +643,7 @@ def _build_extraction_summary(
     pretty = {
         "non_content": "non-content page(s) skipped (covers/TOC/preface)",
         "no_entries": "page(s) with no extractable entries",
+        "parse_failed": "page(s) the AI couldn't parse — review manually",
     }
     summary_bits = [f"{count} {pretty.get(reason, reason)}" for reason, count in by_reason.items()]
     parts.append("; ".join(summary_bits))

@@ -142,3 +142,6 @@ class CommitResponse(BaseModel):
     committed: int
     skipped: int
     errors: list[dict[str, Any]] = Field(default_factory=list)
+    # Documents indexed without vectors because the embedding service was
+    # unavailable at commit time (they remain BM25-searchable).
+    vectors_skipped: int = 0

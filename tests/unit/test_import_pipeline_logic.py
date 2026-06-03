@@ -41,10 +41,18 @@ def stub_pipeline(monkeypatch: pytest.MonkeyPatch) -> ip.ImportPipeline:
     """A pipeline whose per-document commit helpers are neutralised so commit
     flow can be driven purely by which titles we mark as "BAD"."""
     es = SimpleNamespace(index=AsyncMock())
-    embedder = SimpleNamespace(embed=AsyncMock(return_value=[[0.0], [0.0]]))
+    # embed is now called once with all (title, body) texts — return one vector
+    # per input so the per-doc slicing lines up.
+    embedder = SimpleNamespace(embed=AsyncMock(side_effect=lambda texts: [[0.0]] * len(texts)))
     pipeline = ip.ImportPipeline(
         es=es, settings=Settings(), embedder=embedder, taxonomy=SimpleNamespace(),
     )
+
+    # Commit bulk-indexes in one request; fake async_bulk reports every action as
+    # a success (count, no errors) and records calls for assertions.
+    bulk_mock = AsyncMock(side_effect=lambda _es, actions, **kw: (len(actions), []))
+    monkeypatch.setattr(ip, "async_bulk", bulk_mock)
+    pipeline._bulk_mock = bulk_mock  # type: ignore[attr-defined]
 
     monkeypatch.setattr(ip, "_staged_to_knowledge_doc", lambda staged: staged)
     monkeypatch.setattr(ip, "build_title_text", lambda doc: "t")
@@ -77,8 +85,10 @@ async def test_commit_continues_past_bad_document(stub_pipeline: ip.ImportPipeli
     assert result["committed"] == 2
     assert len(result["errors"]) == 1
     assert result["errors"][0]["index"] == 1
-    # The doc *after* the failure was still indexed — not silently dropped.
-    assert stub_pipeline._es.index.await_count == 2
+    # Both good docs (the one before AND after the failure) went into a single
+    # bulk request — not silently dropped.
+    only_call = stub_pipeline._bulk_mock.await_args  # type: ignore[attr-defined]
+    assert len(only_call.args[1]) == 2  # actions passed to async_bulk
     # Partial success keeps COMMITTED but carries the error list.
     assert session.status == ImportStatus.COMMITTED
 
@@ -95,7 +105,8 @@ async def test_commit_all_failed_marks_session_failed(stub_pipeline: ip.ImportPi
 
     assert result["committed"] == 0
     assert len(result["errors"]) == 2
-    assert stub_pipeline._es.index.await_count == 0
+    # Nothing valid to index → bulk is never called.
+    assert stub_pipeline._bulk_mock.await_count == 0  # type: ignore[attr-defined]
     assert session.status == ImportStatus.FAILED
 
 
@@ -143,6 +154,29 @@ def test_evict_drops_old_terminal_sessions_only(stub_pipeline: ip.ImportPipeline
     assert "old_ready" in remaining
     # Recent terminal session survives.
     assert "fresh_committed" in remaining
+
+
+def test_evict_drops_abandoned_session_past_hard_ttl(stub_pipeline: ip.ImportPipeline):
+    """A non-terminal (READY) session older than the hard TTL is evicted so an
+    abandoned preview can't pin memory forever."""
+    hard = stub_pipeline._settings.ingest.session_hard_ttl_minutes
+    ancient = datetime.now(UTC) - timedelta(minutes=hard + 10)
+    recent = datetime.now(UTC)
+
+    stub_pipeline._sessions = {
+        "ancient_ready": ImportSession(
+            session_id="ancient_ready", status=ImportStatus.READY, created_at=ancient,
+        ),
+        "recent_ready": ImportSession(
+            session_id="recent_ready", status=ImportStatus.READY, created_at=recent,
+        ),
+    }
+
+    stub_pipeline._evict_expired_sessions()
+
+    remaining = set(stub_pipeline._sessions)
+    assert "ancient_ready" not in remaining  # hard TTL reclaims abandoned reviews
+    assert "recent_ready" in remaining
 
 
 # ── B1: folder scan confined to scan_root ─────────────────────────────────────

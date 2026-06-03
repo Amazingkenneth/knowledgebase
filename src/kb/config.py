@@ -56,6 +56,22 @@ class LLMConfig(BaseModel):
     api_key: str = ""
     model: str = "qwen-plus"
     max_tokens: int = 1200
+    # Default read-timeout for a chat completion. Segmentation overrides this
+    # per-call with a payload-derived timeout (see services/segmentation.py).
+    timeout_s: int = Field(default=20, ge=1, le=300)
+    # Shorter budget for the structured /extract parameter call.
+    extract_timeout_s: int = Field(default=10, ge=1, le=300)
+    # Transient-failure retries (429 / 5xx / timeout). 0 disables retrying.
+    max_retries: int = Field(default=2, ge=0, le=5)
+
+
+class ObservabilityConfig(BaseModel):
+    # Expose Prometheus metrics at GET /metrics.
+    metrics_enabled: bool = True
+    # Emit logs as one JSON object per line (machine-readable). When false,
+    # logs use a human-readable line that still carries the request id.
+    json_logs: bool = False
+    log_level: str = "INFO"
 
 
 class ServerConfig(BaseModel):
@@ -83,7 +99,11 @@ class IngestConfig(BaseModel):
     # Characters per LLM chunk. Larger = fewer API calls but more tokens per call.
     # 12000 chars ≈ 3000–4000 tokens of input; fits 6–10 alarm entries comfortably.
     segmentation_chunk_chars: int = Field(default=12000, ge=1000, le=100000)
+    # Soft TTL: evict COMMITTED/FAILED sessions this long after creation.
     session_ttl_minutes: int = Field(default=120, ge=10, le=1440)
+    # Hard TTL: evict *any* session (including in-flight / under-review) this
+    # long after creation, bounding memory against abandoned preview sessions.
+    session_hard_ttl_minutes: int = Field(default=480, ge=10, le=10080)
 
 
 class Settings(BaseSettings):
@@ -94,6 +114,7 @@ class Settings(BaseSettings):
     llm: LLMConfig = Field(default_factory=LLMConfig)
     server: ServerConfig = Field(default_factory=ServerConfig)
     ingest: IngestConfig = Field(default_factory=IngestConfig)
+    observability: ObservabilityConfig = Field(default_factory=ObservabilityConfig)
 
     model_config = SettingsConfigDict(
         env_file=".env",
