@@ -1192,7 +1192,7 @@ def _parsed_to_staged(
         ):
             warnings.append("fabrication_warning: failure_desc")
 
-    doc.raw_text_excerpt = _build_excerpt(entry, knowledge_type)
+    doc.raw_text_excerpt = normalized_chunk_text[:500]
     doc.warnings = warnings
     return doc
 
@@ -1203,27 +1203,6 @@ def _fidelity_ok(value: str, normalized_chunk: str, normalized_full_raw: str) ->
         verify_extraction_fidelity(value, normalized_chunk, pre_normalized=True)
         or verify_extraction_fidelity(value, normalized_full_raw, pre_normalized=True)
     )
-
-
-def _build_excerpt(entry: dict[str, Any], kt: KnowledgeType) -> str:
-    """Build a raw text excerpt from the parsed entry for audit."""
-    parts: list[str] = []
-    if kt == KnowledgeType.ALARM:
-        for k in ("error_code", "title", "title_zh", "content", "resolution"):
-            v = entry.get(k, "")
-            if v:
-                parts.append(f"{k}: {str(v)[:200]}")
-    elif kt == KnowledgeType.SETUP:
-        for k in ("station", "procedure"):
-            v = entry.get(k, "")
-            if v:
-                parts.append(f"{k}: {str(v)[:200]}")
-    else:
-        for k in ("problem", "failure_desc", "root_cause"):
-            v = entry.get(k, "")
-            if v:
-                parts.append(f"{k}: {str(v)[:200]}")
-    return "\n".join(parts)[:500]
 
 
 # ── Anti-fabrication ─────────────────────────────────────────────────────────

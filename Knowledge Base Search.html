@@ -3766,7 +3766,6 @@ function ChatHomePage({ taxonomy, onSwitchToSearch, onOpenDoc }) {
   const [historyList, setHistoryList] = aUs(() => window.getRecentSearches?.() || []);
   const [showRevise, setShowRevise]   = aUs(false);
   const [reviseFields, setReviseFields] = aUs({ project: '', equipment: '', type: '', keywords: '' });
-  const [sideChatOpen, setSideChatOpen] = aUs(false);
   const endRef   = React.useRef(null);
   const inputRef = React.useRef(null);
 
@@ -3796,7 +3795,7 @@ function ChatHomePage({ taxonomy, onSwitchToSearch, onOpenDoc }) {
     };
   };
 
-  const sendMsg = aCb(async (text) => {
+  const sendMsg = aCb(async (text, opts = {}) => {
     if (!text || busy) return;
     const userMsg = { role: 'user', content: text };
     const history = [...msgs, userMsg];
@@ -3832,7 +3831,11 @@ function ChatHomePage({ taxonomy, onSwitchToSearch, onOpenDoc }) {
       const reply = data.content || '（无回复）';
       const hits = data.search_results || [];
 
-      if (hits.length > 0) {
+      if (opts.explain) {
+        // Explanation-only turn: results are already shown above and in the
+        // sidebar, so render just the LLM's summary as a plain text bubble.
+        setMsgs(m => [...m, { role: 'assistant', kind: 'text', content: reply }]);
+      } else if (hits.length > 0) {
         const ss = data.search_status || '';
         const isStrict = ss === 'strict_hit';
         const banner = isStrict ? '完全匹配'
@@ -3864,6 +3867,15 @@ function ChatHomePage({ taxonomy, onSwitchToSearch, onOpenDoc }) {
   const doSend = () => {
     const t = inp.trim();
     if (t && !busy) { setInp(''); sendMsg(t); }
+  };
+
+  const explainResults = () => {
+    if (!latestResult || busy) return;
+    sendMsg(
+      '请用要点总结并解释以上检索到的知识：它们分别讲了什么、有何差异或适用场景。' +
+      ' / Summarize and explain the search results above.',
+      { explain: true }
+    );
   };
 
   const deleteHistoryItem = (idx) => {
@@ -4144,10 +4156,11 @@ function ChatHomePage({ taxonomy, onSwitchToSearch, onOpenDoc }) {
                 <button
                   className="chat-home-switch-btn"
                   style={{ display:'inline-flex', alignItems:'center', gap:5 }}
-                  title="对当前检索结果提问 · Ask AI about current results"
-                  onClick={() => setSideChatOpen(o => !o)}
+                  title="总结并解释当前检索结果 · Summarize current results"
+                  onClick={explainResults}
+                  disabled={!latestResult || busy}
                 >
-                  <Icon name="sparkle" size={12} /> AI 解释
+                  <Icon name="sparkle" size={12} /> 总结结果
                 </button>
                 <button className="chat-home-switch-btn"
                   onClick={() => onSwitchToSearch && onSwitchToSearch(accum)}>
@@ -4225,25 +4238,6 @@ function ChatHomePage({ taxonomy, onSwitchToSearch, onOpenDoc }) {
           )}
         </aside>
       </div>
-
-      {/* ── AI Side-question Panel ── */}
-      {sideChatOpen && (
-        <AIChatPanel
-          context={
-            latestResult
-              ? `检索结果（${latestResult.bannerKind === 'full' ? '完全匹配' : '部分匹配'}，共 ${latestResult.total ?? latestResult.hits.length} 条）`
-              : (hasParams ? `已识别参数：${[
-                  accum.project   && `项目 ${accum.project}`,
-                  accum.equipment && `机台 ${accum.equipment}`,
-                  accum.code      && `代码 ${accum.code}`,
-                  accum.keywords?.length && `关键词 ${accum.keywords.join('/')}`,
-                ].filter(Boolean).join('，')}` : null)
-          }
-          results={latestResult ? { hits: latestResult.hits } : null}
-          onClose={() => setSideChatOpen(false)}
-          onOpenDoc={onOpenDoc}
-        />
-      )}
 
       {/* ── History Panel ── */}
       {showHistory && (
