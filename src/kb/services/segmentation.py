@@ -1078,7 +1078,10 @@ def _dedupe_by_key(
 def _deduplicate_alarms_with_context(
     entries: list[tuple[dict[str, Any], str]],
 ) -> list[tuple[dict[str, Any], str]]:
-    """Deduplicate alarm entries from overlapping chunks by error_code, keeping higher-confidence."""
+    """Deduplicate alarm entries from overlapping chunks by error_code.
+
+    Keeps the higher-confidence entry when the same code appears more than once.
+    """
     seen: dict[str, tuple[dict[str, Any], str]] = {}
     for entry, chunk_text in entries:
         code = entry.get("error_code", "").strip().upper()
@@ -1151,9 +1154,10 @@ def _parsed_to_staged(
 
         for field_name in ("content", "resolution"):
             val = getattr(doc, field_name)
-            if val and val != "—":
-                if not _fidelity_ok(val, normalized_chunk_text, normalized_full_raw):
-                    warnings.append(f"fabrication_warning: {field_name}")
+            if val and val != "—" and not _fidelity_ok(
+                val, normalized_chunk_text, normalized_full_raw
+            ):
+                warnings.append(f"fabrication_warning: {field_name}")
 
     elif knowledge_type == KnowledgeType.SETUP:
         doc.title = (entry.get("station", "") or "")[:200]
@@ -1161,9 +1165,10 @@ def _parsed_to_staged(
         doc.procedure = entry.get("procedure", "—") or "—"
         doc.notes = entry.get("notes", "") or ""
 
-        if doc.procedure and doc.procedure != "—":
-            if not _fidelity_ok(doc.procedure, normalized_chunk_text, normalized_full_raw):
-                warnings.append("fabrication_warning: procedure")
+        if doc.procedure and doc.procedure != "—" and not _fidelity_ok(
+            doc.procedure, normalized_chunk_text, normalized_full_raw
+        ):
+            warnings.append("fabrication_warning: procedure")
 
     elif knowledge_type == KnowledgeType.EXPERIENCE:
         doc.title = (entry.get("problem", "") or "")[:200]

@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-import csv
-import io
-import tempfile
 from pathlib import Path
 
 import pytest
 
+from kb.models.taxonomy import KnowledgeType
 from kb.services.extraction import (
     EXTRACTORS,
     _should_use_ocr,
@@ -16,14 +14,13 @@ from kb.services.extraction import (
     extract_file,
 )
 from kb.services.segmentation import (
-    chunk_pages,
-    verify_extraction_fidelity,
     _deduplicate_alarms_with_context,
     _deduplicate_entries,
     _parse_json_array,
     _split_oversized_page,
+    chunk_pages,
+    verify_extraction_fidelity,
 )
-from kb.models.taxonomy import KnowledgeType
 
 
 class TestExtractCSV:

@@ -44,14 +44,24 @@ async def doc_stats(es: ESDep, settings: SettingsDep) -> dict[str, object]:
             count = int(agg_resp["hits"]["total"]["value"])
             by_type[kt.value] = count
             total += count
-            for bucket in agg_resp.get("aggregations", {}).get("project", {}).get("buckets", []):
-                by_project[bucket["key"]] = by_project.get(bucket["key"], 0) + int(bucket["doc_count"])
-            for bucket in agg_resp.get("aggregations", {}).get("equipment", {}).get("buckets", []):
-                by_equipment[bucket["key"]] = by_equipment.get(bucket["key"], 0) + int(bucket["doc_count"])
+            aggs = agg_resp.get("aggregations", {})
+            for bucket in aggs.get("project", {}).get("buckets", []):
+                by_project[bucket["key"]] = (
+                    by_project.get(bucket["key"], 0) + int(bucket["doc_count"])
+                )
+            for bucket in aggs.get("equipment", {}).get("buckets", []):
+                by_equipment[bucket["key"]] = (
+                    by_equipment.get(bucket["key"], 0) + int(bucket["doc_count"])
+                )
         except Exception:
             by_type[kt.value] = 0
 
-    return {"total": total, "by_type": by_type, "by_project": by_project, "by_equipment": by_equipment}
+    return {
+        "total": total,
+        "by_type": by_type,
+        "by_project": by_project,
+        "by_equipment": by_equipment,
+    }
 
 
 def _parse_doc(kt: KnowledgeType, payload: dict[str, Any]) -> KnowledgeDoc:

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from elasticsearch import AsyncElasticsearch
+from typing import Any
 
+from elasticsearch import AsyncElasticsearch
 from kb.config import Settings
 
 _client: AsyncElasticsearch | None = None
@@ -15,7 +16,7 @@ def get_es(settings: Settings) -> AsyncElasticsearch:
     """
     global _client
     if _client is None:
-        kwargs: dict = {"request_timeout": settings.es.request_timeout_s}
+        kwargs: dict[str, Any] = {"request_timeout": settings.es.request_timeout_s}
 
         cfg = settings.es
         if cfg.username and cfg.password:

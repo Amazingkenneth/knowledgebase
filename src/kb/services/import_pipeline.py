@@ -14,10 +14,10 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+from elasticsearch.helpers import async_bulk
 from pydantic import ValidationError
 
 from elasticsearch import AsyncElasticsearch
-from elasticsearch.helpers import async_bulk
 from kb.config import Settings
 from kb.es.body_builder import build_body, build_title_text
 from kb.es.mappings import alias_name
@@ -104,9 +104,7 @@ class ImportPipeline:
         expired = []
         for sid, s in self._sessions.items():
             created = s.created_at or now
-            if s.status in terminal and created < soft_cutoff:
-                expired.append(sid)
-            elif created < hard_cutoff:
+            if s.status in terminal and created < soft_cutoff or created < hard_cutoff:
                 expired.append(sid)
         for sid in expired:
             del self._sessions[sid]

@@ -34,7 +34,8 @@ router = APIRouter(prefix="/api/v1/ingest", tags=["ingest"])
 
 
 def _pipeline(request: Request) -> ImportPipeline:
-    return request.app.state.import_pipeline
+    pipeline: ImportPipeline = request.app.state.import_pipeline
+    return pipeline
 
 
 # ── Upload ───────────────────────────────────────────────────────────────────

@@ -88,7 +88,9 @@ def _base_mapping(dims: int, index_analyzer: str, query_analyzer: str) -> dict[s
     }
 
 
-def index_body(dims: int, index_analyzer: str = "ik_max_word", query_analyzer: str = "ik_smart") -> dict[str, Any]:
+def index_body(
+    dims: int, index_analyzer: str = "ik_max_word", query_analyzer: str = "ik_smart",
+) -> dict[str, Any]:
     """Full create-index body (settings + mappings).
 
     Same shape for every knowledge_type — differentiation is at the application

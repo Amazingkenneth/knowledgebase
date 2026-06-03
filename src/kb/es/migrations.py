@@ -18,7 +18,6 @@ import re
 import sys
 
 from elasticsearch import AsyncElasticsearch, NotFoundError
-
 from kb.config import Settings, get_settings
 from kb.es.client import close_es, get_es
 from kb.es.mappings import alias_name, all_alias_pattern, index_body, index_name
@@ -44,8 +43,10 @@ async def create_one(es: AsyncElasticsearch, settings: Settings, kt: KnowledgeTy
     version = await _next_version(es, settings.es.index_prefix, kt)
     name = index_name(settings.es.index_prefix, kt, version)
     alias = alias_name(settings.es.index_prefix, kt)
-    body = index_body(settings.embedding.dims, settings.es.analyzer_index, settings.es.analyzer_query)
-    await es.indices.create(index=name, **body)  # type: ignore[arg-type]
+    body = index_body(
+        settings.embedding.dims, settings.es.analyzer_index, settings.es.analyzer_query,
+    )
+    await es.indices.create(index=name, **body)
     # Point the alias at the new index.
     # If a previous version of this alias exists on another index, swap it atomically.
     actions = [{"add": {"index": name, "alias": alias}}]
@@ -91,7 +92,10 @@ async def reindex(
     alias = alias_name(settings.es.index_prefix, kt)
 
     if not await es.indices.exists(index=dst):
-        await es.indices.create(index=dst, **index_body(settings.embedding.dims, settings.es.analyzer_index, settings.es.analyzer_query))  # type: ignore[arg-type]
+        body = index_body(
+            settings.embedding.dims, settings.es.analyzer_index, settings.es.analyzer_query,
+        )
+        await es.indices.create(index=dst, **body)
 
     await es.reindex(source={"index": src}, dest={"index": dst}, refresh=True)
     await es.indices.update_aliases(

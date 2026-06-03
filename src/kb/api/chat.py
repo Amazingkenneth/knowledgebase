@@ -10,15 +10,18 @@ POST /api/v1/extract — Extract structured search parameters from a free-text
 
 from __future__ import annotations
 
+import contextlib
 import json
 import logging
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 
 from kb.api.deps import LLMDep, SearchDep, SettingsDep, TaxonomyDep
+from kb.config import Settings
 from kb.models.search import DocHit, EffectiveParams, SearchRequest, SearchStatus
-from kb.models.taxonomy import KnowledgeType
+from kb.models.taxonomy import KnowledgeType, Taxonomy
 from kb.observability import metrics
 from kb.services.llm import LLMClient, LLMError, LLMNotConfiguredError
 
@@ -93,7 +96,7 @@ class ChatRequest(BaseModel):
     # Echo of effective_params from the previous response.  When present the
     # extraction LLM treats it as the current search state and modifies it;
     # when absent params are extracted fresh from the conversation.
-    last_search_params: dict | None = None
+    last_search_params: dict[str, Any] | None = None
 
 
 class ChatResponse(BaseModel):
@@ -170,7 +173,7 @@ def _build_chat_system(
     return f"{base}\n\n{note}检索到{len(hits)}条文档：\n{formatted}"
 
 
-def _sufficient_params(p: dict) -> bool:
+def _sufficient_params(p: dict[str, Any]) -> bool:
     has_field = bool(
         p.get("project")
         or p.get("equipment")
@@ -182,7 +185,7 @@ def _sufficient_params(p: dict) -> bool:
 
 
 async def _summarize_older_history(
-    llm: LLMClient, settings, older: list[_Message]
+    llm: LLMClient, settings: Settings, older: list[_Message]
 ) -> str:
     turns = "\n".join(f"[{m.role}]: {m.content}" for m in older)
     prompt = (
@@ -202,12 +205,12 @@ async def _summarize_older_history(
 
 async def _extract_from_conversation(
     llm: LLMClient,
-    settings,
-    taxonomy,
+    settings: Settings,
+    taxonomy: Taxonomy,
     messages: list[_Message],
     history_summary: str = "",
-    last_params: dict | None = None,
-) -> dict:
+    last_params: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     system = _build_extract_system(taxonomy, update_mode=last_params is not None)
 
     if last_params is not None:
@@ -240,7 +243,8 @@ async def _extract_from_conversation(
             [{"role": "system", "content": system}, {"role": "user", "content": query}],
             timeout=settings.llm.extract_timeout_s,
         )
-        return json.loads(_strip_code_fence(raw))
+        parsed: dict[str, Any] = json.loads(_strip_code_fence(raw))
+        return parsed
     except LLMNotConfiguredError:
         # No key — let the final chat() call surface the 503 cleanly.
         return {}
@@ -286,10 +290,8 @@ async def chat(
     if _sufficient_params(extracted):
         kt = None
         if kt_str := extracted.get("knowledge_type"):
-            try:
+            with contextlib.suppress(ValueError):
                 kt = KnowledgeType(kt_str)
-            except ValueError:
-                pass
 
         last_user = next(
             (m.content for m in reversed(recent) if m.role == "user"), ""
@@ -323,7 +325,7 @@ async def chat(
     system = _build_chat_system(hits, ss, total, history_summary, search_failed)
 
     # 4. LLM call with recent history
-    msgs: list[dict] = [{"role": "system", "content": system}]
+    msgs: list[dict[str, Any]] = [{"role": "system", "content": system}]
     msgs.extend(m.model_dump() for m in recent)
     try:
         content = await llm.complete(msgs, timeout=settings.llm.timeout_s)
@@ -355,7 +357,7 @@ class ExtractResponse(BaseModel):
     is_sentence: bool = False
 
 
-def _build_extract_system(taxonomy, *, update_mode: bool = False) -> str:
+def _build_extract_system(taxonomy: Taxonomy, *, update_mode: bool = False) -> str:
     projects = ", ".join(taxonomy.projects)
     equipment = ", ".join(taxonomy.equipment)
     base = f"""枚举值（必须精确匹配，否则填null）：
@@ -420,4 +422,4 @@ async def extract_params(
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="LLM returned unparseable response",
-        )
+        ) from exc

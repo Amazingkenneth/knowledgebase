@@ -19,10 +19,11 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from elasticsearch import AsyncElasticsearch
+import httpx
 
+from elasticsearch import AsyncElasticsearch
 from kb.config import Settings
-from kb.es.mappings import alias_name, all_alias_pattern
+from kb.es.mappings import alias_name
 from kb.models.search import (
     DocHit,
     EffectiveParams,
@@ -31,8 +32,6 @@ from kb.models.search import (
     SearchStatus,
 )
 from kb.models.taxonomy import KnowledgeType
-import httpx
-
 from kb.observability import metrics
 from kb.services.embedding import EmbeddingClient, EmbeddingError
 
@@ -308,7 +307,6 @@ class SearchService:
                 effective_params=_effective(req),
                 banner=NO_HIT_BANNER,
             )
-        cfg = self._settings.search
         index = _index_for(req, self._settings.es.index_prefix)
         try:
             qvec = (await self._embedder.embed([req.query_text]))[0]

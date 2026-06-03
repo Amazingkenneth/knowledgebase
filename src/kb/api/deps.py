@@ -19,15 +19,18 @@ def _es(request: Request) -> AsyncElasticsearch:
 
 
 def _settings(request: Request) -> Settings:
-    return request.app.state.settings
+    settings: Settings = request.app.state.settings
+    return settings
 
 
 def _taxonomy_store(request: Request) -> TaxonomyStore:
-    return request.app.state.taxonomy_store
+    store: TaxonomyStore = request.app.state.taxonomy_store
+    return store
 
 
 def _embedder(request: Request) -> EmbeddingClient:
-    return request.app.state.embedder
+    embedder: EmbeddingClient = request.app.state.embedder
+    return embedder
 
 
 def _indexing(request: Request) -> IndexingService:
@@ -37,11 +40,13 @@ def _indexing(request: Request) -> IndexingService:
 
 
 def _search(request: Request) -> SearchService:
-    return request.app.state.search
+    svc: SearchService = request.app.state.search
+    return svc
 
 
 def _llm(request: Request) -> LLMClient:
-    return request.app.state.llm
+    llm: LLMClient = request.app.state.llm
+    return llm
 
 
 ESDep = Annotated[AsyncElasticsearch, Depends(_es)]

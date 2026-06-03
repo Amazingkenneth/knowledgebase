@@ -7,6 +7,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 import yaml
 from fastapi import FastAPI, Query, Request, status
@@ -97,7 +98,7 @@ async def _sync_taxonomy_from_es(
         return
 
     path = Path(settings.taxonomy.path)
-    raw: dict = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    raw: dict[str, Any] = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     if new_projects:
         raw["projects"] = raw.get("projects", []) + new_projects
         log.info("taxonomy sync: added projects %s", new_projects)
@@ -117,7 +118,7 @@ async def _sync_taxonomy_from_es(
     )
 
 
-async def _ensure_indices(es, settings) -> None:
+async def _ensure_indices(es: AsyncElasticsearch, settings: Settings) -> None:
     """Create each alias+index if it doesn't already exist."""
     for kt in KnowledgeType:
         alias = alias_name(settings.es.index_prefix, kt)
@@ -169,7 +170,7 @@ async def _session_evictor(app: FastAPI, settings: Settings) -> None:
             log.warning("session evictor: eviction failed — %s", exc)
 
 
-async def _ensure_import_index(es) -> None:
+async def _ensure_import_index(es: AsyncElasticsearch) -> None:
     """Create the import file tracking index if it doesn't exist."""
     try:
         exists = await es.indices.exists(index=IMPORT_INDEX_NAME)

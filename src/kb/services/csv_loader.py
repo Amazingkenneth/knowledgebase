@@ -41,6 +41,7 @@ from __future__ import annotations
 import csv
 import logging
 import re
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 from kb.models.document import AlarmDoc, ExperienceDoc, KnowledgeDoc, SetupDoc
@@ -181,11 +182,12 @@ def load_csv_documents() -> list[KnowledgeDoc]:
     """
     docs: list[KnowledgeDoc] = []
 
-    for path, loader, label in [
+    sources: list[tuple[Path, Callable[[Path], Sequence[KnowledgeDoc]], str]] = [
         (ALARM_CSV,       _load_alarms,       "alarm"),
         (SETUP_CSV,       _load_setups,       "setup"),
         (EXPERIENCE_CSV,  _load_experiences,  "experience"),
-    ]:
+    ]
+    for path, loader, label in sources:
         if not path.exists():
             log.warning("csv_loader: %s not found — skipping %s documents", path, label)
             continue

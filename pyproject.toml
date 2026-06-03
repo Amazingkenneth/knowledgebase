@@ -23,6 +23,8 @@ dev = [
     "pytest-httpx>=0.32",
     "ruff>=0.7",
     "mypy>=1.13",
+    "types-PyYAML",
+    "types-openpyxl",
     "testcontainers[elasticsearch]>=4.8",
 ]
 ingest = [
@@ -62,3 +64,9 @@ select = ["E", "F", "I", "UP", "B", "SIM", "RET"]
 python_version = "3.12"
 strict = true
 plugins = ["pydantic.mypy"]
+
+# Optional OCR extras (paddleocr/numpy) ship no stubs and aren't installed in
+# the base/dev env; they're imported lazily inside services/ocr.py.
+[[tool.mypy.overrides]]
+module = ["paddleocr", "paddleocr.*", "numpy", "numpy.*"]
+ignore_missing_imports = true

@@ -16,6 +16,7 @@ raster images), so OCR is never triggered — the tests verify this explicitly.
 """
 from __future__ import annotations
 
+import csv
 import re
 from pathlib import Path
 
@@ -32,8 +33,6 @@ fitz_mod = pytest.importorskip("fitz", reason="pymupdf not installed")
 # ---------------------------------------------------------------------------
 # CSV helpers  (read the authoritative seed files for cross-checks)
 # ---------------------------------------------------------------------------
-
-import csv
 
 
 def _read_csv(path: Path) -> list[dict[str, str]]:
@@ -133,7 +132,9 @@ class TestAlarmPptxExtraction:
         assert csv_codes == extracted
 
     def test_equipment_types_present(self, alarm_text):
-        for equip in ("Aligner", "Conveyor", "FTU", "Heater", "Loader", "Pump", "SensorModule", "Stage"):
+        for equip in (
+            "Aligner", "Conveyor", "FTU", "Heater", "Loader", "Pump", "SensorModule", "Stage",
+        ):
             assert equip in alarm_text, f"Equipment '{equip}' not found"
 
     def test_project_names_present(self, alarm_text):
@@ -179,7 +180,9 @@ class TestSetupPptxExtraction:
         assert len(setup_pages) >= len(setup_csv)
 
     def test_all_equipment_sections_present(self, setup_text):
-        for equip in ("Aligner", "Conveyor", "FTU", "Heater", "Loader", "Pump", "SensorModule", "Stage"):
+        for equip in (
+            "Aligner", "Conveyor", "FTU", "Heater", "Loader", "Pump", "SensorModule", "Stage",
+        ):
             assert equip in setup_text, f"Equipment section '{equip}' not found"
 
     def test_key_station_names_present(self, setup_text, setup_csv):
@@ -241,7 +244,9 @@ class TestExperiencePdfExtraction:
         assert not blank, f"Blank pages: {[n for n, _ in blank]}"
 
     def test_all_equipment_types_present(self, experience_text):
-        for equip in ("Aligner", "Conveyor", "FTU", "Heater", "Loader", "Pump", "SensorModule", "Stage"):
+        for equip in (
+            "Aligner", "Conveyor", "FTU", "Heater", "Loader", "Pump", "SensorModule", "Stage",
+        ):
             assert equip in experience_text, f"Equipment '{equip}' not found"
 
     def test_all_projects_present(self, experience_text):
@@ -329,7 +334,9 @@ class TestExperiencePdfOcrBehavior:
         assert len(experience_pages) == len(experience_pages_no_ocr), (
             "Page count differs between OCR-enabled and OCR-disabled runs"
         )
-        for (n_ocr, t_ocr), (n_base, t_base) in zip(experience_pages, experience_pages_no_ocr):
+        for (n_ocr, t_ocr), (n_base, t_base) in zip(
+            experience_pages, experience_pages_no_ocr, strict=True
+        ):
             assert n_ocr == n_base
             assert t_ocr == t_base, (
                 f"Page {n_ocr} text differs between OCR and non-OCR runs — "
@@ -338,6 +345,7 @@ class TestExperiencePdfOcrBehavior:
 
     def test_no_pages_trigger_ocr(self, experience_pdf_path):
         import fitz
+
         from kb.services.extraction import _should_use_ocr
 
         doc = fitz.open(str(experience_pdf_path))
@@ -397,4 +405,6 @@ class TestCrossFormatConsistency:
 
     def test_experience_equipment_matches_taxonomy(self, experience_text, taxonomy):
         for equip in taxonomy.equipment:
-            assert equip in experience_text, f"Taxonomy equipment '{equip}' absent from experience PDF"
+            assert equip in experience_text, (
+                f"Taxonomy equipment '{equip}' absent from experience PDF"
+            )

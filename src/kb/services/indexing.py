@@ -10,12 +10,13 @@ later (see plan, Section: Indexing service).
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Sequence
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, cast
 
-from elasticsearch import AsyncElasticsearch
 from elasticsearch.helpers import async_bulk
 
+from elasticsearch import AsyncElasticsearch
 from kb.config import Settings
 from kb.es.body_builder import build_body, build_title_text
 from kb.es.mappings import alias_name
@@ -121,7 +122,7 @@ class IndexingService:
         )
         return _id
 
-    async def index_bulk(self, docs: list[DocumentBase]) -> dict[str, Any]:
+    async def index_bulk(self, docs: Sequence[DocumentBase]) -> dict[str, Any]:
         """All-or-nothing-ish: validate every doc first, then index in one bulk.
 
         Validation errors short-circuit with per-row reporting. ES-side failures
@@ -157,10 +158,10 @@ class IndexingService:
                 }
             )
 
-        success, bulk_errors = await async_bulk(
+        success, raw_errors = await async_bulk(
             self._es, actions, raise_on_error=False, stats_only=False, refresh="wait_for"
         )
-        for err in bulk_errors:
+        for err in cast("list[Any]", raw_errors):  # stats_only=False → always a list
             # async_bulk returns the ES error dict per failed action.
             errors.append({"error": err})
         return {"indexed": success, "errors": errors}

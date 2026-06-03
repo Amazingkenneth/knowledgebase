@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, cast
 
 from elasticsearch.helpers import async_bulk, async_scan
 
@@ -120,9 +120,10 @@ async def seed(
             "_source":  source,
         })
 
-    success, errors = await async_bulk(
+    success, raw_errors = await async_bulk(
         es, actions, raise_on_error=False, stats_only=False, refresh="wait_for"
     )
+    errors = cast("list[Any]", raw_errors)  # stats_only=False → always a list
     for err in errors:
         log.error("seed bulk error: %s", err)
     log.info("seed: indexed %d documents (%d errors)", success, len(errors))
@@ -170,9 +171,10 @@ async def restore_imports(es: AsyncElasticsearch, settings: Settings) -> None:
         log.debug("restore_imports: no imported documents to restore")
         return
 
-    success, errors = await async_bulk(
+    success, raw_errors = await async_bulk(
         es, actions, raise_on_error=False, stats_only=False, refresh="wait_for"
     )
+    errors = cast("list[Any]", raw_errors)  # stats_only=False → always a list
     for err in errors:
         log.error("restore_imports bulk error: %s", err)
     log.info("restore_imports: restored %d imported documents (%d errors)", success, len(errors))

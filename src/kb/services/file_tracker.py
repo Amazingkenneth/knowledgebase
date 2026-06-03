@@ -39,7 +39,8 @@ class FileTracker:
         """Return the import record if this file hash was previously imported, else None."""
         try:
             resp = await self._es.get(index=IMPORT_INDEX_NAME, id=file_hash)
-            return resp["_source"]
+            source: dict[str, Any] = resp["_source"]
+            return source
         except NotFoundError:
             return None
 

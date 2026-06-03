@@ -230,7 +230,6 @@ def _pdf_add_page(doc: Any, lines: list[str]) -> None:
     font file required.  Lines that would fall below the page bottom are
     silently dropped (the tests do not assert a specific page layout).
     """
-    import fitz
 
     page = doc.new_page(width=595, height=842)
     y = 48.0
@@ -257,7 +256,7 @@ def experience_pdf_path(tmp_path_factory, experience_csv_data):
     - Bulk-data pages: all 50 rows with full 问题 / 根因 / 纠正步骤 text,
       ensuring complete coverage regardless of category assignment.
     """
-    fitz_mod = pytest.importorskip("fitz", reason="pymupdf not installed")
+    pytest.importorskip("fitz", reason="pymupdf not installed")
     import fitz
 
     doc = fitz.open()

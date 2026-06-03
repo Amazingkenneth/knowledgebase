@@ -7,6 +7,8 @@ Docker), the tests are skipped instead of erroring.
 
 from __future__ import annotations
 
+import contextlib
+
 import pytest
 import pytest_asyncio
 
@@ -14,7 +16,13 @@ pytest.importorskip("testcontainers")
 
 from testcontainers.elasticsearch import ElasticSearchContainer  # noqa: E402
 
-from kb.config import EmbeddingConfig, ESConfig, SearchConfig, Settings, TaxonomyConfig  # noqa: E402
+from kb.config import (  # noqa: E402
+    EmbeddingConfig,
+    ESConfig,
+    SearchConfig,
+    Settings,
+    TaxonomyConfig,
+)
 from kb.es.client import close_es, get_es  # noqa: E402
 from kb.es.migrations import create_all  # noqa: E402
 from kb.models.taxonomy import KnowledgeType, Taxonomy  # noqa: E402
@@ -46,10 +54,8 @@ def settings(es_container):
 async def fresh_indices(settings):
     es = get_es(settings)
     # Best-effort cleanup of any prior test run.
-    try:
+    with contextlib.suppress(Exception):
         await es.indices.delete(index=f"{settings.es.index_prefix}_*", ignore_unavailable=True)
-    except Exception:
-        pass
     await create_all(es, settings)
     yield
     await close_es()
