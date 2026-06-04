@@ -15,9 +15,10 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse, Response
 
 from elasticsearch import ApiError, AsyncElasticsearch, TransportError
-from kb.api import chat, documents, facets, ingest, search
+from kb.api import chat, documents, facets, feedback, ingest, search
 from kb.config import Settings, get_settings
 from kb.es.client import close_es, get_es
+from kb.es.feedback_mappings import FEEDBACK_INDEX_BODY, FEEDBACK_INDEX_NAME
 from kb.es.import_mappings import IMPORT_INDEX_BODY, IMPORT_INDEX_NAME
 from kb.es.mappings import alias_name, all_alias_pattern
 from kb.es.migrations import create_one
@@ -181,6 +182,18 @@ async def _ensure_import_index(es: AsyncElasticsearch) -> None:
         log.warning("could not create import index: %s", exc)
 
 
+async def _ensure_feedback_index(es: AsyncElasticsearch) -> None:
+    """Create the search-feedback index if it doesn't exist. Unlike the main
+    indices it is never reseeded, so feedback persists across restarts."""
+    try:
+        exists = await es.indices.exists(index=FEEDBACK_INDEX_NAME)
+        if not exists:
+            await es.indices.create(index=FEEDBACK_INDEX_NAME, body=FEEDBACK_INDEX_BODY)
+            log.info("created search-feedback index %s", FEEDBACK_INDEX_NAME)
+    except Exception as exc:
+        log.warning("could not create feedback index: %s", exc)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
@@ -212,6 +225,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         # Auto-create indices and reseed from CSV on every start.
         await _ensure_indices(es, settings)
         await _ensure_import_index(es)
+        await _ensure_feedback_index(es)
         await seed(es, settings, embedder, taxonomy_store.current)
 
         # Re-index previously imported documents that were wiped by seed's clear.
@@ -264,6 +278,7 @@ def create_app(lifespan_override: object | None = None) -> FastAPI:
     app.include_router(facets.router)
     app.include_router(chat.router)
     app.include_router(ingest.router)
+    app.include_router(feedback.router)
 
     @app.exception_handler(RequestValidationError)
     async def _validation_exc(_: Request, exc: RequestValidationError) -> JSONResponse:

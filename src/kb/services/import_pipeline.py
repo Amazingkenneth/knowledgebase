@@ -9,7 +9,9 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
+import time
 import uuid
+from collections import OrderedDict
 from datetime import UTC, datetime, timedelta
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -31,6 +33,7 @@ from kb.models.ingest import (
     StagedDocument,
 )
 from kb.models.taxonomy import KnowledgeType, Taxonomy
+from kb.observability import metrics
 from kb.services.embedding import EmbeddingClient, EmbeddingError
 from kb.services.extraction import ScannedPdfError, extract_file
 from kb.services.file_tracker import FileTracker, compute_bytes_hash
@@ -60,10 +63,23 @@ class ImportPipeline:
         self._llm = llm
         self._tracker = FileTracker(es)
         self._sessions: dict[str, ImportSession] = {}
+        # Bounded FIFO memory of session ids that were evicted by TTL. Lets
+        # session_state() tell an *expired* preview (return 410 "re-upload")
+        # apart from one that never existed (404). Capped so it can't grow
+        # without bound; values are unused (an ordered set).
+        self._evicted: OrderedDict[str, None] = OrderedDict()
+        # Per-session tracker writes that failed during commit_session, keyed by
+        # session_id → {file_hash: committed_doc_payloads}. The docs are already
+        # in ES; replaying these via recommit_tracking() makes them durable
+        # (restore_imports reads the tracker) without a re-upload.
+        self._pending_tracking: dict[str, dict[str, list[dict[str, Any]]]] = {}
         # Strong references to in-flight background tasks. asyncio only holds a
         # weak reference to a task, so without this set a processing task can be
         # garbage-collected mid-run, silently aborting an import.
         self._tasks: set[asyncio.Task[None]] = set()
+
+    # Upper bound on remembered evicted-session ids (see ``_evicted``).
+    _EVICTED_CAP = 2000
 
     def refresh_taxonomy(self, taxonomy: Taxonomy) -> None:
         self._taxonomy = taxonomy
@@ -74,6 +90,17 @@ class ImportPipeline:
 
     def get_session(self, session_id: str) -> ImportSession | None:
         return self._sessions.get(session_id)
+
+    def session_state(self, session_id: str) -> str | None:
+        """Classify a *missing* session id: ``"expired"`` if it was evicted by
+        TTL, else ``None`` (never existed). Callers use this to return 410 vs
+        404. Live sessions should be fetched via ``get_session`` first.
+        """
+        if session_id in self._sessions:
+            return "live"
+        if session_id in self._evicted:
+            return "expired"
+        return None
 
     def list_sessions(self, limit: int = 20) -> list[ImportSession]:
         sessions = sorted(
@@ -108,8 +135,18 @@ class ImportPipeline:
                 expired.append(sid)
         for sid in expired:
             del self._sessions[sid]
+            self._remember_evicted(sid)
         if expired:
             log.info("Evicted %d expired import session(s)", len(expired))
+
+    def _remember_evicted(self, session_id: str) -> None:
+        """Record an evicted id so ``session_state`` can report 410 (expired),
+        trimming oldest entries to keep the set bounded."""
+        self._evicted[session_id] = None
+        self._evicted.move_to_end(session_id)
+        self._pending_tracking.pop(session_id, None)
+        while len(self._evicted) > self._EVICTED_CAP:
+            self._evicted.popitem(last=False)
 
     async def start_upload(
         self,
@@ -261,6 +298,59 @@ class ImportPipeline:
             files_to_upload, knowledge_type_hint, project_hint, equipment_hint, force,
         )
 
+    def accept_all(self, session_id: str, knowledge_type: KnowledgeType | None = None) -> int:
+        """Mark every staged doc as accepted (or only those of ``knowledge_type``).
+
+        Returns the number of docs flipped to accepted. Lets a reviewer approve a
+        whole batch — or all alarms in a mixed file — in one click.
+        """
+        session = self._sessions.get(session_id)
+        if session is None:
+            raise ValueError(f"Session not found: {session_id}")
+        n = 0
+        for doc in session.documents:
+            if knowledge_type is not None and doc.knowledge_type != knowledge_type:
+                continue
+            if not doc.accepted:
+                n += 1
+            doc.accepted = True
+        return n
+
+    async def retry_failed_files(
+        self,
+        session_id: str,
+        force_ocr: bool = False,
+    ) -> ImportSession:
+        """Re-process *all* FAILED files in a session in one go (bulk retry).
+
+        Each file is re-run the same way as ``retry_file``; missing source files
+        are left FAILED with a clear message rather than aborting the batch.
+        """
+        session = self._sessions.get(session_id)
+        if session is None:
+            raise ValueError(f"Session not found: {session_id}")
+        failed = [f for f in session.files if f.status == FileStatus.FAILED]
+        if not failed:
+            return session
+        session.status = ImportStatus.EXTRACTING
+        session.message = f"Retrying {len(failed)} failed file(s)…"
+        for info in failed:
+            rec = await self._tracker.exists(info.file_hash)
+            path = Path(rec["file_path"]) if rec and rec.get("file_path") else None
+            if path is None or not path.exists():
+                info.message = "Uploaded file no longer available — please re-upload it."
+                continue
+            session.documents = [
+                d for d in session.documents if d.source_file != info.file_name
+            ]
+            info.status = FileStatus.PROCESSING
+            info.message = "Retrying…"
+            info.skipped_chunks = []
+            task = asyncio.create_task(self._retry_one(session, info, path, force_ocr))
+            self._tasks.add(task)
+            task.add_done_callback(lambda t: self._on_task_done(session, t))
+        return session
+
     async def retry_file(
         self,
         session_id: str,
@@ -385,6 +475,7 @@ class ImportPipeline:
                 info.status = FileStatus.FAILED
                 info.message = "No text extracted"
                 await self._tracker.record_failed(info.file_hash, "No text extracted")
+                metrics.record_import_file("failed")
                 return []
 
             # Step 2: segment into structured documents.
@@ -395,10 +486,14 @@ class ImportPipeline:
             total_chars = sum(len(text) for _, text in pages)
             n_chunks = max(1, -(-total_chars // chunk_chars))  # ceiling div
             info.message = f"Segmenting ({n_chunks} chunk{'s' if n_chunks != 1 else ''})…"
+            info.chunks_total = n_chunks
+            info.chunks_done = 0
             session.message = f"Segmenting: {info.file_name}"
 
             def _on_progress(i: int, total: int, _info: FileInfo = info) -> None:
                 _info.message = f"AI analysis: chunk {i}/{total}…"
+                _info.chunks_total = total
+                _info.chunks_done = i
                 session.message = f"Segmenting {_info.file_name}: {i}/{total}"
 
             # If no knowledge_type_hint, pass None → per-chunk routing
@@ -449,7 +544,10 @@ class ImportPipeline:
             info.skipped_chunks = skipped
 
             info.status = FileStatus.DONE
+            info.chunks_done = info.chunks_total
             info.message = _build_extraction_summary(len(docs), skipped, knowledge_type_hint)
+            metrics.record_import_file("done")
+            metrics.record_import_docs("extracted", len(docs))
             return docs
 
         except ScannedPdfError as exc:
@@ -471,18 +569,21 @@ class ImportPipeline:
             info.message = msg
             log.warning("Scanned PDF %s: %s", info.file_name, msg)
             await self._tracker.record_failed(info.file_hash, msg)
+            metrics.record_import_file("failed")
             return []
         except ImportError as exc:
             info.status = FileStatus.FAILED
             info.message = str(exc)
             log.error("Missing dependency for %s: %s", info.file_name, exc)
             await self._tracker.record_failed(info.file_hash, str(exc))
+            metrics.record_import_file("failed")
             return []
         except Exception as exc:
             info.status = FileStatus.FAILED
             info.message = f"Processing failed: {exc}"
             log.error("Failed to process %s: %s", info.file_name, exc, exc_info=True)
             await self._tracker.record_failed(info.file_hash, str(exc))
+            metrics.record_import_file("failed")
             return []
 
     async def commit_session(
@@ -494,6 +595,7 @@ class ImportPipeline:
         if session is None:
             raise ValueError(f"Session not found: {session_id}")
 
+        commit_start = time.perf_counter()
         accepted = [d for d in session.documents if d.accepted]
         skipped = len(session.documents) - len(accepted)
         if not accepted:
@@ -615,8 +717,10 @@ class ImportPipeline:
             except Exception as exc:
                 # The docs ARE in ES, but the tracker row that drives
                 # restore_imports() didn't update — so the next startup reseed
-                # would silently drop them. Surface it instead of only logging.
+                # would silently drop them. Stash the payload for replay via
+                # recommit_tracking() and surface it instead of only logging.
                 tracking_failed += len(docs)
+                self._pending_tracking.setdefault(session_id, {})[file_hash] = docs
                 log.error("Failed to update tracker for %s: %s", file_hash[:12], exc)
                 errors.append({
                     "error": (
@@ -625,15 +729,48 @@ class ImportPipeline:
                     ),
                     "hint": (
                         "Documents are searchable now but won't survive a server "
-                        "restart/reseed. Re-import this file to make it durable."
+                        "restart/reseed. Use \"Make durable\" to retry recording them."
                     ),
                 })
 
         # A clean or partial run is COMMITTED (errors list carries what dropped);
         # only a run where nothing landed is FAILED.
         session.status = ImportStatus.FAILED if committed == 0 else ImportStatus.COMMITTED
+        metrics.IMPORT_COMMIT_DURATION.observe(time.perf_counter() - commit_start)
+        metrics.record_import_docs("committed", committed)
+        metrics.record_import_docs("rejected", len(accepted) - committed)
         return {"committed": committed, "skipped": skipped, "errors": errors,
                 "vectors_skipped": vectors_skipped, "tracking_failed": tracking_failed}
+
+    async def recommit_tracking(self, session_id: str) -> dict[str, Any]:
+        """Retry the tracker writes that failed during commit (durability recovery).
+
+        The docs are already in ES; this only re-records them in
+        ``kb_import_files`` so ``restore_imports()`` keeps them across a reseed.
+        Idempotent: successfully recorded files are dropped from the pending set.
+        """
+        pending = self._pending_tracking.get(session_id, {})
+        if not pending:
+            return {"recovered": 0, "still_failed": 0, "errors": []}
+
+        recovered = 0
+        errors: list[dict[str, Any]] = []
+        for file_hash in list(pending.keys()):
+            docs = pending[file_hash]
+            try:
+                await self._tracker.record_committed(file_hash, docs)
+                recovered += len(docs)
+                del pending[file_hash]
+            except Exception as exc:
+                log.error("recommit_tracking failed for %s: %s", file_hash[:12], exc)
+                errors.append({
+                    "error": f"Still could not record {len(docs)} doc(s): {exc}",
+                    "hint": "Elasticsearch may still be unavailable — try again shortly.",
+                })
+        if not pending:
+            self._pending_tracking.pop(session_id, None)
+        still_failed = sum(len(d) for d in pending.values())
+        return {"recovered": recovered, "still_failed": still_failed, "errors": errors}
 
     def _find_file_hash(self, session: ImportSession, source_file: str) -> str | None:
         for f in session.files:

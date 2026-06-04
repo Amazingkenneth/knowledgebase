@@ -13,10 +13,27 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from elasticsearch import AsyncElasticsearch, NotFoundError
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
+
+from elasticsearch import (
+    AsyncElasticsearch,
+    ConnectionTimeout,
+    NotFoundError,
+)
+from elasticsearch import (
+    ConnectionError as ESConnectionError,
+)
 from kb.es.import_mappings import IMPORT_INDEX_NAME
 
 log = logging.getLogger("kb.file_tracker")
+
+# Transient ES failures worth retrying on the durability-critical tracker write.
+_TRANSIENT_ES = (ESConnectionError, ConnectionTimeout)
 
 
 def compute_file_hash(path: Path) -> str:
@@ -93,12 +110,25 @@ class FileTracker:
             refresh="wait_for",
         )
 
+    @retry(
+        retry=retry_if_exception_type(_TRANSIENT_ES),
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=0.3, max=2),
+        reraise=True,
+    )
     async def record_committed(
         self,
         file_hash: str,
         committed_docs: list[dict[str, Any]],
     ) -> None:
-        """Update the import record with committed document payloads."""
+        """Update the import record with committed document payloads.
+
+        This write is durability-critical: ``restore_imports()`` re-indexes from
+        it after the next reseed, so a lost update silently drops committed docs.
+        Retry transient ES connection failures a few times before giving up (the
+        caller surfaces a permanent failure as ``tracking_failed``). ``ApiError``
+        (e.g. document missing) is *not* retried — it won't fix itself.
+        """
         now = datetime.now(UTC).isoformat()
         await self._es.update(
             index=IMPORT_INDEX_NAME,

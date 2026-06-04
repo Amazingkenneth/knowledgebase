@@ -43,6 +43,10 @@ class FileInfo(BaseModel):
     file_size: int = 0
     status: FileStatus
     message: str = ""
+    # Segmentation progress for a real progress bar in the UI (the message
+    # string carries the human label). Both None until segmentation starts.
+    chunks_total: int | None = None
+    chunks_done: int | None = None
     skipped_chunks: list[SkippedChunk] = Field(default_factory=list)
 
 
@@ -138,6 +142,11 @@ class AcceptReject(BaseModel):
     accepted: bool
 
 
+class AcceptAllRequest(BaseModel):
+    """Accept every staged doc, or only those of a given knowledge type."""
+    knowledge_type: KnowledgeType | None = None
+
+
 class RetryRequest(BaseModel):
     """Options for re-processing a single failed file in a session."""
     # Force OCR on for this retry even when ingest.ocr_enabled is off — lets the
@@ -156,3 +165,12 @@ class CommitResponse(BaseModel):
     # They are searchable now but would be dropped on the next startup reseed
     # (restore_imports reads the tracker), so the user should re-import them.
     tracking_failed: int = 0
+
+
+class RecommitTrackingResponse(BaseModel):
+    """Result of retrying the tracker writes that failed during commit."""
+    # Documents whose tracker row was successfully (re-)recorded this time.
+    recovered: int = 0
+    # Documents still missing from the tracker after the retry.
+    still_failed: int = 0
+    errors: list[dict[str, Any]] = Field(default_factory=list)

@@ -38,11 +38,36 @@ UPSTREAM_LATENCY = Histogram(
     "Latency of calls to an upstream dependency.",
     ["service"],  # "llm" | "embedding" | "es"
 )
+IMPORT_FILES = Counter(
+    "kb_import_files_total",
+    "Files handled by the import pipeline, by terminal status.",
+    ["status"],  # "done" | "failed" | "skipped_duplicate" | "unsupported"
+)
+IMPORT_DOCS = Counter(
+    "kb_import_docs_total",
+    "Staged documents by outcome.",
+    ["outcome"],  # "extracted" | "committed" | "rejected"
+)
+IMPORT_COMMIT_DURATION = Histogram(
+    "kb_import_commit_duration_seconds",
+    "Wall-clock time to commit an import session to Elasticsearch.",
+)
 
 
 def record_upstream_error(service: str) -> None:
     """Increment the upstream-error counter for ``service`` (llm/embedding/es)."""
     UPSTREAM_ERRORS.labels(service=service).inc()
+
+
+def record_import_file(status: str) -> None:
+    """Count one file reaching a terminal import status."""
+    IMPORT_FILES.labels(status=status).inc()
+
+
+def record_import_docs(outcome: str, count: int) -> None:
+    """Count ``count`` staged documents with the given outcome."""
+    if count:
+        IMPORT_DOCS.labels(outcome=outcome).inc(count)
 
 
 @contextmanager

@@ -16,11 +16,13 @@ import logging
 from fastapi import APIRouter, Form, HTTPException, Request, UploadFile
 
 from kb.models.ingest import (
+    AcceptAllRequest,
     AcceptReject,
     CommitResponse,
     DocumentUpdate,
     ImportSession,
     ImportStatus,
+    RecommitTrackingResponse,
     RetryRequest,
     ScanRequest,
     SessionListItem,
@@ -121,9 +123,7 @@ async def list_sessions(request: Request, limit: int = 20) -> list[SessionListIt
 @router.get("/sessions/{session_id}", response_model=SessionResponse)
 async def get_session(request: Request, session_id: str) -> SessionResponse:
     pipeline = _pipeline(request)
-    session = pipeline.get_session(session_id)
-    if session is None:
-        raise HTTPException(status_code=404, detail="Session not found")
+    session = _require_session(pipeline, session_id)
     processed = sum(1 for f in session.files if f.status.value != "processing")
     return SessionResponse(
         session_id=session.session_id,
@@ -143,9 +143,7 @@ async def update_document(
     request: Request, session_id: str, doc_index: int, body: DocumentUpdate,
 ) -> dict[str, str]:
     pipeline = _pipeline(request)
-    session = pipeline.get_session(session_id)
-    if session is None:
-        raise HTTPException(status_code=404, detail="Session not found")
+    session = _require_session(pipeline, session_id)
     if doc_index < 0 or doc_index >= len(session.documents):
         raise HTTPException(status_code=400, detail="Document index out of range")
 
@@ -161,14 +159,30 @@ async def accept_reject_document(
     request: Request, session_id: str, doc_index: int, body: AcceptReject,
 ) -> dict[str, str]:
     pipeline = _pipeline(request)
-    session = pipeline.get_session(session_id)
-    if session is None:
-        raise HTTPException(status_code=404, detail="Session not found")
+    session = _require_session(pipeline, session_id)
     if doc_index < 0 or doc_index >= len(session.documents):
         raise HTTPException(status_code=400, detail="Document index out of range")
 
     session.documents[doc_index].accepted = body.accepted
     return {"status": "updated"}
+
+
+# ── Bulk document accept ─────────────────────────────────────────────────────
+
+@router.post("/sessions/{session_id}/documents/accept-all")
+async def accept_all_documents(
+    request: Request, session_id: str, body: AcceptAllRequest | None = None,
+) -> dict[str, int]:
+    """Accept every staged doc (or only those of a given knowledge_type)."""
+    pipeline = _pipeline(request)
+    _require_session(pipeline, session_id)
+    try:
+        n = pipeline.accept_all(
+            session_id, body.knowledge_type if body else None,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return {"accepted": n}
 
 
 # ── Retry a single failed file ───────────────────────────────────────────────
@@ -196,6 +210,30 @@ async def retry_file(
     return UploadResponse(session_id=session.session_id, files=session.files)
 
 
+# ── Retry all failed files ───────────────────────────────────────────────────
+
+@router.post(
+    "/sessions/{session_id}/retry-failed",
+    response_model=UploadResponse,
+    status_code=202,
+)
+async def retry_failed_files(
+    request: Request,
+    session_id: str,
+    body: RetryRequest | None = None,
+) -> UploadResponse:
+    """Re-process every FAILED file in the session at once (optionally forcing OCR)."""
+    pipeline = _pipeline(request)
+    _require_session(pipeline, session_id)
+    try:
+        session = await pipeline.retry_failed_files(
+            session_id, force_ocr=body.force_ocr if body else False,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return UploadResponse(session_id=session.session_id, files=session.files)
+
+
 # ── Commit ───────────────────────────────────────────────────────────────────
 
 @router.post("/sessions/{session_id}/commit", response_model=CommitResponse)
@@ -206,3 +244,25 @@ async def commit_session(request: Request, session_id: str) -> CommitResponse:
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     return CommitResponse(**result)
+
+
+# ── Durability recovery ──────────────────────────────────────────────────────
+
+@router.post(
+    "/sessions/{session_id}/recommit-tracking",
+    response_model=RecommitTrackingResponse,
+)
+async def recommit_tracking(request: Request, session_id: str) -> RecommitTrackingResponse:
+    """Retry the tracker writes that failed during commit.
+
+    The documents are already searchable in ES; this re-records them so they
+    survive the next startup reseed. Lets the user recover from a transient ES
+    blip at commit time without re-uploading. Idempotent.
+    """
+    pipeline = _pipeline(request)
+    _require_session(pipeline, session_id)
+    try:
+        result = await pipeline.recommit_tracking(session_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return RecommitTrackingResponse(**result)

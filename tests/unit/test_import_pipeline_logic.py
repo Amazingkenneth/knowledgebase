@@ -374,6 +374,137 @@ async def test_retry_file_unknown_file_raises():
         await pipeline.retry_file("s", "nope")
 
 
+# ── A1: session_state distinguishes an expired session from an unknown one ────
+
+def test_session_state_reports_expired_after_eviction(stub_pipeline: ip.ImportPipeline):
+    """The 410-vs-404 distinction the ingest router relies on: an id that was
+    evicted by TTL must read back as 'expired', while a never-seen id is None."""
+    ttl = stub_pipeline._settings.ingest.session_hard_ttl_minutes
+    old = datetime.now(UTC) - timedelta(minutes=ttl + 10)
+    stub_pipeline._sessions["gone"] = ImportSession(
+        session_id="gone", status=ImportStatus.READY, created_at=old,
+    )
+
+    stub_pipeline._evict_expired_sessions()
+
+    assert stub_pipeline.get_session("gone") is None
+    assert stub_pipeline.session_state("gone") == "expired"
+    assert stub_pipeline.session_state("never-existed") is None
+
+
+def test_evicted_set_is_bounded(stub_pipeline: ip.ImportPipeline):
+    """The evicted-id memory can't grow without bound."""
+    cap = ip.ImportPipeline._EVICTED_CAP
+    for i in range(cap + 50):
+        stub_pipeline._remember_evicted(f"sid-{i}")
+    assert len(stub_pipeline._evicted) == cap
+    # Oldest were trimmed; newest survive.
+    assert stub_pipeline.session_state("sid-0") is None
+    assert stub_pipeline.session_state(f"sid-{cap + 49}") == "expired"
+
+
+# ── B1: bulk accept ───────────────────────────────────────────────────────────
+
+def test_accept_all_flips_every_doc(stub_pipeline: ip.ImportPipeline):
+    docs = [_staged(0, "a"), _staged(1, "b"), _staged(2, "c")]
+    for d in docs:
+        d.accepted = False
+    stub_pipeline._sessions["s"] = ImportSession(session_id="s", documents=docs)
+
+    n = stub_pipeline.accept_all("s")
+
+    assert n == 3
+    assert all(d.accepted for d in docs)
+
+
+def test_accept_all_filters_by_knowledge_type(stub_pipeline: ip.ImportPipeline):
+    alarm = _staged(0, "alarm")
+    setup = StagedDocument(
+        index=1, knowledge_type=KnowledgeType.SETUP, title="setup",
+        source_file="f.pptx", accepted=False,
+    )
+    alarm.accepted = False
+    stub_pipeline._sessions["s"] = ImportSession(session_id="s", documents=[alarm, setup])
+
+    n = stub_pipeline.accept_all("s", KnowledgeType.ALARM)
+
+    assert n == 1
+    assert alarm.accepted is True
+    assert setup.accepted is False
+
+
+# ── B1: bulk retry of all failed files ────────────────────────────────────────
+
+async def test_retry_failed_files_reprocesses_only_failed(monkeypatch, tmp_path):
+    pipeline = _bare_pipeline()
+    on_disk = tmp_path / "scan.pdf"
+    on_disk.write_bytes(b"x")
+    pipeline._tracker.exists = AsyncMock(  # type: ignore[method-assign]
+        return_value={"file_path": str(on_disk)}
+    )
+    good = FileInfo(file_name="ok.pdf", file_hash="h-ok", file_type="pdf", status=FileStatus.DONE)
+    failed = FileInfo(
+        file_name="scan.pdf", file_hash="h-scan", file_type="pdf", status=FileStatus.FAILED,
+    )
+    session = ImportSession(
+        session_id="s", status=ImportStatus.READY, files=[good, failed],
+        created_at=datetime.now(UTC),
+    )
+    pipeline._sessions["s"] = session
+
+    processed: list[str] = []
+
+    async def fake_process_one(sess, info, path, kt, proj, equip, start_index, force_ocr=False):
+        processed.append(info.file_name)
+        info.status = FileStatus.DONE
+        return []
+
+    monkeypatch.setattr(pipeline, "_process_one", fake_process_one)
+    await pipeline.retry_failed_files("s", force_ocr=True)
+    await asyncio.gather(*pipeline._tasks)
+
+    # Only the failed file was retried, not the already-good one.
+    assert processed == ["scan.pdf"]
+    assert session.status == ImportStatus.READY
+
+
+# ── A3: recommit_tracking replays a failed tracker write ──────────────────────
+
+async def test_recommit_tracking_recovers_after_commit(stub_pipeline: ip.ImportPipeline):
+    """A commit whose tracker write failed leaves a pending payload; once ES is
+    healthy, recommit_tracking re-records it and clears the pending set."""
+    session = ImportSession(
+        session_id="s-rec",
+        documents=[_staged(0, "ok-a")],
+        files=[FileInfo(
+            file_name="f.pptx", file_hash="hash123", file_type="pptx",
+            status=FileStatus.DONE,
+        )],
+        created_at=datetime.now(UTC),
+    )
+    stub_pipeline._sessions["s-rec"] = session
+    failing = AsyncMock(side_effect=RuntimeError("tracker down"))
+    stub_pipeline._tracker.record_committed = failing  # type: ignore[method-assign]
+
+    commit = await stub_pipeline.commit_session("s-rec")
+    assert commit["tracking_failed"] == 1
+    assert "s-rec" in stub_pipeline._pending_tracking
+
+    # ES recovers; replay succeeds and the pending payload is cleared.
+    stub_pipeline._tracker.record_committed = AsyncMock()  # type: ignore[method-assign]
+    result = await stub_pipeline.recommit_tracking("s-rec")
+
+    assert result["recovered"] == 1
+    assert result["still_failed"] == 0
+    assert "s-rec" not in stub_pipeline._pending_tracking
+
+
+async def test_recommit_tracking_noop_when_nothing_pending(stub_pipeline: ip.ImportPipeline):
+    stub_pipeline._sessions["s"] = ImportSession(session_id="s")
+    result = await stub_pipeline.recommit_tracking("s")
+    assert result == {"recovered": 0, "still_failed": 0, "errors": []}
+
+
 async def test_process_one_force_ocr_overrides_disabled_setting(monkeypatch, tmp_path):
     """force_ocr=True must reach extract_file as ocr_enabled=True even when the
     server config has OCR off."""

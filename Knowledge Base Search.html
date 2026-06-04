@@ -2219,6 +2219,121 @@ window.KB_FALLBACK_STATS    = FALLBACK_STATS;
 window.saveRecentSearch     = saveRecentSearch;
 window.getRecentSearches    = getRecentSearches;
 
+// ── Search-box suggestions ────────────────────────────────────────────────
+// Built entirely from already-loaded data (recent searches + taxonomy +
+// the by_error_code aggregation), so typing never triggers a server call.
+function kbSuggestions(query, limit) {
+  const q = (query || '').trim().toLowerCase();
+  const tax = window.KB_TAXONOMY || {};
+  const stats = window.KB_STATS || {};
+  const out = [];
+  const seen = new Set();
+  const push = (value, kind) => {
+    if (!value) return;
+    const key = kind + '::' + value;
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push({ value, kind });
+  };
+  // Recent searches first — most likely what the user wants again.
+  for (const r of getRecentSearches()) push(r.q, 'recent');
+  for (const code of Object.keys(stats.by_error_code || {})) push(code, 'error_code');
+  for (const eq of (tax.equipment || [])) push(eq, 'equipment');
+  for (const p of (tax.projects || [])) push(p, 'project');
+  const matched = q
+    ? out.filter(s => s.value.toLowerCase().includes(q))
+    : out;
+  return matched.slice(0, limit || 8);
+}
+
+// Tiny Levenshtein for "did you mean" over the (small) taxonomy + code list.
+function kbEditDistance(a, b) {
+  a = a.toLowerCase(); b = b.toLowerCase();
+  const m = a.length, n = b.length;
+  if (!m) return n; if (!n) return m;
+  let prev = Array.from({ length: n + 1 }, (_, i) => i);
+  for (let i = 1; i <= m; i++) {
+    const cur = [i];
+    for (let j = 1; j <= n; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+    }
+    prev = cur;
+  }
+  return prev[n];
+}
+
+// Suggest close taxonomy/error-code values for the tokens the user typed.
+function kbDidYouMean(text, limit) {
+  const tokens = (text || '').split(/[\s,，、]+/).filter(t => t.length >= 2);
+  const tax = window.KB_TAXONOMY || {};
+  const stats = window.KB_STATS || {};
+  const candidates = [
+    ...Object.keys(stats.by_error_code || {}),
+    ...(tax.equipment || []),
+    ...(tax.projects || []),
+  ];
+  const out = [];
+  const seen = new Set();
+  for (const tok of tokens) {
+    for (const cand of candidates) {
+      if (cand.toLowerCase() === tok.toLowerCase()) continue;  // already exact
+      const dist = kbEditDistance(tok, cand);
+      const tol = Math.max(1, Math.floor(cand.length / 4));
+      if (dist <= tol && !seen.has(cand)) { seen.add(cand); out.push(cand); }
+    }
+  }
+  return out.slice(0, limit || 4);
+}
+
+// Export the current result hits to a CSV the user can open in Excel.
+function kbExportCsv(hits, filename) {
+  const cols = ['title', 'knowledge_type', 'project', 'equipment', 'error_codes', 'source_file', 'source_pages', 'score'];
+  const esc = (v) => {
+    const s = Array.isArray(v) ? v.join('; ') : (v == null ? '' : String(v));
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  const rows = (hits || []).map(s => {
+    const d = s.doc || {};
+    return [d.title, d.type, d.project, d.equipment, d.codes, d.source?.file, d.source?.pages, s.score].map(esc).join(',');
+  });
+  // BOM so Excel reads UTF-8 (Chinese) correctly.
+  const csv = '﻿' + cols.join(',') + '\n' + rows.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename || `kb-results-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// Record a 👍/👎 on a search result. Fire-and-forget — never blocks the UI.
+function kbSendFeedback(docId, helpful, params, status) {
+  try {
+    fetch('/api/v1/search/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        doc_id: docId,
+        helpful: !!helpful,
+        query_text: (params && (params.raw || (params.keywords || []).join(' '))) || null,
+        knowledge_type: (params && params.type) || null,
+        project: (params && params.project) || null,
+        equipment: (params && params.equipment) || null,
+        search_status: status || null,
+      }),
+    }).catch(() => {});
+  } catch (e) {}
+}
+
+window.kbSuggestions  = kbSuggestions;
+window.kbDidYouMean   = kbDidYouMean;
+window.kbExportCsv    = kbExportCsv;
+window.kbSendFeedback = kbSendFeedback;
+
 // Legacy stubs
 window.KB_DATA     = {};
 window.KB_RETRIEVE = () => [];
@@ -2470,6 +2585,12 @@ function Icon({ name, size = 16 }) {
           <path d="M19 12H5M11 6l-6 6 6 6" />
         </svg>
       );
+    case "arrow-down":
+      return (
+        <svg {...props}>
+          <path d="M12 5v14M6 13l6 6 6-6" />
+        </svg>
+      );
     case "external":
       return (
         <svg {...props}>
@@ -2584,7 +2705,14 @@ function Landing({ taxonomy, stats, onSubmit, onPickRecent, onPickType }) {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="例如：FTU 125002 穿梭真空报警怎么处理？"
+            list="kb-suggest"
+            autoComplete="off"
           />
+          <datalist id="kb-suggest">
+            {(window.kbSuggestions ? window.kbSuggestions('', 40) : []).map((s, i) => (
+              <option key={i} value={s.value} />
+            ))}
+          </datalist>
           <div className="search-actions">
             <span className="search-hint">
               <Kbd>Enter</Kbd> 提问 · <Kbd>↑↓</Kbd> 切例
@@ -2815,6 +2943,8 @@ function ParamStrip({ params, setParams, displayStyle }) {
               ref={addInputRef}
               className="kw-inline-input"
               placeholder="关键词 / keyword"
+              list="kb-suggest-kw"
+              autoComplete="off"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   const v = e.target.value.trim();
@@ -2834,6 +2964,11 @@ function ParamStrip({ params, setParams, displayStyle }) {
               <Icon name="filter" size={12} /> 添加
             </button>
           )}
+          <datalist id="kb-suggest-kw">
+            {(window.kbSuggestions ? window.kbSuggestions('', 40) : []).map((s, i) => (
+              <option key={i} value={s.value} />
+            ))}
+          </datalist>
         </div>
       )}
     </div>
@@ -2937,7 +3072,8 @@ function LooseNotice({ banner, isSentence, onRetry }) {
 }
 
 // --- No results
-function EmptyState({ onBack }) {
+function EmptyState({ onBack, onBroaden, didYouMean, onPickSuggestion }) {
+  const suggestions = didYouMean || [];
   return (
     <div className="empty-state">
       <div className="empty-illus">
@@ -2950,14 +3086,33 @@ function EmptyState({ onBack }) {
         </svg>
       </div>
       <div className="empty-title">知识库中暂无匹配内容</div>
-      <div className="empty-sub">系统不会编造答案。建议调整筛选条件，或联系负责工程师补充知识。</div>
-      <button className="btn btn-ghost" onClick={onBack}>← 返回检索</button>
+      <div className="empty-sub">系统不会编造答案。建议放宽检索，或调整筛选条件后重试。</div>
+
+      {suggestions.length > 0 && (
+        <div style={{ margin: '14px 0 4px', display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', alignItems: 'center' }}>
+          <span style={{ fontSize: '12.5px', color: 'var(--muted)' }}>您是否想找 · Did you mean:</span>
+          {suggestions.map((s) => (
+            <button key={s} className="btn btn-sm" onClick={() => onPickSuggestion && onPickSuggestion(s)}>
+              <span className="mono">{s}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div style={{ display: 'flex', gap: 8, marginTop: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+        {onBroaden && (
+          <button className="btn btn-primary btn-sm" onClick={onBroaden}>
+            <Icon name="sparkle" size={12} /> 放宽检索 · Broaden search
+          </button>
+        )}
+        <button className="btn btn-ghost btn-sm" onClick={onBack}>← 返回检索</button>
+      </div>
     </div>
   );
 }
 
 // --- Detail drawer
-function Detail({ doc, keywords, onClose }) {
+function Detail({ doc, keywords, onClose, searchParams, searchStatus }) {
   rsEff(() => {
     const h = (e) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", h);
@@ -2965,6 +3120,12 @@ function Detail({ doc, keywords, onClose }) {
   }, [onClose]);
 
   const [copied, setCopied] = rsUse(false);
+  const [feedback, setFeedback] = rsUse(null); // 'up' | 'down' | null
+  const sendFeedback = (helpful) => {
+    const kind = helpful ? 'up' : 'down';
+    setFeedback(kind);
+    if (window.kbSendFeedback) window.kbSendFeedback(doc.id, helpful, searchParams, searchStatus);
+  };
   const copySourceFile = () => {
     const filename = doc.source?.file;
     if (!filename || filename === '—') return;
@@ -3052,6 +3213,26 @@ function Detail({ doc, keywords, onClose }) {
             </div>
           </section>
           )}
+
+          {/* Relevance feedback — observational only, never alters results. */}
+          <section className="drawer-section" style={{ display: 'flex', alignItems: 'center', gap: 10, borderTop: '1px solid var(--border)', paddingTop: 12 }}>
+            <span style={{ fontSize: '12.5px', color: 'var(--ink-2)' }}>这条结果有帮助吗？ · Was this helpful?</span>
+            <button
+              className="src-btn"
+              onClick={() => sendFeedback(true)}
+              disabled={feedback !== null}
+              style={feedback === 'up' ? { borderColor: 'var(--strict)', color: 'var(--strict)' } : {}}
+              aria-label="helpful"
+            >👍</button>
+            <button
+              className="src-btn"
+              onClick={() => sendFeedback(false)}
+              disabled={feedback !== null}
+              style={feedback === 'down' ? { borderColor: 'var(--danger)', color: 'var(--danger)' } : {}}
+              aria-label="not helpful"
+            >👎</button>
+            {feedback && <span style={{ fontSize: '11.5px', color: 'var(--muted)' }}>已记录 · Thanks</span>}
+          </section>
         </div>
       </aside>
     </div>
@@ -4512,6 +4693,12 @@ function ResultsPage({ taxonomy, stats, params, setParams, mode, setMode, paramD
                           onClick={() => setMode("loose")}>
                     <span className="mode-dot mode-dot-loose" /> 宽松 Loose
                   </button>
+                  {hits.length > 0 && (
+                    <button className="mode-btn" title="导出当前结果为 CSV · Export results to CSV"
+                            onClick={() => window.kbExportCsv && window.kbExportCsv(hits)}>
+                      <Icon name="arrow-down" size={12} /> 导出 CSV
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -4534,7 +4721,15 @@ function ResultsPage({ taxonomy, stats, params, setParams, mode, setMode, paramD
               )}
 
               {isEmpty ? (
-                <EmptyState onBack={onBack || (() => setMode("strict"))} />
+                <EmptyState
+                  onBack={onBack || (() => setMode("strict"))}
+                  onBroaden={mode === "loose" ? null : () => setMode("loose")}
+                  didYouMean={window.kbDidYouMean ? window.kbDidYouMean(params.raw || (params.keywords || []).join(' ')) : []}
+                  onPickSuggestion={(s) => {
+                    const isCode = !!((window.KB_STATS || {}).by_error_code || {})[s];
+                    setParams({ ...params, raw: s, keywords: isCode ? [] : [s], code: isCode ? s : null });
+                  }}
+                />
               ) : (
                 <div className={`result-grid ${density === "compact" ? "result-grid-compact" : ""}`}>
                   {hits.map((s) => (
@@ -4828,6 +5023,17 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
     const interval = setInterval(async () => {
       try {
         const resp = await fetch(`/api/v1/ingest/sessions/${sid}`);
+        if (resp.status === 410) {
+          // The preview session expired server-side (TTL). Stop polling and
+          // send the user back to upload rather than spinning forever.
+          clearInterval(interval);
+          stopElapsedTimer();
+          showToast('预览会话已过期，请重新上传 · Session expired — please re-upload', 'err');
+          setPhase('upload');
+          setSessionId(null);
+          setDocuments([]);
+          return;
+        }
         if (!resp.ok) return;
         const data = await resp.json();
         setProgress({ total: data.files_total, processed: data.files_processed });
@@ -4887,6 +5093,59 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
     }
   };
 
+  // ── Retry ALL failed files in one go (optionally forcing OCR) ──
+  const retryAllFailed = async (forceOcr) => {
+    if (!sessionId) return;
+    setProcessMsg('');
+    setElapsed(0);
+    setPhase('processing');
+    startElapsedTimer();
+    try {
+      const resp = await fetch(`/api/v1/ingest/sessions/${sessionId}/retry-failed`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ force_ocr: !!forceOcr }),
+      });
+      if (resp.status === 410 || resp.status === 404) {
+        showToast('预览会话已过期，请重新上传 · Session expired — please re-upload', 'err');
+        stopElapsedTimer(); setPhase('upload'); setSessionId(null); setDocuments([]);
+        return;
+      }
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.detail || `Retry failed: ${resp.status}`);
+      }
+      const data = await resp.json();
+      if (data.files) setFiles(data.files);
+      pollSession(sessionId);
+    } catch (err) {
+      showToast(err.message, 'err');
+      stopElapsedTimer();
+      setPhase('preview');
+    }
+  };
+
+  // ── Durability recovery: retry tracker writes that failed at commit time ──
+  const [recommitting, setRecommitting] = React.useState(false);
+  const recommitTracking = async () => {
+    if (!sessionId) return;
+    setRecommitting(true);
+    try {
+      const resp = await fetch(`/api/v1/ingest/sessions/${sessionId}/recommit-tracking`, { method: 'POST' });
+      if (!resp.ok) throw new Error(`Recovery failed: ${resp.status}`);
+      const data = await resp.json();
+      if (data.still_failed > 0) {
+        showToast(`仍有 ${data.still_failed} 条未记录，请稍后重试 · ${data.still_failed} still unrecorded`, 'err');
+      } else {
+        showToast(`已修复 ${data.recovered} 条文档的持久化记录 · ${data.recovered} doc(s) now durable`);
+        setCommitResult(r => r ? { ...r, tracking_failed: data.still_failed } : r);
+      }
+    } catch (err) {
+      showToast(err.message, 'err');
+    }
+    setRecommitting(false);
+  };
+
   // ── Commit ──
   const handleCommit = async () => {
     if (!sessionId) return;
@@ -4911,6 +5170,12 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
     setCommitProgress({ current: total, total, phase: 'committing' });
     try {
       const resp = await fetch(`/api/v1/ingest/sessions/${sessionId}/commit`, { method: 'POST' });
+      if (resp.status === 410 || resp.status === 404) {
+        showToast('预览会话已过期，请重新上传 · Session expired — please re-upload', 'err');
+        setPhase('upload'); setSessionId(null); setDocuments([]);
+        setLoading(false);
+        return;
+      }
       if (!resp.ok) throw new Error(`Commit failed: ${resp.status}`);
       const result = await resp.json();
       setCommitResult(result);
@@ -5068,8 +5333,11 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
               )}
             </div>
             <ul className="import-file-list">
-              {files.map((f, i) => (
-                <li key={i} className="import-file-item">
+              {files.map((f, i) => {
+                const hasChunks = f.chunks_total > 0 && f.status === 'processing';
+                const pct = hasChunks ? Math.round((f.chunks_done / f.chunks_total) * 100) : 0;
+                return (
+                <li key={i} className="import-file-item" style={hasChunks ? { flexWrap: 'wrap' } : {}}>
                   <span className="import-file-name">{f.file_name}</span>
                   {f.message && (f.status === 'processing' || f.status === 'done' || f.status === 'failed') && (
                     <span className="import-file-step">{f.message}</span>
@@ -5079,8 +5347,19 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
                       <span className="kb-spinner" style={{ width: 12, height: 12, borderWidth: 1.5, display: 'inline-block' }} />
                     ) : f.status === 'done' ? '✓' : f.status === 'skipped_duplicate' ? 'Skipped' : f.status === 'failed' ? '✗' : f.status}
                   </span>
+                  {hasChunks && (
+                    <div style={{ flexBasis: '100%', display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                      <div className="import-progress-bar" style={{ flex: 1, height: 4 }}>
+                        <div className="import-progress-fill" style={{ width: `${pct}%` }} />
+                      </div>
+                      <span style={{ fontSize: '10.5px', color: 'var(--muted)', flexShrink: 0 }} className="mono">
+                        {f.chunks_done}/{f.chunks_total}
+                      </span>
+                    </div>
+                  )}
                 </li>
-              ))}
+                );
+              })}
             </ul>
           </section>
         )}
@@ -5136,7 +5415,19 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
                 files (with retry) so nothing silently disappears in preview. */}
             {files.length > 0 && (
               <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '8px 12px', marginBottom: 12, background: 'var(--surface)' }}>
-                <div style={{ fontSize: '11.5px', color: 'var(--ink-2)', fontWeight: 600, marginBottom: 6 }}>文件 · Files</div>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
+                  <div style={{ fontSize: '11.5px', color: 'var(--ink-2)', fontWeight: 600, flex: 1 }}>文件 · Files</div>
+                  {failedFiles.length > 1 && (
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button className="btn btn-sm" onClick={() => retryAllFailed(false)}>
+                        重试全部失败 Retry all failed ({failedFiles.length})
+                      </button>
+                      <button className="btn btn-sm" onClick={() => retryAllFailed(true)} title="对所有失败文件启用 OCR 重试">
+                        用 OCR 重试全部 · Retry all w/ OCR
+                      </button>
+                    </div>
+                  )}
+                </div>
                 {doneFiles.map((f, i) => (
                   <div key={`ok-${i}`} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0', fontSize: '12.5px' }}>
                     <span className="import-file-status ok" style={{ flexShrink: 0 }}>✓</span>
@@ -5334,6 +5625,19 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
               {commitResult.skipped > 0 && (
                 <div className="import-result-label" style={{ marginTop: '8px' }}>
                   跳过 {commitResult.skipped} 条 · {commitResult.skipped} skipped
+                </div>
+              )}
+              {commitResult.tracking_failed > 0 && (
+                <div style={{ marginTop: '12px', textAlign: 'left', background: 'color-mix(in oklab, var(--loose) 10%, var(--surface))', border: '1px solid color-mix(in oklab, var(--loose) 30%, var(--border))', borderRadius: 'var(--radius)', padding: '10px 14px' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--loose)', fontWeight: 600, marginBottom: 4 }}>
+                    ⚠ {commitResult.tracking_failed} 条文档已检索但未持久化记录
+                  </div>
+                  <div style={{ fontSize: '11.5px', color: 'var(--ink-2)', marginBottom: 8 }}>
+                    These docs are searchable now but would be dropped on the next server reseed. Click to make them durable.
+                  </div>
+                  <button className="btn btn-sm btn-primary" onClick={recommitTracking} disabled={recommitting}>
+                    {recommitting ? '修复中…' : '修复持久化 · Make durable'}
+                  </button>
                 </div>
               )}
               {commitResult.errors?.length > 0 && (
@@ -5979,6 +6283,7 @@ function App() {
         <Detail
           doc={openDoc}
           keywords={page === "results" && params ? params.keywords : []}
+          searchParams={params}
           onClose={() => setOpenDoc(null)}
         />
       ) : null}

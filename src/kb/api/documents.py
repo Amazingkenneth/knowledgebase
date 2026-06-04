@@ -26,6 +26,7 @@ async def doc_stats(es: ESDep, settings: SettingsDep) -> dict[str, object]:
     by_type: dict[str, int] = {}
     by_project: dict[str, int] = {}
     by_equipment: dict[str, int] = {}
+    by_error_code: dict[str, int] = {}
     total = 0
 
     for kt in KnowledgeType:
@@ -38,6 +39,8 @@ async def doc_stats(es: ESDep, settings: SettingsDep) -> dict[str, object]:
                     "aggs": {
                         "project": {"terms": {"field": "project", "size": 50}},
                         "equipment": {"terms": {"field": "equipment", "size": 50}},
+                        # Feeds the search-box autocomplete (client filters by prefix).
+                        "error_code": {"terms": {"field": "error_codes", "size": 200}},
                     },
                 },
             )
@@ -53,6 +56,10 @@ async def doc_stats(es: ESDep, settings: SettingsDep) -> dict[str, object]:
                 by_equipment[bucket["key"]] = (
                     by_equipment.get(bucket["key"], 0) + int(bucket["doc_count"])
                 )
+            for bucket in aggs.get("error_code", {}).get("buckets", []):
+                by_error_code[bucket["key"]] = (
+                    by_error_code.get(bucket["key"], 0) + int(bucket["doc_count"])
+                )
         except Exception:
             by_type[kt.value] = 0
 
@@ -61,6 +68,7 @@ async def doc_stats(es: ESDep, settings: SettingsDep) -> dict[str, object]:
         "by_type": by_type,
         "by_project": by_project,
         "by_equipment": by_equipment,
+        "by_error_code": by_error_code,
     }
 
 
