@@ -19,10 +19,9 @@ from kb.models.ingest import (
     AcceptReject,
     CommitResponse,
     DocumentUpdate,
-    FileInfo,
-    FileStatus,
     ImportSession,
     ImportStatus,
+    RetryRequest,
     ScanRequest,
     SessionListItem,
     SessionResponse,
@@ -170,6 +169,31 @@ async def accept_reject_document(
 
     session.documents[doc_index].accepted = body.accepted
     return {"status": "updated"}
+
+
+# ── Retry a single failed file ───────────────────────────────────────────────
+
+@router.post(
+    "/sessions/{session_id}/files/{file_hash}/retry",
+    response_model=UploadResponse,
+    status_code=202,
+)
+async def retry_file(
+    request: Request,
+    session_id: str,
+    file_hash: str,
+    body: RetryRequest | None = None,
+) -> UploadResponse:
+    """Re-process one failed file in the session (optionally forcing OCR) so the
+    reviewer doesn't have to restart the whole import."""
+    pipeline = _pipeline(request)
+    try:
+        session = await pipeline.retry_file(
+            session_id, file_hash, force_ocr=body.force_ocr if body else False,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return UploadResponse(session_id=session.session_id, files=session.files)
 
 
 # ── Commit ───────────────────────────────────────────────────────────────────

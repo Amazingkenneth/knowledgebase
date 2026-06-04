@@ -4856,7 +4856,36 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
   };
   const acceptAll = () => setDocuments(docs => docs.map(d => ({ ...d, accepted: true })));
   const rejectAll = () => setDocuments(docs => docs.map(d => ({ ...d, accepted: false })));
+  // Accept only high-confidence (≥0.8) docs; same threshold as confClass('high').
+  const acceptHighConf = () => setDocuments(docs => docs.map(d => ({ ...d, accepted: d.confidence >= 0.8 })));
   const toggleExpand = (idx) => setExpanded(e => ({ ...e, [idx]: !e[idx] }));
+
+  // ── Retry one failed file in place (optionally forcing OCR) ──
+  const retryFile = async (fileHash, forceOcr) => {
+    if (!sessionId) return;
+    setProcessMsg('');
+    setElapsed(0);
+    setPhase('processing');
+    startElapsedTimer();
+    try {
+      const resp = await fetch(`/api/v1/ingest/sessions/${sessionId}/files/${fileHash}/retry`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ force_ocr: !!forceOcr }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.detail || `Retry failed: ${resp.status}`);
+      }
+      const data = await resp.json();
+      if (data.files) setFiles(data.files);
+      pollSession(sessionId);
+    } catch (err) {
+      showToast(err.message, 'err');
+      stopElapsedTimer();
+      setPhase('preview');
+    }
+  };
 
   // ── Commit ──
   const handleCommit = async () => {
@@ -4903,10 +4932,17 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
   const confClass = (c) => c >= 0.8 ? 'high' : c >= 0.5 ? 'med' : 'low';
   const acceptedCount = documents.filter(d => d.accepted).length;
   const rejectedCount = documents.length - acceptedCount;
+  const highConfCount = documents.filter(d => d.confidence >= 0.8).length;
   // Project is required by taxonomy validation; equipment is optional. Flag
   // only docs missing a project so the reviewer isn't badgered about docs
   // whose source genuinely doesn't name a piece of equipment.
   const docsWithEmptyRequired = documents.filter(d => d.accepted && !d.project);
+  // Per-file outcome for the preview summary: how many docs each file produced,
+  // plus the files that failed or were skipped so nothing silently disappears.
+  const docsByFile = documents.reduce((m, d) => { m[d.source_file] = (m[d.source_file] || 0) + 1; return m; }, {});
+  const doneFiles = files.filter(f => f.status === 'done');
+  const failedFiles = files.filter(f => f.status === 'failed');
+  const skippedFiles = files.filter(f => f.status === 'skipped_duplicate' || f.status === 'unsupported');
 
   return (
     <div className="import-page">
@@ -5035,7 +5071,7 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
               {files.map((f, i) => (
                 <li key={i} className="import-file-item">
                   <span className="import-file-name">{f.file_name}</span>
-                  {f.status === 'processing' && f.message && (
+                  {f.message && (f.status === 'processing' || f.status === 'done' || f.status === 'failed') && (
                     <span className="import-file-step">{f.message}</span>
                   )}
                   <span className={`import-file-status ${f.status === 'done' ? 'ok' : f.status === 'skipped_duplicate' ? 'skip' : f.status === 'failed' ? 'err' : ''}`}>
@@ -5084,9 +5120,53 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
               <h3 className="import-section-title">预览 · Preview ({documents.length} 条文档)</h3>
               <div className="import-bulk-actions">
                 <button className="btn btn-sm" onClick={acceptAll}>全部接受 Accept All</button>
+                <button
+                  className="btn btn-sm"
+                  onClick={acceptHighConf}
+                  disabled={highConfCount === 0}
+                  title="只勾选置信度 ≥ 80% 的文档 · Select only docs with confidence ≥ 80%"
+                >
+                  只接受高置信 Accept high-confidence ({highConfCount})
+                </button>
                 <button className="btn btn-sm" onClick={rejectAll}>全部拒绝 Reject All</button>
               </div>
             </div>
+
+            {/* Per-file outcome: doc counts for done files, plus failed/skipped
+                files (with retry) so nothing silently disappears in preview. */}
+            {files.length > 0 && (
+              <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '8px 12px', marginBottom: 12, background: 'var(--surface)' }}>
+                <div style={{ fontSize: '11.5px', color: 'var(--ink-2)', fontWeight: 600, marginBottom: 6 }}>文件 · Files</div>
+                {doneFiles.map((f, i) => (
+                  <div key={`ok-${i}`} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0', fontSize: '12.5px' }}>
+                    <span className="import-file-status ok" style={{ flexShrink: 0 }}>✓</span>
+                    <span className="import-file-name" style={{ flex: 1 }}>{f.file_name}</span>
+                    <span style={{ color: 'var(--muted)', flexShrink: 0 }}>{docsByFile[f.file_name] || 0} docs</span>
+                  </div>
+                ))}
+                {failedFiles.map((f, i) => {
+                  const ocrHint = /ocr|scan|扫描|图像|image/i.test(f.message || '');
+                  return (
+                    <div key={`fail-${i}`} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', fontSize: '12.5px', flexWrap: 'wrap' }}>
+                      <span className="import-file-status err" style={{ flexShrink: 0 }}>✗</span>
+                      <span className="import-file-name" style={{ fontWeight: 500 }}>{f.file_name}</span>
+                      <span style={{ flex: 1, color: 'var(--loose)', minWidth: 160 }}>{f.message}</span>
+                      <button className="btn btn-sm" onClick={() => retryFile(f.file_hash, false)}>重试 Retry</button>
+                      {ocrHint && (
+                        <button className="btn btn-sm" onClick={() => retryFile(f.file_hash, true)}>用 OCR 重试 Retry with OCR</button>
+                      )}
+                    </div>
+                  );
+                })}
+                {skippedFiles.map((f, i) => (
+                  <div key={`skip-${i}`} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0', fontSize: '12.5px' }}>
+                    <span className="import-file-status skip" style={{ flexShrink: 0 }}>{f.status === 'unsupported' ? '不支持' : 'Skipped'}</span>
+                    <span className="import-file-name" style={{ flex: 1 }}>{f.file_name}</span>
+                    <span style={{ color: 'var(--muted)', flexShrink: 0 }}>{f.message}</span>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {docsWithEmptyRequired.length > 0 && (
               <div style={{ padding: '10px 14px', borderRadius: 'var(--radius)', background: 'color-mix(in oklab, var(--loose) 10%, var(--surface))', border: '1px solid color-mix(in oklab, var(--loose) 30%, var(--border))', fontSize: '12.5px', color: 'var(--loose)', marginBottom: 12 }}>

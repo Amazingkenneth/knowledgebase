@@ -12,6 +12,7 @@ stubbed so we exercise pure orchestration logic:
 
 from __future__ import annotations
 
+import asyncio
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -272,3 +273,134 @@ async def test_document_index_out_of_range_is_400():
     with pytest.raises(HTTPException) as exc_info:
         await update_document(request, "s1", 5, DocumentUpdate())
     assert exc_info.value.status_code == 400
+
+
+# ── Single-file retry ─────────────────────────────────────────────────────────
+
+def _bare_pipeline() -> ip.ImportPipeline:
+    return ip.ImportPipeline(
+        es=SimpleNamespace(), settings=Settings(),
+        embedder=SimpleNamespace(), taxonomy=SimpleNamespace(),
+    )
+
+
+async def test_retry_file_reprocesses_in_place(monkeypatch, tmp_path):
+    """A failed file is re-processed without touching the already-good file's
+    docs; new docs are appended with indices continuing past the existing max."""
+    pipeline = _bare_pipeline()
+    on_disk = tmp_path / "scan.pdf"
+    on_disk.write_bytes(b"x")
+    pipeline._tracker.exists = AsyncMock(  # type: ignore[method-assign]
+        return_value={"file_path": str(on_disk)}
+    )
+
+    good = FileInfo(file_name="ok.pdf", file_hash="h-ok", file_type="pdf", status=FileStatus.DONE)
+    failed = FileInfo(
+        file_name="scan.pdf", file_hash="h-scan", file_type="pdf",
+        status=FileStatus.FAILED, message="image-only PDF",
+    )
+    existing = _staged(0, "from-ok")
+    existing.source_file = "ok.pdf"
+    session = ImportSession(
+        session_id="s", status=ImportStatus.READY,
+        files=[good, failed], documents=[existing], created_at=datetime.now(UTC),
+    )
+    pipeline._sessions["s"] = session
+
+    async def fake_process_one(sess, info, path, kt, proj, equip, start_index, force_ocr=False):
+        info.status = FileStatus.DONE
+        info.message = "Extracted 1 documents."
+        d = _staged(start_index, "recovered")
+        d.source_file = info.file_name
+        return [d]
+
+    monkeypatch.setattr(pipeline, "_process_one", fake_process_one)
+
+    returned = await pipeline.retry_file("s", "h-scan")
+    assert returned is session
+    await asyncio.gather(*pipeline._tasks)
+
+    assert failed.status == FileStatus.DONE
+    assert session.status == ImportStatus.READY
+    titles = {d.title for d in session.documents}
+    assert titles == {"from-ok", "recovered"}
+    # The good file's doc is untouched; the recovered doc continues past index 0.
+    recovered = next(d for d in session.documents if d.title == "recovered")
+    assert recovered.index == 1
+
+
+async def test_retry_file_forwards_force_ocr(monkeypatch, tmp_path):
+    pipeline = _bare_pipeline()
+    on_disk = tmp_path / "scan.pdf"
+    on_disk.write_bytes(b"x")
+    pipeline._tracker.exists = AsyncMock(return_value={"file_path": str(on_disk)})  # type: ignore[method-assign]
+    failed = FileInfo(
+        file_name="scan.pdf", file_hash="h-scan", file_type="pdf", status=FileStatus.FAILED,
+    )
+    session = ImportSession(session_id="s", status=ImportStatus.READY, files=[failed])
+    pipeline._sessions["s"] = session
+
+    seen: dict[str, bool] = {}
+
+    async def fake_process_one(sess, info, path, kt, proj, equip, start_index, force_ocr=False):
+        seen["force_ocr"] = force_ocr
+        info.status = FileStatus.DONE
+        return []
+
+    monkeypatch.setattr(pipeline, "_process_one", fake_process_one)
+    await pipeline.retry_file("s", "h-scan", force_ocr=True)
+    await asyncio.gather(*pipeline._tasks)
+    assert seen["force_ocr"] is True
+
+
+async def test_retry_file_missing_on_disk_raises(tmp_path):
+    pipeline = _bare_pipeline()
+    pipeline._tracker.exists = AsyncMock(  # type: ignore[method-assign]
+        return_value={"file_path": str(tmp_path / "gone.pdf")}
+    )
+    failed = FileInfo(
+        file_name="scan.pdf", file_hash="h", file_type="pdf", status=FileStatus.FAILED,
+    )
+    pipeline._sessions["s"] = ImportSession(session_id="s", files=[failed])
+
+    with pytest.raises(ValueError, match="no longer available"):
+        await pipeline.retry_file("s", "h")
+
+
+async def test_retry_file_unknown_file_raises():
+    pipeline = _bare_pipeline()
+    pipeline._sessions["s"] = ImportSession(session_id="s", files=[])
+    with pytest.raises(ValueError, match="File not found"):
+        await pipeline.retry_file("s", "nope")
+
+
+async def test_process_one_force_ocr_overrides_disabled_setting(monkeypatch, tmp_path):
+    """force_ocr=True must reach extract_file as ocr_enabled=True even when the
+    server config has OCR off."""
+    settings = Settings()
+    settings.ingest.ocr_enabled = False
+    pipeline = ip.ImportPipeline(
+        es=SimpleNamespace(), settings=settings,
+        embedder=SimpleNamespace(), taxonomy=SimpleNamespace(),
+    )
+    pipeline._tracker.record_failed = AsyncMock()  # type: ignore[method-assign]
+
+    captured: dict[str, object] = {}
+
+    def fake_extract(path, **kwargs):
+        captured.update(kwargs)
+        return []  # no pages → short-circuits to FAILED
+
+    monkeypatch.setattr(ip, "extract_file", fake_extract)
+
+    info = FileInfo(
+        file_name="scan.pdf", file_hash="h", file_type="pdf", status=FileStatus.PROCESSING,
+    )
+    session = ImportSession(session_id="s", files=[info])
+    docs = await pipeline._process_one(
+        session, info, tmp_path / "scan.pdf", None, None, None, 0, force_ocr=True,
+    )
+
+    assert captured["ocr_enabled"] is True
+    assert docs == []
+    assert info.status == FileStatus.FAILED

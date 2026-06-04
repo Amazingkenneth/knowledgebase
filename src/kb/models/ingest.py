@@ -138,6 +138,13 @@ class AcceptReject(BaseModel):
     accepted: bool
 
 
+class RetryRequest(BaseModel):
+    """Options for re-processing a single failed file in a session."""
+    # Force OCR on for this retry even when ingest.ocr_enabled is off — lets the
+    # reviewer recover an image-only/scanned PDF without a server config change.
+    force_ocr: bool = False
+
+
 class CommitResponse(BaseModel):
     committed: int
     skipped: int

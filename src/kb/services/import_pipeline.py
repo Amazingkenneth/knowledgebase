@@ -261,6 +261,67 @@ class ImportPipeline:
             files_to_upload, knowledge_type_hint, project_hint, equipment_hint, force,
         )
 
+    async def retry_file(
+        self,
+        session_id: str,
+        file_hash: str,
+        force_ocr: bool = False,
+    ) -> ImportSession:
+        """Re-process a single failed file within an existing session.
+
+        The uploaded bytes were persisted to disk at upload time and the path is
+        recorded in the file tracker, so we can re-run extract→segment→stage for
+        just this file without the user re-uploading the whole batch. ``force_ocr``
+        lets the reviewer retry an image-only PDF with OCR turned on.
+        """
+        session = self._sessions.get(session_id)
+        if session is None:
+            raise ValueError(f"Session not found: {session_id}")
+        info = next((f for f in session.files if f.file_hash == file_hash), None)
+        if info is None:
+            raise ValueError(f"File not found in session: {file_hash}")
+
+        rec = await self._tracker.exists(file_hash)
+        path = Path(rec["file_path"]) if rec and rec.get("file_path") else None
+        if path is None or not path.exists():
+            raise ValueError(
+                "Uploaded file is no longer available on the server — please re-upload it."
+            )
+
+        # Drop any docs previously staged from this file so a retry replaces
+        # rather than duplicates them (a failed file has none, but be defensive).
+        session.documents = [d for d in session.documents if d.source_file != info.file_name]
+        info.status = FileStatus.PROCESSING
+        info.message = "Retrying…"
+        info.skipped_chunks = []
+        session.status = ImportStatus.EXTRACTING
+        session.message = f"Retrying: {info.file_name}"
+
+        task = asyncio.create_task(self._retry_one(session, info, path, force_ocr))
+        self._tasks.add(task)
+        task.add_done_callback(lambda t: self._on_task_done(session, t))
+        return session
+
+    async def _retry_one(
+        self,
+        session: ImportSession,
+        info: FileInfo,
+        path: Path,
+        force_ocr: bool,
+    ) -> None:
+        """Background task body for ``retry_file``: process one file and merge
+        its docs back into the session, then return the session to READY."""
+        start_index = max((d.index for d in session.documents), default=-1) + 1
+        docs = await self._process_one(
+            session, info, path,
+            session.knowledge_type_hint, session.project_hint, session.equipment_hint,
+            start_index, force_ocr=force_ocr,
+        )
+        session.documents.extend(docs)
+        session.documents.sort(key=lambda d: d.index)
+        session.status = ImportStatus.READY
+        session.message = ""
+
     async def _process_files(
         self,
         session: ImportSession,
@@ -269,130 +330,160 @@ class ImportPipeline:
         project_hint: str | None,
         equipment_hint: str | None,
     ) -> None:
-        """Background processing: extract → segment → stage."""
+        """Background processing: extract → segment → stage each file in turn."""
         all_docs: list[StagedDocument] = []
         doc_index = 0
 
         for info, path in file_paths:
             if path is None:
                 continue
-
-            try:
-                # Step 1: extract text
-                info.message = "Extracting text…"
-                session.message = f"Extracting: {info.file_name}"
-                ocr_enabled = self._settings.ingest.ocr_enabled
-                pages = extract_file(
-                    path,
-                    ocr_enabled=ocr_enabled,
-                    ocr_lang=self._settings.ingest.ocr_lang,
-                    ocr_min_confidence=self._settings.ingest.ocr_min_confidence,
-                    pdf_max_pages=self._settings.ingest.pdf_max_pages,
-                    xlsx_max_cells=self._settings.ingest.xlsx_max_cells,
-                )
-                if not pages:
-                    info.status = FileStatus.FAILED
-                    info.message = "No text extracted"
-                    await self._tracker.record_failed(info.file_hash, "No text extracted")
-                    continue
-
-                # Step 2: segment into structured documents.
-                # If knowledge_type_hint is set, every chunk goes through that
-                # parser (lock). If None, each chunk is classified independently
-                # → supports mixed-type files; non-content pages are skipped.
-                chunk_chars = self._settings.ingest.segmentation_chunk_chars
-                total_chars = sum(len(text) for _, text in pages)
-                n_chunks = max(1, -(-total_chars // chunk_chars))  # ceiling div
-                info.message = f"Segmenting ({n_chunks} chunk{'s' if n_chunks != 1 else ''})…"
-                session.message = f"Segmenting: {info.file_name}"
-
-                def _on_progress(i: int, total: int, _info: FileInfo = info) -> None:
-                    _info.message = f"AI analysis: chunk {i}/{total}…"
-                    session.message = f"Segmenting {_info.file_name}: {i}/{total}"
-
-                # If no knowledge_type_hint, pass None → per-chunk routing
-                # (supports mixed-type files and skips non-content pages).
-                seg_type = knowledge_type_hint
-
-                # Filename-based hint fallback. If the user didn't supply
-                # project/equipment hints but the filename contains a token
-                # that matches a taxonomy value (e.g. "PDX-aligner-faults.pdf"
-                # → project=PDX, equipment=Aligner), use that as the hint.
-                # User can still override per-doc in the preview UI.
-                effective_project = project_hint
-                effective_equipment = equipment_hint
-                if not effective_project or not effective_equipment:
-                    fn_project, fn_equipment = _detect_taxonomy_from_filename(
-                        info.file_name, self._taxonomy,
-                    )
-                    if not effective_project and fn_project:
-                        effective_project = fn_project
-                        log.info(
-                            "Auto-detected project=%s from filename %s",
-                            fn_project, info.file_name,
-                        )
-                    if not effective_equipment and fn_equipment:
-                        effective_equipment = fn_equipment
-                        log.info(
-                            "Auto-detected equipment=%s from filename %s",
-                            fn_equipment, info.file_name,
-                        )
-
-                docs, skipped = await segment_text(
-                    self._settings, pages, seg_type, info.file_name,
-                    effective_project, effective_equipment,
-                    on_chunk_progress=_on_progress,
-                    llm=self._llm,
-                )
-
-                # Resolve project/equipment against the taxonomy. Entry values
-                # supplied by the LLM (verbatim from the source) take priority,
-                # then filename-detected hints (already folded into the doc by
-                # the segmenter), then the cross-project bucket "所有项目" so
-                # the reviewer is never blocked from committing.
-                for doc in docs:
-                    _resolve_taxonomy_fields(doc, self._taxonomy, info.file_name)
-                    doc.index = doc_index
-                    doc_index += 1
-                all_docs.extend(docs)
-                info.skipped_chunks = skipped
-
-                info.status = FileStatus.DONE
-                info.message = _build_extraction_summary(len(docs), skipped, knowledge_type_hint)
-
-            except ScannedPdfError as exc:
-                # Image-only PDF with no readable text — point the user at OCR
-                # instead of a generic failure.
-                from kb.services.ocr import ocr_available
-
-                if not self._settings.ingest.ocr_enabled:
-                    hint = "Enable OCR (KB_INGEST__OCR_ENABLED=true) and re-import."
-                elif not ocr_available():
-                    hint = (
-                        "OCR is not installed in this deployment — rebuild the image "
-                        "with --build-arg INSTALL_OCR=true, then re-import."
-                    )
-                else:
-                    hint = "OCR ran but found no readable text (low-quality scan)."
-                msg = f"{exc} {hint}"
-                info.status = FileStatus.FAILED
-                info.message = msg
-                log.warning("Scanned PDF %s: %s", info.file_name, msg)
-                await self._tracker.record_failed(info.file_hash, msg)
-            except ImportError as exc:
-                info.status = FileStatus.FAILED
-                info.message = str(exc)
-                log.error("Missing dependency for %s: %s", info.file_name, exc)
-                await self._tracker.record_failed(info.file_hash, str(exc))
-            except Exception as exc:
-                info.status = FileStatus.FAILED
-                info.message = f"Processing failed: {exc}"
-                log.error("Failed to process %s: %s", info.file_name, exc, exc_info=True)
-                await self._tracker.record_failed(info.file_hash, str(exc))
+            docs = await self._process_one(
+                session, info, path,
+                knowledge_type_hint, project_hint, equipment_hint,
+                doc_index,
+            )
+            all_docs.extend(docs)
+            doc_index += len(docs)
 
         session.documents = all_docs
         session.status = ImportStatus.READY
         session.message = ""
+
+    async def _process_one(
+        self,
+        session: ImportSession,
+        info: FileInfo,
+        path: Path,
+        knowledge_type_hint: KnowledgeType | None,
+        project_hint: str | None,
+        equipment_hint: str | None,
+        start_index: int,
+        force_ocr: bool = False,
+    ) -> list[StagedDocument]:
+        """Extract → segment → stage a single file.
+
+        Updates ``info.status``/``info.message`` and records tracker failures in
+        place. Staged docs are assigned ``doc.index`` sequentially from
+        ``start_index``. Returns the staged documents ([] when the file failed or
+        yielded nothing). ``force_ocr`` turns OCR on even when
+        ``ingest.ocr_enabled`` is off — used by the single-file retry path.
+        """
+        ocr_enabled = force_ocr or self._settings.ingest.ocr_enabled
+        try:
+            # Step 1: extract text
+            info.message = "Extracting text…"
+            session.message = f"Extracting: {info.file_name}"
+            pages = extract_file(
+                path,
+                ocr_enabled=ocr_enabled,
+                ocr_lang=self._settings.ingest.ocr_lang,
+                ocr_min_confidence=self._settings.ingest.ocr_min_confidence,
+                pdf_max_pages=self._settings.ingest.pdf_max_pages,
+                xlsx_max_cells=self._settings.ingest.xlsx_max_cells,
+            )
+            if not pages:
+                info.status = FileStatus.FAILED
+                info.message = "No text extracted"
+                await self._tracker.record_failed(info.file_hash, "No text extracted")
+                return []
+
+            # Step 2: segment into structured documents.
+            # If knowledge_type_hint is set, every chunk goes through that
+            # parser (lock). If None, each chunk is classified independently
+            # → supports mixed-type files; non-content pages are skipped.
+            chunk_chars = self._settings.ingest.segmentation_chunk_chars
+            total_chars = sum(len(text) for _, text in pages)
+            n_chunks = max(1, -(-total_chars // chunk_chars))  # ceiling div
+            info.message = f"Segmenting ({n_chunks} chunk{'s' if n_chunks != 1 else ''})…"
+            session.message = f"Segmenting: {info.file_name}"
+
+            def _on_progress(i: int, total: int, _info: FileInfo = info) -> None:
+                _info.message = f"AI analysis: chunk {i}/{total}…"
+                session.message = f"Segmenting {_info.file_name}: {i}/{total}"
+
+            # If no knowledge_type_hint, pass None → per-chunk routing
+            # (supports mixed-type files and skips non-content pages).
+            seg_type = knowledge_type_hint
+
+            # Filename-based hint fallback. If the user didn't supply
+            # project/equipment hints but the filename contains a token
+            # that matches a taxonomy value (e.g. "PDX-aligner-faults.pdf"
+            # → project=PDX, equipment=Aligner), use that as the hint.
+            # User can still override per-doc in the preview UI.
+            effective_project = project_hint
+            effective_equipment = equipment_hint
+            if not effective_project or not effective_equipment:
+                fn_project, fn_equipment = _detect_taxonomy_from_filename(
+                    info.file_name, self._taxonomy,
+                )
+                if not effective_project and fn_project:
+                    effective_project = fn_project
+                    log.info(
+                        "Auto-detected project=%s from filename %s",
+                        fn_project, info.file_name,
+                    )
+                if not effective_equipment and fn_equipment:
+                    effective_equipment = fn_equipment
+                    log.info(
+                        "Auto-detected equipment=%s from filename %s",
+                        fn_equipment, info.file_name,
+                    )
+
+            docs, skipped = await segment_text(
+                self._settings, pages, seg_type, info.file_name,
+                effective_project, effective_equipment,
+                on_chunk_progress=_on_progress,
+                llm=self._llm,
+            )
+
+            # Resolve project/equipment against the taxonomy. Entry values
+            # supplied by the LLM (verbatim from the source) take priority,
+            # then filename-detected hints (already folded into the doc by
+            # the segmenter), then the cross-project bucket "所有项目" so
+            # the reviewer is never blocked from committing.
+            idx = start_index
+            for doc in docs:
+                _resolve_taxonomy_fields(doc, self._taxonomy, info.file_name)
+                doc.index = idx
+                idx += 1
+            info.skipped_chunks = skipped
+
+            info.status = FileStatus.DONE
+            info.message = _build_extraction_summary(len(docs), skipped, knowledge_type_hint)
+            return docs
+
+        except ScannedPdfError as exc:
+            # Image-only PDF with no readable text — point the user at OCR
+            # instead of a generic failure.
+            from kb.services.ocr import ocr_available
+
+            if not ocr_enabled:
+                hint = "Enable OCR (KB_INGEST__OCR_ENABLED=true) and re-import."
+            elif not ocr_available():
+                hint = (
+                    "OCR is not installed in this deployment — rebuild the image "
+                    "with --build-arg INSTALL_OCR=true, then re-import."
+                )
+            else:
+                hint = "OCR ran but found no readable text (low-quality scan)."
+            msg = f"{exc} {hint}"
+            info.status = FileStatus.FAILED
+            info.message = msg
+            log.warning("Scanned PDF %s: %s", info.file_name, msg)
+            await self._tracker.record_failed(info.file_hash, msg)
+            return []
+        except ImportError as exc:
+            info.status = FileStatus.FAILED
+            info.message = str(exc)
+            log.error("Missing dependency for %s: %s", info.file_name, exc)
+            await self._tracker.record_failed(info.file_hash, str(exc))
+            return []
+        except Exception as exc:
+            info.status = FileStatus.FAILED
+            info.message = f"Processing failed: {exc}"
+            log.error("Failed to process %s: %s", info.file_name, exc, exc_info=True)
+            await self._tracker.record_failed(info.file_hash, str(exc))
+            return []
 
     async def commit_session(
         self,
