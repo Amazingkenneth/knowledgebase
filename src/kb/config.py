@@ -45,6 +45,10 @@ class SearchConfig(BaseModel):
     # Weight of the vector (cosine) score in the BM25+vector ranking blend.
     # Final score = (1 - vector_weight) * BM25 + vector_weight * (cosine_sim + 1)
     vector_weight: float = Field(default=0.5, ge=0.0, le=1.0)
+    # Deepest page reachable via from_+size. Mirrors ES `index.max_result_window`
+    # (default 10000). A request past this is rejected at the model with a clear
+    # 400 instead of failing inside Elasticsearch with an opaque 502.
+    max_result_window: int = Field(default=10000, ge=10, le=100000)
 
 
 class TaxonomyConfig(BaseModel):

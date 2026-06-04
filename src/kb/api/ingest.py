@@ -19,6 +19,9 @@ from kb.models.ingest import (
     AcceptReject,
     CommitResponse,
     DocumentUpdate,
+    FileInfo,
+    FileStatus,
+    ImportSession,
     ImportStatus,
     ScanRequest,
     SessionListItem,
@@ -36,6 +39,23 @@ router = APIRouter(prefix="/api/v1/ingest", tags=["ingest"])
 def _pipeline(request: Request) -> ImportPipeline:
     pipeline: ImportPipeline = request.app.state.import_pipeline
     return pipeline
+
+
+def _require_session(pipeline: ImportPipeline, session_id: str) -> ImportSession:
+    """Return the live session or raise 410 (expired) / 404 (never existed).
+
+    Distinguishing the two lets the frontend prompt a re-import on an expired
+    preview instead of showing a dead-end "not found".
+    """
+    session = pipeline.get_session(session_id)
+    if session is not None:
+        return session
+    if pipeline.session_state(session_id) == "expired":
+        raise HTTPException(
+            status_code=410,
+            detail="Import session expired — please re-upload the file(s).",
+        )
+    raise HTTPException(status_code=404, detail="Session not found")
 
 
 # ── Upload ───────────────────────────────────────────────────────────────────

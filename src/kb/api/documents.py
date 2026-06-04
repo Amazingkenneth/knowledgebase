@@ -41,7 +41,7 @@ async def doc_stats(es: ESDep, settings: SettingsDep) -> dict[str, object]:
                     },
                 },
             )
-            count = int(agg_resp["hits"]["total"]["value"])
+            count = int(agg_resp.get("hits", {}).get("total", {}).get("value", 0))
             by_type[kt.value] = count
             total += count
             aggs = agg_resp.get("aggregations", {})

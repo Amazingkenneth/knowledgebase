@@ -3,9 +3,14 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from kb.models.taxonomy import KnowledgeType
+
+# Hard ES `index.max_result_window` default. Deep pagination past this fails
+# inside Elasticsearch with an opaque error; we reject it at the model instead.
+# Kept as a literal here so the request model stays free of settings coupling.
+_MAX_RESULT_WINDOW = 10000
 
 # Bounded scalar aliases so a single oversized term can't bloat an ES query or
 # LLM context. Caps are generous for real queries but reject abuse.
@@ -51,6 +56,16 @@ class SearchRequest(BaseModel):
     size: int = Field(default=10, ge=1, le=50)
     from_: int = Field(default=0, ge=0)
 
+    @model_validator(mode="after")
+    def _check_result_window(self) -> SearchRequest:
+        if self.from_ + self.size > _MAX_RESULT_WINDOW:
+            raise ValueError(
+                f"from_ + size ({self.from_ + self.size}) exceeds the "
+                f"{_MAX_RESULT_WINDOW}-result window; narrow your query instead "
+                "of paging this deep."
+            )
+        return self
+
 
 class DocHit(BaseModel):
     id: str
@@ -90,5 +105,10 @@ class SearchResponse(BaseModel):
     # Populated only when status == TOO_MANY — facet counts to help the caller
     # decide what to ask the user to narrow on.
     facets: dict[str, dict[str, int]] = Field(default_factory=dict)
+    # Per-facet count of documents whose value fell outside the top buckets in
+    # `facets` (ES terms-agg `sum_other_doc_count`). A non-zero entry tells the
+    # caller "this facet has more values than shown" so it doesn't present the
+    # truncated bucket list as exhaustive.
+    facets_truncated: dict[str, int] = Field(default_factory=dict)
     # Human-readable banner the caller MUST render verbatim (for LOOSE/VECTOR_ONLY/NO_HIT).
     banner: str | None = None

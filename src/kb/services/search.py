@@ -125,6 +125,18 @@ def _rescore_clause(query_vec: list[float], window: int, vector_weight: float) -
     }
 
 
+def _total(resp: dict[str, Any]) -> int:
+    """Read hits.total.value defensively.
+
+    A malformed/unexpected ES response (missing keys) should degrade to "no
+    hits" rather than raising a KeyError that surfaces as an opaque 500.
+    """
+    try:
+        return int(resp["hits"]["total"]["value"])
+    except (KeyError, TypeError, ValueError):
+        return 0
+
+
 def _hit_to_doc(h: dict[str, Any]) -> DocHit:
     src = h["_source"]
     return DocHit(
@@ -226,7 +238,7 @@ class SearchService:
 
         with metrics.measure_upstream("es"):
             resp = await self._es.search(index=index, body=body)
-        total = int(resp["hits"]["total"]["value"])
+        total = _total(resp)
         raw_hits = resp["hits"]["hits"]
 
         if total == 0:
@@ -239,13 +251,14 @@ class SearchService:
             )
 
         if total > cfg.strict_max_hits:
-            facets = await self._facet_counts(req)
+            facets, truncated = await self._facet_counts(req)
             return SearchResponse(
                 status=SearchStatus.TOO_MANY,
                 total=total,
                 hits=[],
                 effective_params=_effective(req),
                 facets=facets,
+                facets_truncated=truncated,
             )
 
         return SearchResponse(
@@ -279,7 +292,7 @@ class SearchService:
 
         with metrics.measure_upstream("es"):
             resp = await self._es.search(index=index, body=body)
-        total = int(resp["hits"]["total"]["value"])
+        total = _total(resp)
         if total == 0:
             return SearchResponse(
                 status=SearchStatus.NO_HIT,
@@ -329,7 +342,7 @@ class SearchService:
         }
         with metrics.measure_upstream("es"):
             resp = await self._es.search(index=index, body=body)
-        total = int(resp["hits"]["total"]["value"])
+        total = _total(resp)
         if total == 0:
             return SearchResponse(
                 status=SearchStatus.NO_HIT,
@@ -348,10 +361,17 @@ class SearchService:
 
     # ---------- facets ----------
 
-    async def _facet_counts(self, req: SearchRequest) -> dict[str, dict[str, int]]:
+    async def _facet_counts(
+        self, req: SearchRequest
+    ) -> tuple[dict[str, dict[str, int]], dict[str, int]]:
         """Aggregation of project/equipment/error_codes for the strict-filtered
         result set. Used in TOO_MANY responses so the caller can ask the user
         which facet to narrow on.
+
+        Returns ``(counts, truncated)`` where ``truncated[facet]`` is the
+        ES ``sum_other_doc_count`` — the number of docs whose value fell outside
+        the top buckets returned. A non-zero entry means the bucket list is not
+        exhaustive.
         """
         cfg = self._settings.search
         index = _index_for(req, self._settings.es.index_prefix)
@@ -367,7 +387,12 @@ class SearchService:
         with metrics.measure_upstream("es"):
             resp = await self._es.search(index=index, body=body)
         out: dict[str, dict[str, int]] = {}
+        truncated: dict[str, int] = {}
         for key in ("project", "equipment", "error_codes"):
-            buckets = resp.get("aggregations", {}).get(key, {}).get("buckets", [])
+            agg = resp.get("aggregations", {}).get(key, {})
+            buckets = agg.get("buckets", [])
             out[key] = {b["key"]: int(b["doc_count"]) for b in buckets}
-        return out
+            other = int(agg.get("sum_other_doc_count", 0) or 0)
+            if other:
+                truncated[key] = other
+        return out, truncated
