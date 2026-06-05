@@ -1423,6 +1423,11 @@ subsystem. For the metrics and health probes referenced here, see
 <td>Enable OCR (<code>KB_INGEST__OCR_ENABLED=true</code> + the <code>ocr</code> extra / <code>INSTALL_OCR=true</code> image), or retry that file with <code>force_ocr</code>: <code>POST …/files/{hash}/retry {"force_ocr":true}</code></td>
 </tr>
 <tr>
+<td>File finishes but the UI shows <strong>"No documents extracted"</strong> (0 staged docs)</td>
+<td>Text extracted fine, but segmentation returned nothing — usually an over-budget chunk truncated by the LLM, or all entries sat in a skipped chunk</td>
+<td>Fixed in <code>chunk_pages</code> (overlap is now budget-bounded, every chunk ≤ <code>segmentation_chunk_chars</code>) and <code>_split_oversized_page</code> (preamble before the first heading is kept). Check the file's <code>skipped_chunks</code> for <code>no_entries</code>/<code>parse_failed</code>; lower <code>KB_INGEST__SEGMENTATION_CHUNK_CHARS</code> or set a knowledge-type hint and re-upload</td>
+</tr>
+<tr>
 <td>File <code>status: skipped_duplicate</code></td>
 <td>Its SHA-256 hash was already committed</td>
 <td>Intended dedup; re-import with <code>force=true</code> on upload/scan if you really mean to</td>

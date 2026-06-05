@@ -1422,6 +1422,11 @@
 <td>启用 OCR（<code>KB_INGEST__OCR_ENABLED=true</code> + <code>ocr</code> extra / <code>INSTALL_OCR=true</code> 镜像），或用 <code>force_ocr</code> 重试该文件：<code>POST …/files/{hash}/retry {"force_ocr":true}</code></td>
 </tr>
 <tr>
+<td>文件处理完成但界面显示 <strong>"未提取到文档 / No documents extracted"</strong>（0 条暂存文档）</td>
+<td>文本抽取正常，但切分未返回任何条目——通常是超预算的块被 LLM 截断，或全部条目落入被跳过的块</td>
+<td>已在 <code>chunk_pages</code>（重叠现为预算受限，每块 ≤ <code>segmentation_chunk_chars</code>）与 <code>_split_oversized_page</code>（保留首个标题前的前导文本）中修复。查看该文件的 <code>skipped_chunks</code> 是否为 <code>no_entries</code>/<code>parse_failed</code>；调小 <code>KB_INGEST__SEGMENTATION_CHUNK_CHARS</code> 或设定知识类型提示后重新上传</td>
+</tr>
+<tr>
 <td>文件 <code>status: skipped_duplicate</code></td>
 <td>其 SHA-256 哈希已提交过</td>
 <td>刻意的去重；若确实要重导，上传/扫描时带 <code>force=true</code></td>

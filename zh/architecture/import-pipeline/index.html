@@ -1759,7 +1759,7 @@
 <p>健壮性管道按外→内分层：<strong>结构化切块 → JSON 抢救（最长前缀 + 对象扫描）→ 修复重试 → 二分恢复 → 条目校验 → 跨块去重。</strong> 各层详见下文。</p>
 </blockquote>
 <h3 id="_3">切块<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
-<p><code>chunk_pages()</code> 将页打包为受 <code>segmentation_chunk_chars</code> 约束的块，相邻块保留 <code>_OVERLAP_PAGES = 1</code> 页重叠，确保跨块边界的条目仍能被完整看到。</p>
+<p><code>chunk_pages()</code> 将页打包为受 <code>segmentation_chunk_chars</code> 约束的块，相邻块保留 <code>_OVERLAP_PAGES = 1</code> 页重叠，确保跨块边界的条目仍能被完整看到。该重叠是<strong>预算感知的</strong>：只有当上一页与下一页合计仍不超过预算（<code>len(overlap) + len(page) &lt;= max_chars</code>）时，才把上一页带入下一块；否则下一块从空开始。这样可<strong>保证每个块都不超过 <code>max_chars</code></strong>——此前无条件把接近占满的整页作为重叠再加进去，会与下一页合成超预算的块（例如 12k 预算下出现 16k 的块），LLM 可能在 JSON 中途被截断，从而悄悄丢掉该页全部条目（"未提取到文档 / No documents extracted"）。</p>
 <p>打包前，<code>_split_oversized_page()</code> 会对任何单页超过 <code>max_chars</code> 的页进行<strong>结构化细分</strong>，优先级如下：</p>
 <ol>
 <li><strong>类标题边界</strong> — markdown 标题、中文 <code>第N章/节</code>、英文 <code>Chapter N</code>、编号小节（<code>1.2.3 …</code>）、纯大写行。</li>
@@ -1767,6 +1767,7 @@
 <li><strong>行分隔</strong>（<code>\n</code>）。</li>
 <li><strong>硬字符截断</strong>（最后手段，仅在单行长度超过 <code>max_chars</code> 时使用）。</li>
 </ol>
+<p>按标题切分时，<strong>第一个标题之前的前导文本</strong>会作为独立片段保留，而非被丢弃——否则位于首个标题行之上的条目（如出现在首个纯文本标题之前、以表格渲染的告警行）会丢失，可能导致整个文件零文档提取。</p>
 <p>细分得到的子页<strong>保留原页码</strong>，因此 <code>source_pages</code> 的可追溯性不受影响。这堵上了之前一个隐性漏洞——单个超大页（如 1 页的 DOCX、巨大的 sheet、长版 PDF 页）会越过 LLM 输入预算被悄悄送出。</p>
 <h3 id="json">JSON 健壮性<a class="headerlink" href="#json" title="Permanent link">&para;</a></h3>
 <p>LLM 的失败形式多样：输出被截断（中途撞上 <code>max_tokens</code>）、从噪声 PDF 复制了非法控制字符、加上 "Here is the JSON:" 之类的前言，或包了 markdown 围栏。<code>_parse_json_array()</code> 全部处理：</p>

@@ -1826,7 +1826,13 @@ entry validation → cross-chunk dedup.</strong> Each layer is detailed below.</
 <h3 id="chunking">Chunking<a class="headerlink" href="#chunking" title="Permanent link">&para;</a></h3>
 <p><code>chunk_pages()</code> packs pages into <code>segmentation_chunk_chars</code>-bounded chunks with
 <code>_OVERLAP_PAGES = 1</code> page of overlap so entries spanning a chunk boundary are still
-seen whole.</p>
+seen whole. The overlap is <strong>budget-aware</strong>: the previous page is carried into the
+next chunk only when it still leaves room for the incoming page
+(<code>len(overlap) + len(page) &lt;= max_chars</code>); otherwise the next chunk starts fresh.
+This guarantees <strong>every chunk stays within <code>max_chars</code></strong> — re-adding a near-full
+page as overlap used to combine with the next page into an over-budget chunk (e.g.
+16k against a 12k budget), which the LLM could truncate mid-JSON and silently drop
+every entry on the page ("No documents extracted").</p>
 <p>Before packing, <code>_split_oversized_page()</code> structurally subdivides any single page
 that exceeds <code>max_chars</code>. The split tries, in order:</p>
 <ol>
@@ -1836,6 +1842,10 @@ that exceeds <code>max_chars</code>. The split tries, in order:</p>
 <li><strong>Line breaks</strong> (<code>\n</code>).</li>
 <li><strong>Hard character cut</strong> (last resort, for a single line larger than <code>max_chars</code>).</li>
 </ol>
+<p>When splitting on headings, any <strong>preamble before the first heading</strong> is kept as
+its own segment rather than discarded — otherwise entries that sit above the first
+heading line (e.g. table-rendered alarm rows that precede the first plain-text
+heading) would vanish, which can leave a file with zero extracted documents.</p>
 <p>Sub-pages keep the <strong>original page number</strong>, so <code>source_pages</code> traceability is
 preserved. This closes the silent hole where a single oversized page (e.g. a
 one-page DOCX, a huge spreadsheet sheet, or a long-form PDF page) used to be fed to
