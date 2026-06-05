@@ -1,6 +1,6 @@
 # 可观测性
 
-应用内置结构化日志、Prometheus 指标，以及一个观察用的搜索反馈信号。在[设置](configuration.md#observability)的 `observability:` 段配置。
+应用内置结构化日志、Prometheus 指标，以及一个观察用的搜索反馈信号。在[设置](configuration.zh.md#observability)的 `observability:` 段配置。
 
 ---
 
@@ -74,4 +74,4 @@ GET /api/v1/admin/search-feedback?limit=20
 }
 ```
 
-用有用率与表现最差的查询，判断是否需要调 `title_boost`、`vector_weight` 或 `rrf_window`——见[检索与排序](architecture/search-ranking.md#the-ranking-formula)。
+用有用率与表现最差的查询，判断是否需要调 `title_boost`、`vector_weight` 或 `rrf_window`——见[检索与排序](architecture/search-ranking.zh.md#the-ranking-formula)。

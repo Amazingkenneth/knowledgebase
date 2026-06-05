@@ -296,7 +296,7 @@ Tracker 记录的生命周期状态：
 
 ## 配置项
 
-全部位于 `config/settings.yaml` 的 `ingest:` 段，或对应 `KB_INGEST__*` 环境变量——见[配置 → Ingest](../configuration.md#ingest)。
+全部位于 `config/settings.yaml` 的 `ingest:` 段，或对应 `KB_INGEST__*` 环境变量——见[配置 → Ingest](../configuration.zh.md#ingest)。
 
 ---
 

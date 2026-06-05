@@ -27,13 +27,13 @@
 | `mode` | `auto\|strict\|loose\|vector_only` | 默认 `auto` |
 | `size`、`from_` | `int` | 分页；受 `max_result_window` 约束 |
 
-返回 `SearchResponse`，含 `status`、`total`、`hits[]`、`effective_params`，可选的 `facets` + `facets_truncated`（在 `too_many` 时），以及 `banner`（在 `loose_hit` / `vector_only` 时）。见[状态契约](architecture/search-ranking.md#status-contract)。
+返回 `SearchResponse`，含 `status`、`total`、`hits[]`、`effective_params`，可选的 `facets` + `facets_truncated`（在 `too_many` 时），以及 `banner`（在 `loose_hit` / `vector_only` 时）。见[状态契约](architecture/search-ranking.zh.md#status-contract)。
 
 ---
 
 ## 对话与提取
 
-二者均需 `KB_LLM__API_KEY`（否则 **503**）。见 [AI 对话搜索](architecture/ai-chat.md)。
+二者均需 `KB_LLM__API_KEY`（否则 **503**）。见 [AI 对话搜索](architecture/ai-chat.zh.md)。
 
 ### `POST /api/v1/chat`
 
@@ -62,7 +62,7 @@ NL → 结构化参数。请求体：`{ query }`。返回 `{ project, knowledge_
 
 ## Ingest（文件导入）
 
-强制人工审核的文件 → 文档管道（`src/kb/api/ingest.py`）。需要 `KB_LLM__API_KEY`。完整设计见[文件导入管道](architecture/import-pipeline.md)。
+强制人工审核的文件 → 文档管道（`src/kb/api/ingest.py`）。需要 `KB_LLM__API_KEY`。完整设计见[文件导入管道](architecture/import-pipeline.zh.md)。
 
 | 方法与路径 | 用途 |
 |---|---|
@@ -95,7 +95,7 @@ NL → 结构化参数。请求体：`{ query }`。返回 `{ project, knowledge_
 |---|---|
 | `POST /api/v1/search/feedback` | 记录一次结果 👍/👎 → `202`。仅观察用——绝不改变结果 |
 
-请求体：`{ doc_id, helpful, query_text?, knowledge_type?, project?, equipment?, search_status? }`。见[可观测性 → 搜索反馈](observability.md#search-feedback)。
+请求体：`{ doc_id, helpful, query_text?, knowledge_type?, project?, equipment?, search_status? }`。见[可观测性 → 搜索反馈](observability.zh.md#search-feedback)。
 
 ---
 

@@ -113,7 +113,7 @@ embedding 服务不可用时，第一、二级仅用 BM25——无报错、状�
 
 ## 可调项
 
-全部位于 `config/settings.yaml` 的 `search:` 段或 `KB_SEARCH__*` 环境变量。见[配置 → Search](../configuration.md#search)。
+全部位于 `config/settings.yaml` 的 `search:` 段或 `KB_SEARCH__*` 环境变量。见[配置 → Search](../configuration.zh.md#search)。
 
 | 参数 | 默认值 | 作用 |
 |---|---|---|
@@ -123,4 +123,4 @@ embedding 服务不可用时，第一、二级仅用 BM25——无报错、状�
 | `vector_weight` | `0.5` | 最终评分中 BM25 与余弦的平衡 |
 | `max_result_window` | `10000` | 最深 `from_ + size` 页；在模型层用 400 拒绝，而非在 ES 内部失败 |
 
-要找到 `title_boost` / `vector_weight` / `rrf_window` 的合适取值，请使用[搜索反馈](../observability.md#search-feedback)接口聚合的 👍/👎 信号。
+要找到 `title_boost` / `vector_weight` / `rrf_window` 的合适取值，请使用[搜索反馈](../observability.zh.md#search-feedback)接口聚合的 👍/👎 信号。

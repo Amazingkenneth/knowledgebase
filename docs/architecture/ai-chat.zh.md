@@ -90,7 +90,7 @@ LLM 接收一个严格的 JSON Schema 提示（`_build_extract_system`），其�
 
 ## 搜索管道：排序与降级策略
 
-管道为**严格 → 宽松 → 纯向量**三级状态机，由 `SearchService._auto()` 驱动。每一级产生带类型的 `SearchStatus`，命中即短路返回。完整的排序公式与状态契约见[检索与排序](search-ranking.md)；从 `/chat` 视角的概要：
+管道为**严格 → 宽松 → 纯向量**三级状态机，由 `SearchService._auto()` 驱动。每一级产生带类型的 `SearchStatus`，命中即短路返回。完整的排序公式与状态契约见[检索与排序](search-ranking.zh.md)；从 `/chat` 视角的概要：
 
 | `SearchStatus` | 触发条件 | 是否返回文档 |
 |---|---|---|
@@ -164,7 +164,7 @@ LLM 接收一个严格的 JSON Schema 提示（`_build_extract_system`），其�
 
 ## 可调配置项
 
-均可通过 `config/settings.yaml` 或 `KB_*` 环境变量设置，完整清单见[配置](../configuration.md)。
+均可通过 `config/settings.yaml` 或 `KB_*` 环境变量设置，完整清单见[配置](../configuration.zh.md)。
 
 | 参数 | 默认值 | 作用 |
 |---|---|---|

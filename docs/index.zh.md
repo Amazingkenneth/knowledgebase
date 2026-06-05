@@ -32,7 +32,7 @@
 
 -   :material-format-list-checks: **Taxonomy 约束**
 
-    `project` 与 `equipment` 在入库时对照 [`config/taxonomy.yaml`](configuration.md#taxonomy) 校验。未知值被拒绝，而非静默入库。
+    `project` 与 `equipment` 在入库时对照 [`config/taxonomy.yaml`](configuration.zh.md#taxonomy) 校验。未知值被拒绝，而非静默入库。
 
 </div>
 
@@ -42,14 +42,14 @@
 
 | 你想… | 阅读 |
 |---|---|
-| 运行整套服务并试用 | [快速开始](getting-started.md) |
-| 了解整体架构 | [架构 → 总览](architecture/overview.md) |
-| 了解 chat/extract 接口 | [架构 → AI 对话搜索](architecture/ai-chat.md) |
-| 了解文件如何变成文档 | [架构 → 文件导入管道](architecture/import-pipeline.md) |
-| 了解检索排序与状态契约 | [架构 → 检索与排序](architecture/search-ranking.md) |
-| 调参 / 接入新的 Provider | [配置](configuration.md) |
-| 调用 HTTP API | [API 参考](api-reference.md) |
-| 接入指标与日志 | [可观测性](observability.md) |
+| 运行整套服务并试用 | [快速开始](getting-started.zh.md) |
+| 了解整体架构 | [架构 → 总览](architecture/overview.zh.md) |
+| 了解 chat/extract 接口 | [架构 → AI 对话搜索](architecture/ai-chat.zh.md) |
+| 了解文件如何变成文档 | [架构 → 文件导入管道](architecture/import-pipeline.zh.md) |
+| 了解检索排序与状态契约 | [架构 → 检索与排序](architecture/search-ranking.zh.md) |
+| 调参 / 接入新的 Provider | [配置](configuration.zh.md) |
+| 调用 HTTP API | [API 参考](api-reference.zh.md) |
+| 接入指标与日志 | [可观测性](observability.zh.md) |
 
 ---
 

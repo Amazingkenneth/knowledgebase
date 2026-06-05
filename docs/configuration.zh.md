@@ -59,7 +59,7 @@ Schema 是 `src/kb/config.py` 中的 pydantic-settings `Settings` 类——所�
 | `vector_weight` | `0.5` | 最终评分中 BM25 ↔ 余弦的平衡 |
 | `max_result_window` | `10000` | 最深 `from_ + size`；对应 ES `index.max_result_window` |
 
-各旋钮的作用见[检索与排序](architecture/search-ranking.md)。
+各旋钮的作用见[检索与排序](architecture/search-ranking.zh.md)。
 
 ### LLM（`llm`）
 

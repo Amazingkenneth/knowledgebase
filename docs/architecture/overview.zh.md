@@ -1,6 +1,6 @@
 # 架构总览
 
-本系统是一个**纯检索型**知识库。每一个可检索的字节都来自源文档；LLM 是查询解析器和讲解者，从不生成事实。本页是导览图——深入细节见 [AI 对话搜索](ai-chat.md)、[文件导入管道](import-pipeline.md) 与 [检索与排序](search-ranking.md)。
+本系统是一个**纯检索型**知识库。每一个可检索的字节都来自源文档；LLM 是查询解析器和讲解者，从不生成事实。本页是导览图——深入细节见 [AI 对话搜索](ai-chat.zh.md)、[文件导入管道](import-pipeline.zh.md) 与 [检索与排序](search-ranking.zh.md)。
 
 ---
 
@@ -32,12 +32,12 @@ flowchart LR
 
 | 请求面 | 角色 | 详情 |
 |---|---|---|
-| `POST /api/v1/search` | 结构化混合检索 | [检索与排序](search-ranking.md) |
-| `POST /api/v1/chat`、`/extract` | 对话搜索与 NL→参数 | [AI 对话搜索](ai-chat.md) |
-| `POST /api/v1/documents/*` | 直接对索引 CRUD | [API 参考](../api-reference.md#documents) |
-| `POST /api/v1/ingest/*` | 文件 → 审核 → 入库文档 | [文件导入管道](import-pipeline.md) |
-| `GET /api/v1/facets`、`/admin/*` | 实时 taxonomy + 重载 | [配置](../configuration.md#taxonomy) |
-| `POST /api/v1/search/feedback` | 结果 👍/👎（观察用） | [可观测性](../observability.md#search-feedback) |
+| `POST /api/v1/search` | 结构化混合检索 | [检索与排序](search-ranking.zh.md) |
+| `POST /api/v1/chat`、`/extract` | 对话搜索与 NL→参数 | [AI 对话搜索](ai-chat.zh.md) |
+| `POST /api/v1/documents/*` | 直接对索引 CRUD | [API 参考](../api-reference.zh.md#documents) |
+| `POST /api/v1/ingest/*` | 文件 → 审核 → 入库文档 | [文件导入管道](import-pipeline.zh.md) |
+| `GET /api/v1/facets`、`/admin/*` | 实时 taxonomy + 重载 | [配置](../configuration.zh.md#taxonomy) |
+| `POST /api/v1/search/feedback` | 结果 👍/👎（观察用） | [可观测性](../observability.zh.md#search-feedback) |
 
 ---
 
@@ -48,7 +48,7 @@ flowchart LR
 1. **召回** —— 在 `body` 文本字段上做关键词（BM25）查询，对 `title` 施加 `title^N` 加权。精确匹配的**过滤条件**（`project`、`equipment`、`error_codes`）收窄候选集，但不影响相关性。
 2. **排序** —— 对召回的 top `rrf_window` 命中，将 BM25 分数与 `body_vec` 稠密向量的余弦相似度融合重排。embedding 服务不可用时，本阶段降级为仅 BM25——无报错，状态不变。
 
-auto 管道走 **严格 → 宽松 → 纯向量**，在第一个产出命中的阶段短路返回，并为每个响应打上带类型的 [`SearchStatus`](search-ranking.md#status-contract)。该状态是一项契约：上游调用方据此分支（如在 `loose_hit` 上渲染"仅供参考"banner）。
+auto 管道走 **严格 → 宽松 → 纯向量**，在第一个产出命中的阶段短路返回，并为每个响应打上带类型的 [`SearchStatus`](search-ranking.zh.md#status-contract)。该状态是一项契约：上游调用方据此分支（如在 `loose_hit` 上渲染"仅供参考"banner）。
 
 ---
 
@@ -66,8 +66,8 @@ auto 管道走 **严格 → 宽松 → 纯向量**，在第一个产出命中的
 
 两个辅助索引支撑运维：
 
-- `kb_import_files` —— 导入追踪器（去重 + 自动恢复）。见 [文件导入管道 → 文件追踪器](import-pipeline.md#file-tracker-kb_import_files)。
-- `kb_search_feedback` —— 观察用的 👍/👎 信号。见 [可观测性 → 搜索反馈](../observability.md#search-feedback)。
+- `kb_import_files` —— 导入追踪器（去重 + 自动恢复）。见 [文件导入管道 → 文件追踪器](import-pipeline.zh.md#file-tracker-kb_import_files)。
+- `kb_search_feedback` —— 观察用的 👍/👎 信号。见 [可观测性 → 搜索反馈](../observability.zh.md#search-feedback)。
 
 ---
 
@@ -91,7 +91,7 @@ flowchart TD
 
 ## 配置与优雅降级
 
-设置分层：`config/settings.yaml` → `.env` → shell 环境变量，由 `src/kb/config.py` 的 pydantic-settings `Settings` 类校验。见[配置](../configuration.md)。
+设置分层：`config/settings.yaml` → `.env` → shell 环境变量，由 `src/kb/config.py` 的 pydantic-settings `Settings` 类校验。见[配置](../configuration.zh.md)。
 
 两个外部 AI 服务均为**可选**：
 

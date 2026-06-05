@@ -7,7 +7,7 @@
 | **只想运行**（部署 / 试用） | Docker + Docker Compose 24+ —— 见 [方式 A](#a-docker-compose)。其余不需要。 |
 | **开发 / 修改代码** | Python 3.12+、[uv](https://docs.astral.sh/uv/) 与 Docker（用于 Elasticsearch）—— 见 [方式 B](#b-python-es)。 |
 
-LLM 密钥（`KB_LLM__API_KEY`）与 embedding 密钥（`KB_EMBEDDING__API_KEY`）均为**可选**——服务在缺失时也能启动并优雅降级（仅关键词检索，AI 对话关闭）。见[配置](configuration.md)。
+LLM 密钥（`KB_LLM__API_KEY`）与 embedding 密钥（`KB_EMBEDDING__API_KEY`）均为**可选**——服务在缺失时也能启动并优雅降级（仅关键词检索，AI 对话关闭）。见[配置](configuration.zh.md)。
 
 ---
 
@@ -92,7 +92,7 @@ uv run mypy src                                # 类型检查
 
 ## 种子数据与数据加载
 
-每次启动时，服务都会**清空每个索引的全部文档并从 `config/` 下的 CSV 重新加载**。CSV 的新增、修改、删除行都会在下次重启生效。seed 之后，`restore_imports()` 会从 `kb_import_files` 追踪索引重新索引此前导入的文档——因此导入文件能在重 seed 后幸存。见[架构 → 文件导入管道](architecture/import-pipeline.md#file-tracker-kb_import_files)。
+每次启动时，服务都会**清空每个索引的全部文档并从 `config/` 下的 CSV 重新加载**。CSV 的新增、修改、删除行都会在下次重启生效。seed 之后，`restore_imports()` 会从 `kb_import_files` 追踪索引重新索引此前导入的文档——因此导入文件能在重 seed 后幸存。见[架构 → 文件导入管道](architecture/import-pipeline.zh.md#file-tracker-kb_import_files)。
 
 ---
 
