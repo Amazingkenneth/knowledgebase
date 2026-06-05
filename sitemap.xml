@@ -1,129 +1,129 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
     <url>
-        <loc>None./</loc>
+        <loc>https://amazingkenneth.github.io/knowledgebase/</loc>
         <lastmod>2026-06-05</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="None"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/"/>
     </url>
     <url>
-        <loc>Noneapi-reference/</loc>
+        <loc>https://amazingkenneth.github.io/knowledgebase/api-reference/</loc>
         <lastmod>2026-06-05</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneapi-reference/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/api-reference/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/api-reference/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/api-reference/"/>
     </url>
     <url>
-        <loc>Noneconfiguration/</loc>
+        <loc>https://amazingkenneth.github.io/knowledgebase/configuration/</loc>
         <lastmod>2026-06-05</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneconfiguration/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/configuration/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/configuration/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/configuration/"/>
     </url>
     <url>
-        <loc>Nonegetting-started/</loc>
+        <loc>https://amazingkenneth.github.io/knowledgebase/getting-started/</loc>
         <lastmod>2026-06-05</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonegetting-started/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/getting-started/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/getting-started/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/getting-started/"/>
     </url>
     <url>
-        <loc>Noneobservability/</loc>
+        <loc>https://amazingkenneth.github.io/knowledgebase/observability/</loc>
         <lastmod>2026-06-05</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneobservability/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/observability/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/observability/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/observability/"/>
     </url>
     <url>
-        <loc>Nonearchitecture/ai-chat/</loc>
+        <loc>https://amazingkenneth.github.io/knowledgebase/architecture/ai-chat/</loc>
         <lastmod>2026-06-05</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonearchitecture/ai-chat/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/architecture/ai-chat/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/architecture/ai-chat/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/architecture/ai-chat/"/>
     </url>
     <url>
-        <loc>Nonearchitecture/import-pipeline/</loc>
+        <loc>https://amazingkenneth.github.io/knowledgebase/architecture/import-pipeline/</loc>
         <lastmod>2026-06-05</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonearchitecture/import-pipeline/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/architecture/import-pipeline/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/architecture/import-pipeline/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/architecture/import-pipeline/"/>
     </url>
     <url>
-        <loc>Nonearchitecture/overview/</loc>
+        <loc>https://amazingkenneth.github.io/knowledgebase/architecture/overview/</loc>
         <lastmod>2026-06-05</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonearchitecture/overview/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/architecture/overview/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/architecture/overview/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/architecture/overview/"/>
     </url>
     <url>
-        <loc>Nonearchitecture/search-ranking/</loc>
+        <loc>https://amazingkenneth.github.io/knowledgebase/architecture/search-ranking/</loc>
         <lastmod>2026-06-05</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonearchitecture/search-ranking/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/architecture/search-ranking/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/architecture/search-ranking/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/architecture/search-ranking/"/>
     </url>
     <url>
-        <loc>Nonezh/</loc>
+        <loc>https://amazingkenneth.github.io/knowledgebase/zh/</loc>
         <lastmod>2026-06-05</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="None"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/"/>
     </url>
     <url>
-        <loc>Nonezh/api-reference/</loc>
+        <loc>https://amazingkenneth.github.io/knowledgebase/zh/api-reference/</loc>
         <lastmod>2026-06-05</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/api-reference/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneapi-reference/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/api-reference/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/api-reference/"/>
     </url>
     <url>
-        <loc>Nonezh/configuration/</loc>
+        <loc>https://amazingkenneth.github.io/knowledgebase/zh/configuration/</loc>
         <lastmod>2026-06-05</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/configuration/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneconfiguration/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/configuration/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/configuration/"/>
     </url>
     <url>
-        <loc>Nonezh/getting-started/</loc>
+        <loc>https://amazingkenneth.github.io/knowledgebase/zh/getting-started/</loc>
         <lastmod>2026-06-05</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/getting-started/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonegetting-started/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/getting-started/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/getting-started/"/>
     </url>
     <url>
-        <loc>Nonezh/observability/</loc>
+        <loc>https://amazingkenneth.github.io/knowledgebase/zh/observability/</loc>
         <lastmod>2026-06-05</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/observability/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneobservability/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/observability/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/observability/"/>
     </url>
     <url>
-        <loc>Nonezh/architecture/ai-chat/</loc>
+        <loc>https://amazingkenneth.github.io/knowledgebase/zh/architecture/ai-chat/</loc>
         <lastmod>2026-06-05</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/architecture/ai-chat/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonearchitecture/ai-chat/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/architecture/ai-chat/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/architecture/ai-chat/"/>
     </url>
     <url>
-        <loc>Nonezh/architecture/import-pipeline/</loc>
+        <loc>https://amazingkenneth.github.io/knowledgebase/zh/architecture/import-pipeline/</loc>
         <lastmod>2026-06-05</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/architecture/import-pipeline/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonearchitecture/import-pipeline/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/architecture/import-pipeline/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/architecture/import-pipeline/"/>
     </url>
     <url>
-        <loc>Nonezh/architecture/overview/</loc>
+        <loc>https://amazingkenneth.github.io/knowledgebase/zh/architecture/overview/</loc>
         <lastmod>2026-06-05</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/architecture/overview/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonearchitecture/overview/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/architecture/overview/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/architecture/overview/"/>
     </url>
     <url>
-        <loc>Nonezh/architecture/search-ranking/</loc>
+        <loc>https://amazingkenneth.github.io/knowledgebase/zh/architecture/search-ranking/</loc>
         <lastmod>2026-06-05</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/architecture/search-ranking/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonearchitecture/search-ranking/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/architecture/search-ranking/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/architecture/search-ranking/"/>
     </url>
 </urlset>
