@@ -95,6 +95,15 @@ plugins:
             Configuration: 配置
             API Reference: API 参考
             Observability: 可观测性
+            Reference: 参考手册
+            Data Model: 数据模型
+            Configuration Reference: 配置参考
+            Build from Scratch: 从零搭建
+            Operations: 运维
+            Testing & Development: 测试与开发
+            Deployment: 部署
+            Troubleshooting: 故障排查
+            Security: 安全
 
 nav:
   - Home: index.md
@@ -107,3 +116,12 @@ nav:
   - Configuration: configuration.md
   - API Reference: api-reference.md
   - Observability: observability.md
+  - Reference:
+      - Data Model: reference/data-model.md
+      - Configuration Reference: reference/configuration-reference.md
+      - Build from Scratch: reference/build-from-scratch.md
+  - Operations:
+      - Testing & Development: operations/testing.md
+      - Deployment: operations/deployment.md
+      - Troubleshooting: operations/troubleshooting.md
+      - Security: operations/security.md

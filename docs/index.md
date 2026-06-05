@@ -66,6 +66,13 @@ httpx · DashScope Embeddings API (optional).
 | Tune settings / add a provider | [Configuration](configuration.md) |
 | Call the HTTP API | [API Reference](api-reference.md) |
 | Wire up metrics & logs | [Observability](observability.md) |
+| Rebuild the system from scratch | [Reference → Build from Scratch](reference/build-from-scratch.md) |
+| Look up every field & ES mapping | [Reference → Data Model](reference/data-model.md) |
+| Look up every setting & env var | [Reference → Configuration Reference](reference/configuration-reference.md) |
+| Deploy, back up & harden | [Operations → Deployment](operations/deployment.md) |
+| Run the tests / develop | [Operations → Testing & Development](operations/testing.md) |
+| Diagnose a failure | [Operations → Troubleshooting](operations/troubleshooting.md) |
+| Understand the security posture | [Operations → Security](operations/security.md) |
 
 ---
 

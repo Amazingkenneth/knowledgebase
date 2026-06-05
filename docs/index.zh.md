@@ -50,6 +50,13 @@
 | 调参 / 接入新的 Provider | [配置](configuration.zh.md) |
 | 调用 HTTP API | [API 参考](api-reference.zh.md) |
 | 接入指标与日志 | [可观测性](observability.zh.md) |
+| 从零重建整个系统 | [参考 → 从零搭建](reference/build-from-scratch.zh.md) |
+| 查阅每个字段与 ES 映射 | [参考 → 数据模型](reference/data-model.zh.md) |
+| 查阅每项设置与环境变量 | [参考 → 配置参考](reference/configuration-reference.zh.md) |
+| 部署、备份与加固 | [运维 → 部署](operations/deployment.zh.md) |
+| 运行测试 / 开发 | [运维 → 测试与开发](operations/testing.zh.md) |
+| 诊断故障 | [运维 → 故障排查](operations/troubleshooting.zh.md) |
+| 了解安全态势 | [运维 → 安全](operations/security.zh.md) |
 
 ---
 
