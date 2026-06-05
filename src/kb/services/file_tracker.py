@@ -107,7 +107,11 @@ class FileTracker:
                 "created_at": now,
                 "updated_at": now,
             },
-            refresh="wait_for",
+            # No refresh wait: this marker only has to be durable, not instantly
+            # searchable. exists() reads it via a real-time GET-by-id (refresh
+            # independent), so blocking the synchronous upload path on an ES
+            # refresh cycle per file just adds latency the upload proxy can 408 on.
+            refresh=False,
         )
 
     @retry(

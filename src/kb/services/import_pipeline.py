@@ -460,10 +460,15 @@ class ImportPipeline:
         """
         ocr_enabled = force_ocr or self._settings.ingest.ocr_enabled
         try:
-            # Step 1: extract text
+            # Step 1: extract text. extract_file is synchronous and CPU-bound
+            # (pymupdf / python-docx / openpyxl / PaddleOCR); run it in a worker
+            # thread so a large or OCR-heavy file can't freeze the single async
+            # event loop and stall every other in-flight request (uploads, status
+            # polls, healthchecks) — which a fronting proxy reports as a 408/504.
             info.message = "Extracting text…"
             session.message = f"Extracting: {info.file_name}"
-            pages = extract_file(
+            pages = await asyncio.to_thread(
+                extract_file,
                 path,
                 ocr_enabled=ocr_enabled,
                 ocr_lang=self._settings.ingest.ocr_lang,
