@@ -1,11 +1,11 @@
-# AI 对话搜索架构说明
-
-## 概述
+# AI 对话搜索架构
 
 本系统是一个面向半导体制造设备的**纯检索型知识库**。LLM 从不作为事实来源——它仅用于解析查询意图，以及作为对话界面向用户解释原文档内容。两个接口承担各自职责：
 
 - `POST /api/v1/chat` — 完整对话搜索：解析 → 检索 → 回答
 - `POST /api/v1/extract` — 仅执行自然语言到结构化参数的独立提取
+
+实现位于 `src/kb/api/chat.py`。未配置 `KB_LLM__API_KEY` 时两个接口均返回 **HTTP 503**。
 
 ---
 
@@ -32,7 +32,7 @@
         └─ 是  ▼
                │
         [3] SearchService.search(mode="auto")
-               │  严格 → 宽松 → 纯向量 三级检索管道（见排序章节）
+               │  严格 → 宽松 → 纯向量 三级检索管道（见检索与排序）
                │  → SearchResponse {status, hits, total, facets, banner}
                │
         ▼
@@ -45,14 +45,14 @@
         │  messages = [system_prompt] + 最近历史（≤20 轮）
         │
         ▼
-ChatResponse {content, search_results, search_status, effective_params}
+ChatResponse {content, search_results, search_status, effective_params, search_error}
 ```
 
 ---
 
 ## 查询理解：参数提取
 
-LLM 接收一个严格的 JSON Schema 提示（`_build_extract_system`），其中列出了 `project` 和 `equipment` 的全部合法枚举值。LLM 必须精确匹配，否则返回 `null`——明确要求宁填 `null` 也不猜测。
+LLM 接收一个严格的 JSON Schema 提示（`_build_extract_system`），其中列出了 `project` 和 `equipment` 的全部合法枚举值。LLM 必须精确匹配，否则返回 `null`——明确要求宁填 `null` 也不猜测。返回值随后由 `_canonical_taxonomy_value` 映射为规范大小写；不在 taxonomy 中的值会被丢弃（并记日志），以免成为静默匹配不到任何内容的过滤条件。
 
 **两种提取模式**：
 
@@ -60,6 +60,7 @@ LLM 接收一个严格的 JSON Schema 提示（`_build_extract_system`），其�
 
 - *单轮对话*：直接发送原始用户消息。
 - *多轮对话*：将所有用户消息（不含助手消息）编号后拼接：
+
 ```
 多轮对话：
 1. <第一轮用户消息>
@@ -70,9 +71,9 @@ LLM 接收一个严格的 JSON Schema 提示（`_build_extract_system`），其�
 
 **增量更新模式**（提供 `last_search_params`）：客户端回传上次响应的 `effective_params`。LLM 接收当前参数加最近 8 条消息（含双方），增量修改参数——根据用户指示添加、移除或更改字段，未提及的字段保持不变。
 
-若存在历史摘要（见历史管理章节），两种模式均会将其前置于提取查询中。
+若存在历史摘要（见[历史管理](#history-management)），两种模式均会将其前置于提取查询中。
 
-提取调用超时为 8 秒，失败时静默返回 `{}`——充分性校验随即阻断搜索，LLM 改为向用户追问。
+提取调用使用较短超时（`llm.extract_timeout_s`，默认 10 秒），失败时静默返回 `{}`——充分性校验随即阻断搜索，LLM 改为向用户追问。
 
 **提取字段说明**：
 
@@ -89,45 +90,7 @@ LLM 接收一个严格的 JSON Schema 提示（`_build_extract_system`），其�
 
 ## 搜索管道：排序与降级策略
 
-管道为**严格 → 宽松 → 纯向量**三级状态机，由 `SearchService._auto()` 驱动。每一级产生带类型的 `SearchStatus`，命中即短路返回。
-
-### 第一级 — 严格检索（AND 关键词 BM25 + 向量重排）
-
-- ES `multi_match`，字段为 `title^{title_boost}` 和 `body`，operator 为 `AND`
-- 过滤子句（不影响评分）：`project`、`equipment`、`error_codes`
-- **门控**：总命中数 > `strict_max_hits`（默认 8）→ 返回 `TOO_MANY` 及分面聚合，不返回文档
-- 命中时：对 top-`rrf_window`（默认 50）候选文档做 BM25 + 余弦向量相似度融合重排
-
-### 第二级 — 宽松检索（OR 关键词 BM25 + 向量重排）
-
-- 结构与严格检索相同，但 operator 为 `OR`——任意关键词匹配即可
-- 同样执行可选的重排步骤
-- 返回 `LOOSE_HIT`；banner 文字"仅供参考"是强制契约，调用方必须展示
-
-### 第三级 — 纯向量检索（kNN）
-
-- 仅在 `query_text` 存在时执行（即最后一条原始用户消息）
-- ES `knn` 查询，字段为 `body_vec`；`k = req.size`，`num_candidates = max(k×4, 100)`
-- project/equipment/error_codes 过滤条件仍然生效
-- 返回 `VECTOR_ONLY`；低置信度 banner 为必填
-- 依赖 embedding 服务可达——不可达时静默降级至 `NO_HIT`
-
-### 评分公式
-
-当 embedding 服务可用时，第一、二级对 top-`rrf_window` 关键词召回候选执行重排：
-
-```
-final_score = (1 - vector_weight) × BM25_score
-            + vector_weight × (cosine_similarity(query_vec, body_vec) + 1)
-```
-
-- `vector_weight` 默认为 `0.5`，可通过 `KB_SEARCH__VECTOR_WEIGHT` 调整
-- `cosine_sim + 1` 将 `[-1, 1]` 映射到 `[0, 2]`，确保分数非负
-- 缺少 `body_vec` 的文档（未生成 embedding 时入库）在向量分量上得 0 分
-
-当 embedding 服务不可用时，第一、二级仅使用 BM25——无报错，状态也不降级。
-
-### 状态契约
+管道为**严格 → 宽松 → 纯向量**三级状态机，由 `SearchService._auto()` 驱动。每一级产生带类型的 `SearchStatus`，命中即短路返回。完整的排序公式与状态契约见[检索与排序](search-ranking.md)；从 `/chat` 视角的概要：
 
 | `SearchStatus` | 触发条件 | 是否返回文档 |
 |---|---|---|
@@ -146,21 +109,26 @@ final_score = (1 - vector_weight) × BM25_score
 | 条件 | 系统提示指令 |
 |---|---|
 | 参数不足，未触发搜索 | 引导用户提供项目 / 机台 / 报警码 / 故障现象 |
-| `TOO_MANY` | 告知用户约有 N 条匹配，请缩小范围（机台、报警码或更具体描述） |
-| `NO_HIT` 或结果为空 | 告知用户未找到匹配，建议换描述或补充信息 |
-| `LOOSE_HIT` | 在结果前注明"宽松匹配，仅供参考" |
-| `VECTOR_ONLY` | 在结果前注明"语义匹配，置信度较低" |
-| `STRICT_HIT` | 无附加说明 |
+| 检索后端报错（`search_error`） | 告知用户检索暂时不可用；**不得**暗示知识库为空，也不得凭空作答 |
+| `too_many` | 告知用户约有 N 条匹配，请缩小范围（机台、报警码或更具体描述） |
+| `no_hit` 或结果为空 | 告知用户未找到匹配，建议换描述或补充信息 |
+| `loose_hit` | 在结果前注明"宽松匹配，仅供参考" |
+| `vector_only` | 在结果前注明"语义匹配，置信度较低" |
+| `strict_hit` | 无附加说明 |
 
 **文档序列化**（`_format_results_for_llm`）：
 
-- 最多将 `_MAX_RESULTS_IN_CONTEXT = 2` 条文档注入上下文
-- 每条展示：标题、项目、机台、报警码（如有），以及 summary 或首个 section 的前 200 个字符
+- 最多将 `_MAX_RESULTS_IN_CONTEXT = 2` 条文档注入上下文。
+- 每条展示：标题、项目、机台、报警码（如有），以及 summary 或首个 section 的前 200 个字符。
 
 系统提示在所有状态下均强制执行三条规则：
-1. 只基于检索结果作答——不编造参数或步骤
-2. 不确定时明确说明
-3. 信息不足时追问（项目 / 机台 / 报警码 / 故障现象）
+
+1. 只基于检索结果作答——不编造参数或步骤。
+2. 不确定时明确说明。
+3. 信息不足时追问（项目 / 机台 / 报警码 / 故障现象）。
+
+!!! info "检索错误 ≠ 无结果"
+    若检索后端抛出异常（如 Elasticsearch 不可达），处理函数会置 `search_error=True`，而非当作正常的 `no_hit`。此时系统提示会告知模型检索已宕机，且响应携带 `search_error: true`，使 UI 可展示*重试*提示而非"未找到知识"。
 
 ---
 
@@ -168,19 +136,21 @@ final_score = (1 - vector_weight) × BM25_score
 
 **服务端无状态**——客户端每次请求都发送完整对话历史。服务端：
 
-1. 截取最近 `_MAX_HISTORY = 20` 条消息
-2. 对超出窗口的更早消息通过单独 LLM 调用生成摘要（见历史管理章节）
-3. 提取参数——全新提取或通过增量更新模式
-4. 每轮都完整执行搜索管道
+1. 截取最近 `_MAX_HISTORY = 20` 条消息。
+2. 对超出窗口的更早消息通过单独 LLM 调用生成摘要。
+3. 提取参数——全新提取或通过增量更新模式。
+4. 每轮都完整执行搜索管道。
 
-因此，用户可以在多轮对话中自然地细化查询——第 3 轮说"其实是 CMP 机台"，`equipment` 的提取结果会随即更新，并触发新一轮搜索，无需任何服务端会话管理。
+因此用户可以在多轮对话中自然地细化查询——第 3 轮说"其实是 CMP 机台"，`equipment` 的提取结果会随即更新并触发新一轮搜索，无需任何服务端会话管理。
 
-### 历史管理
+请求体有防御性上限：单条消息 `_MAX_MESSAGE_CHARS = 20_000`，单次对话 `_MAX_MESSAGES = 200`，使调用方无法驱动无界的内存或 LLM token 开销。
+
+### 历史管理 {#history-management}
 
 当对话超过 20 条消息时，更早的消息由专用 LLM 调用（`_summarize_older_history`）生成摘要。摘要提取关键信息（项目、机台、报警码、故障现象、已尝试方案），浓缩为 2-3 句话。该摘要会：
 
-- 前置于参数提取查询中，避免丢失早期轮次的参数
-- 以"早期对话摘要"的形式包含在对话系统提示中
+- 前置于参数提取查询中，避免丢失早期轮次的参数。
+- 以"早期对话摘要"的形式包含在对话系统提示中。
 
 摘要生成失败（超时或 LLM 错误）时，系统照常运行——仅使用最近 20 条消息。
 
@@ -188,24 +158,23 @@ final_score = (1 - vector_weight) × BM25_score
 
 客户端可发送 `last_search_params`（上次响应的 `effective_params`）以启用增量更新模式。LLM 不再从头提取全部参数，而是在现有参数基础上结合最近对话仅应用用户表达的变更。这在长对话中用户逐步细化搜索时更为稳健。
 
-**澄清追问流程**：当 LLM 判断无法给出有效答案（无结果、结果过多或参数不足）时，系统提示会指示其追问以下信息之一：项目、机台、报警码或故障现象。用户的下一条消息追加到历史后，提取步骤会从合并上下文中获取新信息。
-
-**`effective_params` 回显**：响应始终包含实际生效的搜索参数。前端可据此立即展示"正在搜索 MEM 项目、Sphere 机台，关键词：[...]"，让用户在阅读 LLM 回答前及时发现提取错误。客户端应在下次请求中将其作为 `last_search_params` 回传以启用增量更新模式。
+**`effective_params` 回显**：响应始终包含实际生效的搜索参数。前端可据此立即展示"正在搜索 MEM 项目、Aligner 机台，关键词：[...]"，让用户在阅读 LLM 回答前及时发现提取错误。客户端应在下次请求中将其作为 `last_search_params` 回传以启用增量更新模式。
 
 ---
 
 ## 可调配置项
 
-均可通过 `config/settings.yaml` 或 `KB_SEARCH__*` 环境变量设置：
+均可通过 `config/settings.yaml` 或 `KB_*` 环境变量设置，完整清单见[配置](../configuration.md)。
 
 | 参数 | 默认值 | 作用 |
 |---|---|---|
-| `search.strict_max_hits` | `8` | TOO_MANY 阈值 |
+| `search.strict_max_hits` | `8` | `too_many` 阈值 |
 | `search.title_boost` | `3.0` | BM25 中标题字段相对正文的权重 |
 | `search.rrf_window` | `50` | 参与向量重排的召回候选数 |
 | `search.vector_weight` | `0.5` | 最终评分中向量分量的权重 |
 | `llm.max_tokens` | `1200` | LLM 单次回复最大 token 数 |
-| `embedding.batch_size` | `10` | 每次 embedding API 调用的最大文档数 |
+| `llm.timeout_s` | `20` | 对话回答调用的读超时 |
+| `llm.extract_timeout_s` | `10` | `/extract` 参数调用的读超时 |
 
 ---
 
@@ -214,4 +183,4 @@ final_score = (1 - vector_weight) × BM25_score
 - **禁止幻觉**：LLM 回答必须完全基于检索文档，系统提示明确禁止生成结果中未出现的参数、步骤或说明。
 - **Taxonomy 约束**：`project` 和 `equipment` 在入库时校验；LLM 提示中列出合法枚举值，确保提取结果在已知词汇表范围内。
 - **Embedding 优雅降级**：当 embedding 服务不可用时，向量重排和 kNN 降级步骤均静默跳过，BM25 搜索正常继续。
-- **Banner 为强制契约**：`LOOSE_HIT` 和 `VECTOR_ONLY` 状态携带必须展示的 banner（`banner` 字段），调用方必须原文渲染，以向用户明示置信度降低。
+- **Banner 为强制契约**：`loose_hit` 和 `vector_only` 状态携带必须展示的 banner（`banner` 字段），调用方必须原文渲染，以向用户明示置信度降低。

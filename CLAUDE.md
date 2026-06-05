@@ -29,7 +29,30 @@ uv run --extra ingest --extra ocr pytest tests/unit  # includes OCR behaviour te
 uv run pytest tests/integration -m integration  # needs Docker
 uv run ruff check src tests            # lint
 uv run mypy src                        # type check
+uv sync --extra docs                   # install MkDocs Material + i18n plugin
+uv run mkdocs serve                    # preview the docs site (EN/中文) at :8000
+uv run mkdocs build --strict           # build docs/ → ./site; fails on broken links/anchors
 ```
+
+## Documentation
+
+Human docs are a bilingual (English / 中文) MkDocs Material site under `docs/`,
+configured by `mkdocs.yml`. Source layout uses the i18n suffix convention:
+`page.md` (English) + `page.zh.md` (中文). Cross-page heading links use explicit
+`{#anchor}` ids so they resolve identically in both languages — keep that pattern
+when adding pages. Always run `uv run mkdocs build --strict` after editing docs;
+strict mode catches broken links and the `navigation.instant` ↔ i18n
+incompatibility. The build output `./site` is git-ignored. Mermaid diagrams render
+via the `pymdownx.superfences` custom fence already wired in `mkdocs.yml`.
+
+**Auto-publish**: a local `pre-push` git hook (not GitHub Actions, to avoid CI
+cost) deploys the site to `gh-pages` whenever a push to `main` touches `docs/` or
+`mkdocs.yml`. The hooks are version-controlled in `scripts/git-hooks/` and
+activated by `./scripts/install-hooks.sh` (sets `core.hooksPath`, which is why
+that dir also replicates the repo's Git LFS passthrough hooks). The actual
+build+deploy is `scripts/deploy-docs.sh` (runs `mkdocs gh-deploy --strict`);
+run it directly to publish on demand. A failed strict build aborts the push —
+bypass once with `git push --no-verify`.
 
 ---
 

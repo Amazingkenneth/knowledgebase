@@ -8,6 +8,7 @@ A precision information-retrieval service for manufacturing knowledge. Built on 
 
 ## Table of Contents
 
+- [Documentation Site](#documentation-site)
 - [Architecture Overview](#architecture-overview)
 - [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
@@ -23,6 +24,42 @@ A precision information-retrieval service for manufacturing knowledge. Built on 
 - [File Import Pipeline](#file-import-pipeline)
 - [Development](#development)
 - [Project Structure](#project-structure)
+
+---
+
+## Documentation Site
+
+In-depth, bilingual (English / 中文) documentation lives in [`docs/`](docs/) and is
+published as an interactive [MkDocs Material](https://squidfunk.github.io/mkdocs-material/)
+site — architecture deep-dives, the search/ranking contract, the import pipeline,
+full configuration reference, API reference, and observability.
+
+```bash
+uv sync --extra docs           # install mkdocs-material + the i18n plugin
+uv run mkdocs serve            # live preview at http://127.0.0.1:8000
+uv run mkdocs build --strict   # build static site into ./site (fails on broken links)
+uv run mkdocs gh-deploy        # publish to the gh-pages branch (GitHub Pages)
+```
+
+### Auto-publish on push (no CI minutes)
+
+Instead of GitHub Actions, the site is published by a local git hook. Run the
+installer once per clone:
+
+```bash
+./scripts/install-hooks.sh      # points core.hooksPath at scripts/git-hooks/
+```
+
+After that, any `git push` to `main` that touches `docs/` or `mkdocs.yml`
+automatically builds (`--strict`) and deploys to `gh-pages` via
+[`scripts/deploy-docs.sh`](scripts/deploy-docs.sh) — no GitHub Actions, no
+billable minutes. A failed build aborts the push; bypass a single push with
+`git push --no-verify`. The installer also carries the repo's Git LFS hooks, so
+LFS keeps working. You can deploy by hand any time with `./scripts/deploy-docs.sh`.
+
+Use the language switcher in the site header to toggle English ↔ 中文. The pages
+below are a condensed quick-reference; the docs site is the canonical, deeper
+reference.
 
 ---
 

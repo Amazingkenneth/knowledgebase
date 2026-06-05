@@ -1,0 +1,56 @@
+#!/bin/sh
+#
+# pre-push: Git LFS passthrough + automatic docs publishing.
+#
+# When a push to `main` includes changes under docs/ or mkdocs.yml, build the
+# site and deploy it to gh-pages (scripts/deploy-docs.sh). This keeps the
+# published GitHub Pages site in lock-step with what lands on GitHub, with no
+# CI minutes spent.
+#
+# Bypass for a single push with:  git push --no-verify
+#
+# stdin lines (one per ref being pushed):
+#   <local_ref> SP <local_sha> SP <remote_ref> SP <remote_sha> LF
+
+# Capture stdin once — it is consumed by both git-lfs and our docs check.
+stdin="$(cat)"
+
+# --- 1. Git LFS passthrough (preserve the repo's LFS behaviour) ------------
+if command -v git-lfs >/dev/null 2>&1; then
+	printf '%s\n' "$stdin" | git lfs pre-push "$@"
+else
+	printf >&2 "\n%s\n\n" "This repository is configured for Git LFS but 'git-lfs' was not found on your path. If you no longer wish to use Git LFS, remove this hook by deleting the 'pre-push' file in the hooks directory (set by 'core.hookspath'; usually '.git/hooks')."
+	exit 2
+fi
+
+# --- 2. Docs auto-deploy ----------------------------------------------------
+DEPLOY_BRANCH="refs/heads/main"   # only publish from main
+DOCS_PATHS="docs mkdocs.yml"
+ZERO="0000000000000000000000000000000000000000"
+
+needs_deploy=0
+while read -r local_ref local_sha remote_ref remote_sha; do
+	[ -z "$local_ref" ] && continue
+	[ "$local_ref" = "$DEPLOY_BRANCH" ] || continue
+	[ "$local_sha" = "$ZERO" ] && continue   # branch deletion
+
+	if [ "$remote_sha" = "$ZERO" ]; then
+		# New branch on the remote — inspect just the tip commit.
+		changed="$(git show --name-only --pretty=format: "$local_sha" -- $DOCS_PATHS)"
+	else
+		changed="$(git diff --name-only "$remote_sha" "$local_sha" -- $DOCS_PATHS)"
+	fi
+	[ -n "$changed" ] && needs_deploy=1
+done <<EOF
+$stdin
+EOF
+
+if [ "$needs_deploy" = "1" ]; then
+	echo "[docs] doc changes detected on main — deploying to gh-pages…"
+	if ! "$(git rev-parse --show-toplevel)/scripts/deploy-docs.sh"; then
+		echo "[docs] deploy FAILED — push aborted. Fix the build or bypass with 'git push --no-verify'." >&2
+		exit 1
+	fi
+fi
+
+exit 0

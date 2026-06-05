@@ -1,0 +1,105 @@
+site_name: Knowledge Base — Manufacturing Search Engine
+site_description: >-
+  Zero-fabrication manufacturing knowledge-base API — Elasticsearch-backed
+  verbatim retrieval with hybrid BM25 + vector search and an LLM used only as a
+  query proxy.
+site_author: Knowledge Base team
+copyright: Documentation for the manufacturing knowledge-base API
+docs_dir: docs
+
+# The site has no public GitHub Pages target wired in yet; set `site_url` and
+# `repo_url` when you publish. `mkdocs gh-deploy` works without them.
+
+theme:
+  name: material
+  language: en
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/git-alt
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - def_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+plugins:
+  - search
+  - i18n:
+      docs_structure: suffix
+      reconfigure_material: true
+      reconfigure_search: true
+      languages:
+        - locale: en
+          default: true
+          name: English
+          build: true
+        - locale: zh
+          name: 中文
+          build: true
+          nav_translations:
+            Home: 首页
+            Getting Started: 快速开始
+            Architecture: 架构
+            Overview: 总览
+            AI Chat Search: AI 对话搜索
+            Import Pipeline: 文件导入管道
+            Search & Ranking: 检索与排序
+            Configuration: 配置
+            API Reference: API 参考
+            Observability: 可观测性
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Architecture:
+      - Overview: architecture/overview.md
+      - AI Chat Search: architecture/ai-chat.md
+      - Import Pipeline: architecture/import-pipeline.md
+      - Search & Ranking: architecture/search-ranking.md
+  - Configuration: configuration.md
+  - API Reference: api-reference.md
+  - Observability: observability.md
