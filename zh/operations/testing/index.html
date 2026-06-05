@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="en" class="no-js">
+<html lang="zh" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -12,35 +12,35 @@
         <meta name="author" content="Knowledge Base team">
       
       
-        <link rel="canonical" href="https://amazingkenneth.github.io/knowledgebase/architecture/search-ranking/">
+        <link rel="canonical" href="https://amazingkenneth.github.io/knowledgebase/zh/operations/testing/">
       
       
-        <link rel="prev" href="../import-pipeline/">
+        <link rel="prev" href="../../reference/build-from-scratch/">
       
       
-        <link rel="next" href="../../configuration/">
+        <link rel="next" href="../deployment/">
       
       
         
-          <link rel="alternate" href="./" hreflang="en">
+          <link rel="alternate" href="../../../operations/testing/" hreflang="en">
         
-          <link rel="alternate" href="../../zh/architecture/search-ranking/" hreflang="zh">
+          <link rel="alternate" href="./" hreflang="zh">
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>Search & Ranking - Knowledge Base — Manufacturing Search Engine</title>
+        <title>测试与开发 - Knowledge Base — Manufacturing Search Engine</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -59,7 +59,7 @@
       
     
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -84,8 +84,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#search-ranking" class="md-skip">
-          Skip to content
+        <a href="#testing" class="md-skip">
+          跳转至
         </a>
       
     </div>
@@ -97,8 +97,8 @@
       
 
 <header class="md-header" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="Knowledge Base — Manufacturing Search Engine" class="md-header__button md-logo" aria-label="Knowledge Base — Manufacturing Search Engine" data-md-component="logo">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../../" title="Knowledge Base — Manufacturing Search Engine" class="md-header__button md-logo" aria-label="Knowledge Base — Manufacturing Search Engine" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -118,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Search & Ranking
+              测试与开发
             
           </span>
         </div>
@@ -158,20 +158,20 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="Select language">
+    <button class="md-header__button md-icon" aria-label="选择当前语言">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="./" hreflang="en" class="md-select__link">
+            <a href="../../../operations/testing/" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="../../zh/architecture/search-ranking/" hreflang="zh" class="md-select__link">
+            <a href="./" hreflang="zh" class="md-select__link">
               中文
             </a>
           </li>
@@ -192,16 +192,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="Search">
+      <nav class="md-search__options" aria-label="查找">
         
-        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -214,7 +214,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            Initializing search
+            正在初始化搜索引擎
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -226,7 +226,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/Amazingkenneth/knowledgebase" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/Amazingkenneth/knowledgebase" title="前往仓库" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -247,7 +247,7 @@
         
           
             
-<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
       
@@ -257,13 +257,13 @@
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href="../../" class="md-tabs__link">
         
   
   
     
   
-  Home
+  首页
 
       </a>
     </li>
@@ -282,7 +282,7 @@
   
     
   
-  Getting Started
+  快速开始
 
       </a>
     </li>
@@ -293,17 +293,15 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../overview/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../architecture/overview/" class="md-tabs__link">
           
   
   
-  Architecture
+  架构
 
         </a>
       </li>
@@ -323,7 +321,7 @@
   
     
   
-  Configuration
+  配置
 
       </a>
     </li>
@@ -342,7 +340,7 @@
   
     
   
-  API Reference
+  API 参考
 
       </a>
     </li>
@@ -361,7 +359,7 @@
   
     
   
-  Observability
+  可观测性
 
       </a>
     </li>
@@ -380,7 +378,7 @@
           
   
   
-  Reference
+  参考手册
 
         </a>
       </li>
@@ -392,15 +390,17 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../operations/testing/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
           
   
   
-  Operations
+  运维
 
         </a>
       </li>
@@ -428,9 +428,9 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="Knowledge Base — Manufacturing Search Engine" class="md-nav__button md-logo" aria-label="Knowledge Base — Manufacturing Search Engine" data-md-component="logo">
+    <a href="../../" title="Knowledge Base — Manufacturing Search Engine" class="md-nav__button md-logo" aria-label="Knowledge Base — Manufacturing Search Engine" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -440,7 +440,7 @@
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/Amazingkenneth/knowledgebase" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/Amazingkenneth/knowledgebase" title="前往仓库" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -460,14 +460,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Home
+    首页
   
 
     
@@ -494,7 +494,7 @@
   <span class="md-ellipsis">
     
   
-    Getting Started
+    快速开始
   
 
     
@@ -511,38 +511,33 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Architecture
+    架构
   
 
     
@@ -553,12 +548,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Architecture
+    架构
   
 
           </label>
@@ -571,14 +566,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../overview/" class="md-nav__link">
+      <a href="../../architecture/overview/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Overview
+    总览
   
 
     
@@ -599,14 +594,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../ai-chat/" class="md-nav__link">
+      <a href="../../architecture/ai-chat/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    AI Chat Search
+    AI 对话搜索
   
 
     
@@ -627,14 +622,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../import-pipeline/" class="md-nav__link">
+      <a href="../../architecture/import-pipeline/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Import Pipeline
+    文件导入管道
   
 
     
@@ -652,44 +647,17 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Search & Ranking
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../architecture/search-ranking/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Search & Ranking
+    检索与排序
   
 
     
@@ -698,142 +666,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#two-stage-retrieval" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Two-stage retrieval
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-auto-state-machine" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The auto state machine
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="The auto state machine">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#stage-1-strict-and-keyword-bm25-vector-rescore" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 1 — Strict (AND-keyword BM25 + vector rescore)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stage-2-loose-or-keyword-bm25-vector-rescore" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 2 — Loose (OR-keyword BM25 + vector rescore)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stage-3-vector-only-pure-knn" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 3 — Vector-only (pure kNN)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-ranking-formula" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The ranking formula
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#status-contract" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Status contract
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#faceting-on-too_many" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Faceting on too_many
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#index-selection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Index selection
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#tunables" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tunables
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -860,7 +692,7 @@
   <span class="md-ellipsis">
     
   
-    Configuration
+    配置
   
 
     
@@ -887,7 +719,7 @@
   <span class="md-ellipsis">
     
   
-    API Reference
+    API 参考
   
 
     
@@ -914,7 +746,7 @@
   <span class="md-ellipsis">
     
   
-    Observability
+    可观测性
   
 
     
@@ -957,7 +789,7 @@
   <span class="md-ellipsis">
     
   
-    Reference
+    参考手册
   
 
     
@@ -973,7 +805,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Reference
+    参考手册
   
 
           </label>
@@ -993,7 +825,7 @@
   <span class="md-ellipsis">
     
   
-    Data Model
+    数据模型
   
 
     
@@ -1021,7 +853,7 @@
   <span class="md-ellipsis">
     
   
-    Configuration Reference
+    配置参考
   
 
     
@@ -1049,7 +881,7 @@
   <span class="md-ellipsis">
     
   
-    Build from Scratch
+    从零搭建
   
 
     
@@ -1074,33 +906,38 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
         
           
-          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
             
   
   
   <span class="md-ellipsis">
     
   
-    Operations
+    运维
   
 
     
@@ -1111,12 +948,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Operations
+    运维
   
 
           </label>
@@ -1126,17 +963,147 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../operations/testing/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试与开发
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
   <span class="md-ellipsis">
     
   
-    Testing & Development
+    测试与开发
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        测试布局
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        运行套件
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fixtures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixture 是生成的，而非提交的
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#new-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为新知识类型添加测试
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dev-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        本地开发服务器
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    部署
   
 
     
@@ -1157,14 +1124,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/deployment/" class="md-nav__link">
+      <a href="../troubleshooting/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Deployment
+    故障排查
   
 
     
@@ -1185,42 +1152,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/troubleshooting/" class="md-nav__link">
+      <a href="../security/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Troubleshooting
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../operations/security/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Security
+    安全
   
 
     
@@ -1254,7 +1193,7 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+<nav class="md-nav md-nav--secondary" aria-label="目录">
   
   
   
@@ -1263,15 +1202,15 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      Table of contents
+      目录
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#two-stage-retrieval" class="md-nav__link">
+  <a href="#layout" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Two-stage retrieval
+        测试布局
       
     </span>
   </a>
@@ -1279,60 +1218,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-auto-state-machine" class="md-nav__link">
+  <a href="#running" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The auto state machine
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="The auto state machine">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#stage-1-strict-and-keyword-bm25-vector-rescore" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 1 — Strict (AND-keyword BM25 + vector rescore)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stage-2-loose-or-keyword-bm25-vector-rescore" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 2 — Loose (OR-keyword BM25 + vector rescore)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stage-3-vector-only-pure-knn" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 3 — Vector-only (pure kNN)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-ranking-formula" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The ranking formula
+        运行套件
       
     </span>
   </a>
@@ -1340,10 +1229,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#status-contract" class="md-nav__link">
+  <a href="#fixtures" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Status contract
+        Fixture 是生成的，而非提交的
       
     </span>
   </a>
@@ -1351,10 +1240,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#faceting-on-too_many" class="md-nav__link">
+  <a href="#new-type" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Faceting on too_many
+        为新知识类型添加测试
       
     </span>
   </a>
@@ -1362,21 +1251,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#index-selection" class="md-nav__link">
+  <a href="#dev-server" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Index selection
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#tunables" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tunables
+        本地开发服务器
       
     </span>
   </a>
@@ -1403,203 +1281,92 @@
   
 
 
-<h1 id="search-ranking">Search &amp; Ranking<a class="headerlink" href="#search-ranking" title="Permanent link">&para;</a></h1>
-<p><code>POST /api/v1/search</code> is the structured retrieval core. It takes a <code>SearchRequest</code>
-with exact-match filters and keywords, runs a two-stage recall + ranking pipeline,
-and returns a <code>SearchResponse</code> tagged with a typed <code>SearchStatus</code>. The handler is
-<code>src/kb/api/search.py</code>; the engine is <code>src/kb/services/search.py</code>.</p>
+<h1 id="testing">测试与开发<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h1>
+<p>本页介绍测试套件布局、各层级的运行方式、让仓库免于二进制资产的 fixture 即时生成技巧，以及新增
+知识类型时如何扩展测试。工具链为 <code>uv</code> + <code>pytest</code> + <code>ruff</code> + <code>mypy</code>，均在 <code>pyproject.toml</code> 中声明。</p>
 <hr />
-<h2 id="two-stage-retrieval">Two-stage retrieval<a class="headerlink" href="#two-stage-retrieval" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Stage</th>
-<th>What it does</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Recall</strong></td>
-<td>Keyword query (AND for strict, OR for loose) over <code>body</code> with a <code>title^N</code> boost. Filters are exact-match on keyword fields; they never affect relevance, only inclusion.</td>
-</tr>
-<tr>
-<td><strong>Ranking</strong></td>
-<td>The top <code>rrf_window</code> recall hits are rescored by blending the BM25 score with cosine vector similarity on <code>body_vec</code>. Degrades gracefully to BM25-only when the embedder is down.</td>
-</tr>
-<tr>
-<td><strong>vector_only</strong></td>
-<td>Pure kNN (semantic-only, no keyword recall). The last fallback in the auto pipeline when keyword recall returns nothing.</td>
-</tr>
-</tbody>
-</table>
-<p>The recall query (<code>_bm25_query</code>) puts the Part-1 fields in a <code>filter</code> clause (no
-scoring impact) and the keyword <code>multi_match</code> in a <code>must</code> clause. With no keywords,
-<code>match_all</code> runs under the filter — returning every doc in scope.</p>
-<hr />
-<h2 id="the-auto-state-machine">The auto state machine<a class="headerlink" href="#the-auto-state-machine" title="Permanent link">&para;</a></h2>
-<p><code>mode="auto"</code> (used by <code>/chat</code>) walks the stages and short-circuits on the first
-success:</p>
-<pre class="mermaid"><code>flowchart TD
-    A["_auto(req)"] --&gt; S["_strict()"]
-    S --&gt;|strict_hit / too_many| RET1["return"]
-    S --&gt;|no_hit| L["_loose()"]
-    L --&gt;|loose_hit| RET2["return"]
-    L --&gt;|no_hit| Q{"query_text present?"}
-    Q --&gt;|yes| V["_vector_only()"]
-    Q --&gt;|no| NH["no_hit"]
-    V --&gt;|vector_only| RET3["return"]
-    V --&gt;|no_hit| NH</code></pre>
-<p>You can also request a single stage directly via <code>mode="strict"</code>, <code>"loose"</code>, or
-<code>"vector_only"</code>.</p>
-<h3 id="stage-1-strict-and-keyword-bm25-vector-rescore">Stage 1 — Strict (AND-keyword BM25 + vector rescore)<a class="headerlink" href="#stage-1-strict-and-keyword-bm25-vector-rescore" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>multi_match</code> across <code>title^{title_boost}</code> and <code>body</code>, operator <code>AND</code>.</li>
-<li>Filter clauses (no score impact): <code>project</code>, <code>equipment</code>, <code>error_codes</code>.</li>
-<li><strong>Gate</strong>: if total hits &gt; <code>strict_max_hits</code> (default 8) → return <code>too_many</code> with
-  facet aggregations and <strong>no documents</strong> — the caller should ask the user to
-  narrow down.</li>
-<li>On a hit (≤ <code>strict_max_hits</code>): optionally rescore the top <code>rrf_window</code> (default
-  50) candidates with BM25 + cosine.</li>
-</ul>
-<h3 id="stage-2-loose-or-keyword-bm25-vector-rescore">Stage 2 — Loose (OR-keyword BM25 + vector rescore)<a class="headerlink" href="#stage-2-loose-or-keyword-bm25-vector-rescore" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Same query structure but operator <code>OR</code> — any keyword match qualifies.</li>
-<li>Same optional rescore step.</li>
-<li>Returns <code>loose_hit</code> with the mandatory banner <em>"没有完全匹配的知识，以下为相关参考，
-  仅供参考。"</em> (no exact match; the following are related references, for reference
-  only).</li>
-</ul>
-<h3 id="stage-3-vector-only-pure-knn">Stage 3 — Vector-only (pure kNN)<a class="headerlink" href="#stage-3-vector-only-pure-knn" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Only runs if <code>query_text</code> is present (the raw last user message).</li>
-<li>ES <code>knn</code> on <code>body_vec</code>; <code>k = req.size</code>, <code>num_candidates = max(k*4, 100)</code>.</li>
-<li>Filters (project/equipment/error_codes) still apply.</li>
-<li>Returns <code>vector_only</code> with a low-confidence banner.</li>
-<li>Requires the embedding service — silently falls through to <code>no_hit</code> if it fails.</li>
-</ul>
-<hr />
-<h2 id="the-ranking-formula">The ranking formula<a class="headerlink" href="#the-ranking-formula" title="Permanent link">&para;</a></h2>
-<p>When the embedding service is available, stages 1 and 2 apply a rescore pass over
-the top <code>rrf_window</code> keyword-recall candidates (<code>_rescore_clause</code>):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>final_score = (1 - vector_weight) × BM25_score
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>            + vector_weight × (cosine_similarity(query_vec, body_vec) + 1)
+<h2 id="layout">测试布局<a class="headerlink" href="#layout" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>tests/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── unit/            # 无需基础设施 —— 纯逻辑、mock 客户端
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│   ├── conftest.py            # 即时生成 PPTX/PDF/XLSX fixture
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│   ├── test_search_queries.py # ES 查询体结构
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│   ├── test_search_banner.py  # status→banner 契约
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│   ├── test_body_builder.py   # 固定的 `body` 文本布局
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│   ├── test_document_validation.py
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│   ├── test_indexing_validation.py
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│   ├── test_extraction.py / test_extraction_limits.py
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   ├── test_segmentation_parse.py / test_segmentation_routing.py
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   ├── test_import_pipeline_logic.py / test_import_files.py
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   ├── test_import_security.py # 上传路径穿越防护
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   ├── test_embedding_client.py / test_llm_client.py
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   ├── test_taxonomy.py / test_spec.py / test_config.py / test_feedback.py
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   └── …
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>├── api/             # 通过 TestClient 测试 FastAPI 路由（无活动 ES）
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│   ├── conftest.py
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│   ├── test_routes.py / test_endpoints.py
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│   ├── test_input_bounds.py        # 请求大小/边界约束
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│   └── test_exception_handlers.py
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>└── integration/     # 需要 Docker / 活动的 Elasticsearch
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    ├── conftest.py
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    └── test_indexing_and_search.py
 </code></pre></div>
+<p>按成本分三层：</p>
 <ul>
-<li><code>vector_weight</code> defaults to <code>0.5</code>; tunable via <code>KB_SEARCH__VECTOR_WEIGHT</code>.</li>
-<li><code>cosine_sim + 1</code> maps <code>[-1, 1]</code> → <code>[0, 2]</code> to keep scores non-negative.</li>
-<li>Docs missing a <code>body_vec</code> (seeded without embeddings) score 0 on the vector
-  component — guarded in the rescore script so they don't error.</li>
+<li><strong><code>tests/unit</code></strong> —— 无需基础设施。上游客户端（ES、嵌入、LLM）被 mock，或仅在纯解析/校验逻辑上
+  运行。快速，随处可跑。</li>
+<li><strong><code>tests/api</code></strong> —— 通过 <code>TestClient</code> 驱动 FastAPI 应用；仍无活动 ES。</li>
+<li><strong><code>tests/integration</code></strong> —— 标记 <code>@pytest.mark.integration</code>；需要 Docker（带 IK 插件的真实 ES）。
+  <code>integration</code> 标记在 <code>pyproject.toml</code> 声明（<code>markers = ["integration: requires Docker / Elasticsearch"]</code>）。</li>
 </ul>
-<p>When the embedding service is down, stages 1 and 2 run with BM25 only — no error, no
-degraded status flag. The warning is logged and counted as an upstream error metric.</p>
-<div class="admonition note">
-<p class="admonition-title">Why a rescore window, not native RRF</p>
-<p>Rescoring only the top <code>rrf_window</code> recall candidates keeps the expensive vector
-pass bounded while still re-ordering the head of the result list where it
-matters. The CLAUDE.md shorthand calls this "RRF"; mechanically it is a weighted
-BM25 + cosine blend over the recall window.</p>
-</div>
 <hr />
-<h2 id="status-contract">Status contract<a class="headerlink" href="#status-contract" title="Permanent link">&para;</a></h2>
-<p>Every <code>POST /api/v1/search</code> response carries a <code>status</code> field. <strong>Do not change these
-values</strong> — upstream callers depend on them.</p>
-<table>
-<thead>
-<tr>
-<th>Status</th>
-<th>Condition</th>
-<th>Documents returned</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>strict_hit</code></td>
-<td>All filters + AND-keywords matched, within <code>strict_max_hits</code></td>
-<td>Yes</td>
-</tr>
-<tr>
-<td><code>too_many</code></td>
-<td>Strict matched more than <code>strict_max_hits</code> — caller should ask user to narrow</td>
-<td>No (facets only)</td>
-</tr>
-<tr>
-<td><code>loose_hit</code></td>
-<td>Fell back to OR-keywords — show with "for reference only" banner</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td><code>vector_only</code></td>
-<td>Only vector similarity matched — low confidence</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td><code>no_hit</code></td>
-<td>Nothing matched</td>
-<td>No</td>
-</tr>
-</tbody>
-</table>
-<p><code>loose_hit</code> and <code>vector_only</code> responses carry a non-null <code>banner</code> string that
-callers <strong>must render verbatim</strong> — it signals reduced confidence to the user.</p>
+<h2 id="running">运行套件<a class="headerlink" href="#running" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/unit<span class="w">                         </span><span class="c1"># 单元 —— 缺少 extras 时跳过 ingest 测试</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>uv<span class="w"> </span>run<span class="w"> </span>--extra<span class="w"> </span>ingest<span class="w"> </span>pytest<span class="w"> </span>tests/unit<span class="w">          </span><span class="c1"># + PPTX/PDF/XLSX 抽取测试</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>uv<span class="w"> </span>run<span class="w"> </span>--extra<span class="w"> </span>ingest<span class="w"> </span>--extra<span class="w"> </span>ocr<span class="w"> </span>pytest<span class="w"> </span>tests/unit<span class="w">  </span><span class="c1"># + OCR 行为（宿主需 libGL）</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/api<span class="w">                           </span><span class="c1"># 路由级测试</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/integration<span class="w"> </span>-m<span class="w"> </span>integration<span class="w">    </span><span class="c1"># 需要 Docker</span>
+</code></pre></div>
+<p><code>ingest</code> extra 安装 <code>pymupdf</code> / <code>openpyxl</code> / <code>python-pptx</code> / <code>python-docx</code>；<code>ocr</code> extra 追加
+<code>paddleocr</code> / <code>paddlepaddle</code>（较重，且 OCR 测试需宿主存在 <code>libGL</code> —— <code>libgl1</code>）。不带 <code>ingest</code>
+extra 时抽取测试被<strong>跳过</strong>而非失败，因此最小安装下 <code>uv run pytest tests/unit</code> 仍为绿。</p>
+<p>提交前请同时运行 lint 与类型检查：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>check<span class="w"> </span>src<span class="w"> </span>tests
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>uv<span class="w"> </span>run<span class="w"> </span>mypy<span class="w"> </span>src
+</code></pre></div>
 <hr />
-<h2 id="faceting-on-too_many">Faceting on <code>too_many</code><a class="headerlink" href="#faceting-on-too_many" title="Permanent link">&para;</a></h2>
-<p>When strict recall overflows <code>strict_max_hits</code>, <code>_facet_counts()</code> aggregates
-<code>project</code>, <code>equipment</code>, and <code>error_codes</code> over the strict-filtered set (top 20
-buckets each) so the caller can offer "narrow by…" choices. Each facet also reports
-a <code>facets_truncated[facet]</code> count (ES <code>sum_other_doc_count</code>) — a non-zero value
-means the bucket list is not exhaustive.</p>
+<h2 id="fixtures">Fixture 是生成的，而非提交的<a class="headerlink" href="#fixtures" title="Permanent link">&para;</a></h2>
+<p><code>tests/unit/conftest.py</code> 每个 pytest 会话从 <code>config/</code> 下三个种子 CSV <strong>即时构建</strong>最小但内容完整的
+PPTX/PDF/XLSX 文件，写入由 pytest 管理的临时目录（自动清理）。这是刻意为之：没有大体积二进制模板
+进入 git，生成的文件足够朴素（无图片/主题）以便低成本地走通文本抽取代码路径。CSV 读取器依次尝试
+<code>utf-8-sig</code>、<code>utf-8</code>、<code>gb18030</code> 编码 —— 与带 BOM 的中文种子文件匹配。</p>
+<p>由此带来的好处：当你修改某个种子 CSV 的列时，生成的 fixture 随之改变，抽取测试便自动与真实种子格式
+保持同步。</p>
 <hr />
-<h2 id="index-selection">Index selection<a class="headerlink" href="#index-selection" title="Permanent link">&para;</a></h2>
-<p><code>_index_for()</code> picks the index to query:</p>
-<ul>
-<li><code>knowledge_type</code> set → the single <code>kb_&lt;type&gt;_v1</code> alias.</li>
-<li><code>knowledge_type</code> omitted → a comma-joined search across <strong>all</strong> type aliases.</li>
-</ul>
-<p>This is why a chat query without a detected knowledge type still searches alarms,
-setups, and experience documents together.</p>
+<h2 id="new-type">为新知识类型添加测试<a class="headerlink" href="#new-type" title="Permanent link">&para;</a></h2>
+<p>新增知识类型时（完整步骤见
+<a href="../../reference/data-model/">数据模型 → 新增类型</a>），照搬既有模式：</p>
+<ol>
+<li><strong>模型校验</strong> —— 在 <code>test_document_validation.py</code> 为新子类添加用例（必填 vs 可选字段、taxonomy
+   约束）。</li>
+<li><strong>body 布局</strong> —— 扩展 <code>test_body_builder.py</code>：<code>body</code> 文本拼装顺序由测试<em>固定</em>，新类型的分节顺序
+   必须断言。</li>
+<li><strong>切分</strong> —— 添加路由 + 解析用例（<code>test_segmentation_routing.py</code>、<code>test_segmentation_parse.py</code>），
+   覆盖 LLM 分类器与按类型抽取器。</li>
+<li><strong>spec 一致性</strong> —— <code>test_spec.py</code> 检查每个 <code>config/knowledge_types/*.yaml</code> spec 与其模型一致；
+   在此加入新 spec。</li>
+<li><strong>种子往返</strong> —— 添加 CSV 表头文件并确认 conftest fixture 生成器能处理它。</li>
+</ol>
+<p>新测试尽量放在 <code>tests/unit</code>，除非确实需要活动 ES —— 那时标记 <code>@pytest.mark.integration</code> 并放到
+<code>tests/integration</code>。</p>
 <hr />
-<h2 id="tunables">Tunables<a class="headerlink" href="#tunables" title="Permanent link">&para;</a></h2>
-<p>All under <code>search:</code> in <code>config/settings.yaml</code> or <code>KB_SEARCH__*</code> env vars. See
-<a href="../../configuration/#search">Configuration → Search</a>.</p>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Default</th>
-<th>Effect</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>strict_max_hits</code></td>
-<td><code>8</code></td>
-<td><code>too_many</code> threshold</td>
-</tr>
-<tr>
-<td><code>title_boost</code></td>
-<td><code>3.0</code></td>
-<td>Title field weight vs body in BM25</td>
-</tr>
-<tr>
-<td><code>rrf_window</code></td>
-<td><code>50</code></td>
-<td>How many recall hits are rescored by vector</td>
-</tr>
-<tr>
-<td><code>vector_weight</code></td>
-<td><code>0.5</code></td>
-<td>Balance between BM25 and cosine in final score</td>
-</tr>
-<tr>
-<td><code>max_result_window</code></td>
-<td><code>10000</code></td>
-<td>Deepest <code>from_ + size</code> page; rejected at the model with a 400 instead of failing inside ES</td>
-</tr>
-</tbody>
-</table>
-<p>To find good values for <code>title_boost</code> / <code>vector_weight</code> / <code>rrf_window</code>, use the
-aggregated 👍/👎 signal from the <a href="../../observability/#search-feedback">search feedback</a>
-endpoint.</p>
+<h2 id="dev-server">本地开发服务器<a class="headerlink" href="#dev-server" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>--build<span class="w"> </span>elasticsearch<span class="w">   </span><span class="c1"># 仅 ES</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>kb<span class="w"> </span>--reload<span class="w">                  </span><span class="c1"># 应用监听 KB_SERVER__PORT（默认 8000）</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>kb<span class="w"> </span>--port<span class="w"> </span><span class="m">8001</span><span class="w"> </span>--reload<span class="w">      </span><span class="c1"># 显式端口覆盖</span>
+</code></pre></div>
+<p><code>python -m kb</code> 从 settings 读取端口；<code>uv run uvicorn kb.main:app --reload</code> 直接运行应用但<strong>不</strong>从
+settings 读取端口。完整本地开发循环见<a href="../../getting-started/">快速开始</a>，容器路径见
+<a href="../deployment/">部署</a>。</p>
 
 
 
@@ -1623,7 +1390,7 @@ endpoint.</p>
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  Back to top
+  回到页面顶部
 </button>
         
       </main>
@@ -1632,33 +1399,33 @@ endpoint.</p>
   
     
       
-      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      <nav class="md-footer__inner md-grid" aria-label="页脚" >
         
           
-          <a href="../import-pipeline/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Import Pipeline">
+          <a href="../../reference/build-from-scratch/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 从零搭建">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
             </div>
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                Previous
+                上一页
               </span>
               <div class="md-ellipsis">
-                Import Pipeline
+                从零搭建
               </div>
             </div>
           </a>
         
         
           
-          <a href="../../configuration/" class="md-footer__link md-footer__link--next" aria-label="Next: Configuration">
+          <a href="../deployment/" class="md-footer__link md-footer__link--next" aria-label="下一页: 部署">
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                Next
+                下一页
               </span>
               <div class="md-ellipsis">
-                Configuration
+                部署
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -1699,10 +1466,10 @@ endpoint.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>

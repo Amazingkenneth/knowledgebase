@@ -12,19 +12,19 @@
         <meta name="author" content="Knowledge Base team">
       
       
-        <link rel="canonical" href="https://amazingkenneth.github.io/knowledgebase/architecture/search-ranking/">
+        <link rel="canonical" href="https://amazingkenneth.github.io/knowledgebase/operations/testing/">
       
       
-        <link rel="prev" href="../import-pipeline/">
+        <link rel="prev" href="../../reference/build-from-scratch/">
       
       
-        <link rel="next" href="../../configuration/">
+        <link rel="next" href="../deployment/">
       
       
         
           <link rel="alternate" href="./" hreflang="en">
         
-          <link rel="alternate" href="../../zh/architecture/search-ranking/" hreflang="zh">
+          <link rel="alternate" href="../../zh/operations/testing/" hreflang="zh">
         
       
       
@@ -33,7 +33,7 @@
     
     
       
-        <title>Search & Ranking - Knowledge Base — Manufacturing Search Engine</title>
+        <title>Testing & Development - Knowledge Base — Manufacturing Search Engine</title>
       
     
     
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#search-ranking" class="md-skip">
+        <a href="#testing" class="md-skip">
           Skip to content
         </a>
       
@@ -118,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Search & Ranking
+              Testing & Development
             
           </span>
         </div>
@@ -171,7 +171,7 @@
           </li>
         
           <li class="md-select__item">
-            <a href="../../zh/architecture/search-ranking/" hreflang="zh" class="md-select__link">
+            <a href="../../zh/operations/testing/" hreflang="zh" class="md-select__link">
               中文
             </a>
           </li>
@@ -293,13 +293,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../overview/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../architecture/overview/" class="md-tabs__link">
           
   
   
@@ -392,11 +390,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../operations/testing/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
           
   
   
@@ -511,31 +511,26 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
             
   
   
@@ -553,7 +548,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -571,7 +566,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../overview/" class="md-nav__link">
+      <a href="../../architecture/overview/" class="md-nav__link">
         
   
   
@@ -599,7 +594,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ai-chat/" class="md-nav__link">
+      <a href="../../architecture/ai-chat/" class="md-nav__link">
         
   
   
@@ -627,7 +622,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../import-pipeline/" class="md-nav__link">
+      <a href="../../architecture/import-pipeline/" class="md-nav__link">
         
   
   
@@ -652,37 +647,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Search & Ranking
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../architecture/search-ranking/" class="md-nav__link">
         
   
   
@@ -698,142 +666,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#two-stage-retrieval" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Two-stage retrieval
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-auto-state-machine" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The auto state machine
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="The auto state machine">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#stage-1-strict-and-keyword-bm25-vector-rescore" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 1 — Strict (AND-keyword BM25 + vector rescore)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stage-2-loose-or-keyword-bm25-vector-rescore" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 2 — Loose (OR-keyword BM25 + vector rescore)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stage-3-vector-only-pure-knn" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 3 — Vector-only (pure kNN)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-ranking-formula" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The ranking formula
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#status-contract" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Status contract
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#faceting-on-too_many" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Faceting on too_many
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#index-selection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Index selection
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#tunables" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tunables
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1074,26 +906,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
         
           
-          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
             
   
   
@@ -1111,7 +948,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1126,10 +963,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../operations/testing/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing & Development
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1145,6 +1009,81 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test layout
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running the suite
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fixtures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixtures are generated, not committed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#new-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding tests for a new knowledge type
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dev-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local dev server
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1157,7 +1096,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/deployment/" class="md-nav__link">
+      <a href="../deployment/" class="md-nav__link">
         
   
   
@@ -1185,7 +1124,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/troubleshooting/" class="md-nav__link">
+      <a href="../troubleshooting/" class="md-nav__link">
         
   
   
@@ -1213,7 +1152,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/security/" class="md-nav__link">
+      <a href="../security/" class="md-nav__link">
         
   
   
@@ -1268,10 +1207,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#two-stage-retrieval" class="md-nav__link">
+  <a href="#layout" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Two-stage retrieval
+        Test layout
       
     </span>
   </a>
@@ -1279,60 +1218,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-auto-state-machine" class="md-nav__link">
+  <a href="#running" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The auto state machine
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="The auto state machine">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#stage-1-strict-and-keyword-bm25-vector-rescore" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 1 — Strict (AND-keyword BM25 + vector rescore)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stage-2-loose-or-keyword-bm25-vector-rescore" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 2 — Loose (OR-keyword BM25 + vector rescore)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stage-3-vector-only-pure-knn" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 3 — Vector-only (pure kNN)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-ranking-formula" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The ranking formula
+        Running the suite
       
     </span>
   </a>
@@ -1340,10 +1229,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#status-contract" class="md-nav__link">
+  <a href="#fixtures" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Status contract
+        Fixtures are generated, not committed
       
     </span>
   </a>
@@ -1351,10 +1240,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#faceting-on-too_many" class="md-nav__link">
+  <a href="#new-type" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Faceting on too_many
+        Adding tests for a new knowledge type
       
     </span>
   </a>
@@ -1362,21 +1251,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#index-selection" class="md-nav__link">
+  <a href="#dev-server" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Index selection
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#tunables" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tunables
+        Local dev server
       
     </span>
   </a>
@@ -1403,203 +1281,101 @@
   
 
 
-<h1 id="search-ranking">Search &amp; Ranking<a class="headerlink" href="#search-ranking" title="Permanent link">&para;</a></h1>
-<p><code>POST /api/v1/search</code> is the structured retrieval core. It takes a <code>SearchRequest</code>
-with exact-match filters and keywords, runs a two-stage recall + ranking pipeline,
-and returns a <code>SearchResponse</code> tagged with a typed <code>SearchStatus</code>. The handler is
-<code>src/kb/api/search.py</code>; the engine is <code>src/kb/services/search.py</code>.</p>
+<h1 id="testing">Testing &amp; Development<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h1>
+<p>This page covers the test suite layout, how to run each tier, the fixture-generation
+trick that keeps the repo free of binary assets, and how to extend the tests when you add
+a knowledge type. Tooling is <code>uv</code> + <code>pytest</code> + <code>ruff</code> + <code>mypy</code>, all declared in
+<code>pyproject.toml</code>.</p>
 <hr />
-<h2 id="two-stage-retrieval">Two-stage retrieval<a class="headerlink" href="#two-stage-retrieval" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Stage</th>
-<th>What it does</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Recall</strong></td>
-<td>Keyword query (AND for strict, OR for loose) over <code>body</code> with a <code>title^N</code> boost. Filters are exact-match on keyword fields; they never affect relevance, only inclusion.</td>
-</tr>
-<tr>
-<td><strong>Ranking</strong></td>
-<td>The top <code>rrf_window</code> recall hits are rescored by blending the BM25 score with cosine vector similarity on <code>body_vec</code>. Degrades gracefully to BM25-only when the embedder is down.</td>
-</tr>
-<tr>
-<td><strong>vector_only</strong></td>
-<td>Pure kNN (semantic-only, no keyword recall). The last fallback in the auto pipeline when keyword recall returns nothing.</td>
-</tr>
-</tbody>
-</table>
-<p>The recall query (<code>_bm25_query</code>) puts the Part-1 fields in a <code>filter</code> clause (no
-scoring impact) and the keyword <code>multi_match</code> in a <code>must</code> clause. With no keywords,
-<code>match_all</code> runs under the filter — returning every doc in scope.</p>
-<hr />
-<h2 id="the-auto-state-machine">The auto state machine<a class="headerlink" href="#the-auto-state-machine" title="Permanent link">&para;</a></h2>
-<p><code>mode="auto"</code> (used by <code>/chat</code>) walks the stages and short-circuits on the first
-success:</p>
-<pre class="mermaid"><code>flowchart TD
-    A["_auto(req)"] --&gt; S["_strict()"]
-    S --&gt;|strict_hit / too_many| RET1["return"]
-    S --&gt;|no_hit| L["_loose()"]
-    L --&gt;|loose_hit| RET2["return"]
-    L --&gt;|no_hit| Q{"query_text present?"}
-    Q --&gt;|yes| V["_vector_only()"]
-    Q --&gt;|no| NH["no_hit"]
-    V --&gt;|vector_only| RET3["return"]
-    V --&gt;|no_hit| NH</code></pre>
-<p>You can also request a single stage directly via <code>mode="strict"</code>, <code>"loose"</code>, or
-<code>"vector_only"</code>.</p>
-<h3 id="stage-1-strict-and-keyword-bm25-vector-rescore">Stage 1 — Strict (AND-keyword BM25 + vector rescore)<a class="headerlink" href="#stage-1-strict-and-keyword-bm25-vector-rescore" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>multi_match</code> across <code>title^{title_boost}</code> and <code>body</code>, operator <code>AND</code>.</li>
-<li>Filter clauses (no score impact): <code>project</code>, <code>equipment</code>, <code>error_codes</code>.</li>
-<li><strong>Gate</strong>: if total hits &gt; <code>strict_max_hits</code> (default 8) → return <code>too_many</code> with
-  facet aggregations and <strong>no documents</strong> — the caller should ask the user to
-  narrow down.</li>
-<li>On a hit (≤ <code>strict_max_hits</code>): optionally rescore the top <code>rrf_window</code> (default
-  50) candidates with BM25 + cosine.</li>
-</ul>
-<h3 id="stage-2-loose-or-keyword-bm25-vector-rescore">Stage 2 — Loose (OR-keyword BM25 + vector rescore)<a class="headerlink" href="#stage-2-loose-or-keyword-bm25-vector-rescore" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Same query structure but operator <code>OR</code> — any keyword match qualifies.</li>
-<li>Same optional rescore step.</li>
-<li>Returns <code>loose_hit</code> with the mandatory banner <em>"没有完全匹配的知识，以下为相关参考，
-  仅供参考。"</em> (no exact match; the following are related references, for reference
-  only).</li>
-</ul>
-<h3 id="stage-3-vector-only-pure-knn">Stage 3 — Vector-only (pure kNN)<a class="headerlink" href="#stage-3-vector-only-pure-knn" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Only runs if <code>query_text</code> is present (the raw last user message).</li>
-<li>ES <code>knn</code> on <code>body_vec</code>; <code>k = req.size</code>, <code>num_candidates = max(k*4, 100)</code>.</li>
-<li>Filters (project/equipment/error_codes) still apply.</li>
-<li>Returns <code>vector_only</code> with a low-confidence banner.</li>
-<li>Requires the embedding service — silently falls through to <code>no_hit</code> if it fails.</li>
-</ul>
-<hr />
-<h2 id="the-ranking-formula">The ranking formula<a class="headerlink" href="#the-ranking-formula" title="Permanent link">&para;</a></h2>
-<p>When the embedding service is available, stages 1 and 2 apply a rescore pass over
-the top <code>rrf_window</code> keyword-recall candidates (<code>_rescore_clause</code>):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>final_score = (1 - vector_weight) × BM25_score
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>            + vector_weight × (cosine_similarity(query_vec, body_vec) + 1)
+<h2 id="layout">Test layout<a class="headerlink" href="#layout" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>tests/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── unit/            # no infrastructure — pure logic, mocked clients
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│   ├── conftest.py            # generates PPTX/PDF/XLSX fixtures on the fly
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│   ├── test_search_queries.py # ES query-body shape
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│   ├── test_search_banner.py  # status→banner contract
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│   ├── test_body_builder.py   # the pinned `body` text layout
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│   ├── test_document_validation.py
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│   ├── test_indexing_validation.py
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│   ├── test_extraction.py / test_extraction_limits.py
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   ├── test_segmentation_parse.py / test_segmentation_routing.py
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   ├── test_import_pipeline_logic.py / test_import_files.py
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   ├── test_import_security.py # path-traversal guard on uploads
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   ├── test_embedding_client.py / test_llm_client.py
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   ├── test_taxonomy.py / test_spec.py / test_config.py / test_feedback.py
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   └── …
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>├── api/             # FastAPI route tests via TestClient (no live ES)
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│   ├── conftest.py
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│   ├── test_routes.py / test_endpoints.py
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│   ├── test_input_bounds.py        # request-size / bound enforcement
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│   └── test_exception_handlers.py
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>└── integration/     # needs Docker / a live Elasticsearch
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    ├── conftest.py
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    └── test_indexing_and_search.py
 </code></pre></div>
+<p>Three tiers, by cost:</p>
 <ul>
-<li><code>vector_weight</code> defaults to <code>0.5</code>; tunable via <code>KB_SEARCH__VECTOR_WEIGHT</code>.</li>
-<li><code>cosine_sim + 1</code> maps <code>[-1, 1]</code> → <code>[0, 2]</code> to keep scores non-negative.</li>
-<li>Docs missing a <code>body_vec</code> (seeded without embeddings) score 0 on the vector
-  component — guarded in the rescore script so they don't error.</li>
+<li><strong><code>tests/unit</code></strong> — no infrastructure. Upstream clients (ES, embeddings, LLM) are mocked
+  or exercised on pure parsing/validation logic. Fast; runs anywhere.</li>
+<li><strong><code>tests/api</code></strong> — drives the FastAPI app through <code>TestClient</code>; still no live ES.</li>
+<li><strong><code>tests/integration</code></strong> — marked <code>@pytest.mark.integration</code>; requires Docker (a real ES
+  with the IK plugin). The <code>integration</code> marker is declared in <code>pyproject.toml</code>
+  (<code>markers = ["integration: requires Docker / Elasticsearch"]</code>).</li>
 </ul>
-<p>When the embedding service is down, stages 1 and 2 run with BM25 only — no error, no
-degraded status flag. The warning is logged and counted as an upstream error metric.</p>
-<div class="admonition note">
-<p class="admonition-title">Why a rescore window, not native RRF</p>
-<p>Rescoring only the top <code>rrf_window</code> recall candidates keeps the expensive vector
-pass bounded while still re-ordering the head of the result list where it
-matters. The CLAUDE.md shorthand calls this "RRF"; mechanically it is a weighted
-BM25 + cosine blend over the recall window.</p>
-</div>
 <hr />
-<h2 id="status-contract">Status contract<a class="headerlink" href="#status-contract" title="Permanent link">&para;</a></h2>
-<p>Every <code>POST /api/v1/search</code> response carries a <code>status</code> field. <strong>Do not change these
-values</strong> — upstream callers depend on them.</p>
-<table>
-<thead>
-<tr>
-<th>Status</th>
-<th>Condition</th>
-<th>Documents returned</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>strict_hit</code></td>
-<td>All filters + AND-keywords matched, within <code>strict_max_hits</code></td>
-<td>Yes</td>
-</tr>
-<tr>
-<td><code>too_many</code></td>
-<td>Strict matched more than <code>strict_max_hits</code> — caller should ask user to narrow</td>
-<td>No (facets only)</td>
-</tr>
-<tr>
-<td><code>loose_hit</code></td>
-<td>Fell back to OR-keywords — show with "for reference only" banner</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td><code>vector_only</code></td>
-<td>Only vector similarity matched — low confidence</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td><code>no_hit</code></td>
-<td>Nothing matched</td>
-<td>No</td>
-</tr>
-</tbody>
-</table>
-<p><code>loose_hit</code> and <code>vector_only</code> responses carry a non-null <code>banner</code> string that
-callers <strong>must render verbatim</strong> — it signals reduced confidence to the user.</p>
+<h2 id="running">Running the suite<a class="headerlink" href="#running" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/unit<span class="w">                         </span><span class="c1"># unit — skips ingest tests if extras absent</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>uv<span class="w"> </span>run<span class="w"> </span>--extra<span class="w"> </span>ingest<span class="w"> </span>pytest<span class="w"> </span>tests/unit<span class="w">          </span><span class="c1"># + PPTX/PDF/XLSX extraction tests</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>uv<span class="w"> </span>run<span class="w"> </span>--extra<span class="w"> </span>ingest<span class="w"> </span>--extra<span class="w"> </span>ocr<span class="w"> </span>pytest<span class="w"> </span>tests/unit<span class="w">  </span><span class="c1"># + OCR behaviour (needs libGL on host)</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/api<span class="w">                           </span><span class="c1"># route-level tests</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/integration<span class="w"> </span>-m<span class="w"> </span>integration<span class="w">    </span><span class="c1"># needs Docker</span>
+</code></pre></div>
+<p>The <code>ingest</code> extra installs <code>pymupdf</code> / <code>openpyxl</code> / <code>python-pptx</code> / <code>python-docx</code>; the
+<code>ocr</code> extra adds <code>paddleocr</code> / <code>paddlepaddle</code> (heavy, and the OCR tests need <code>libGL</code> —
+<code>libgl1</code> — present on the host). Without the <code>ingest</code> extra the extraction tests are
+<strong>skipped</strong>, not failed, so the base <code>uv run pytest tests/unit</code> stays green on a minimal
+install.</p>
+<p>Lint and type-check (run both before committing):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>check<span class="w"> </span>src<span class="w"> </span>tests
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>uv<span class="w"> </span>run<span class="w"> </span>mypy<span class="w"> </span>src
+</code></pre></div>
 <hr />
-<h2 id="faceting-on-too_many">Faceting on <code>too_many</code><a class="headerlink" href="#faceting-on-too_many" title="Permanent link">&para;</a></h2>
-<p>When strict recall overflows <code>strict_max_hits</code>, <code>_facet_counts()</code> aggregates
-<code>project</code>, <code>equipment</code>, and <code>error_codes</code> over the strict-filtered set (top 20
-buckets each) so the caller can offer "narrow by…" choices. Each facet also reports
-a <code>facets_truncated[facet]</code> count (ES <code>sum_other_doc_count</code>) — a non-zero value
-means the bucket list is not exhaustive.</p>
+<h2 id="fixtures">Fixtures are generated, not committed<a class="headerlink" href="#fixtures" title="Permanent link">&para;</a></h2>
+<p><code>tests/unit/conftest.py</code> builds <strong>minimal but content-complete</strong> PPTX/PDF/XLSX files
+on the fly from the three seed CSVs in <code>config/</code>, once per pytest session, into a
+pytest-managed temp dir (auto-cleaned). This is deliberate: no large binary templates ever
+land in git, and the generated files are plain (no images/themes) so they exercise the
+text-extraction code paths cheaply. The CSV reader tries <code>utf-8-sig</code>, <code>utf-8</code>, then
+<code>gb18030</code> encodings — matching the BOM-prefixed Chinese seed files.</p>
+<p>Consequence: if you change a seed CSV's columns, the generated fixtures change with it, so
+extraction tests stay in sync with the real seed format automatically.</p>
 <hr />
-<h2 id="index-selection">Index selection<a class="headerlink" href="#index-selection" title="Permanent link">&para;</a></h2>
-<p><code>_index_for()</code> picks the index to query:</p>
-<ul>
-<li><code>knowledge_type</code> set → the single <code>kb_&lt;type&gt;_v1</code> alias.</li>
-<li><code>knowledge_type</code> omitted → a comma-joined search across <strong>all</strong> type aliases.</li>
-</ul>
-<p>This is why a chat query without a detected knowledge type still searches alarms,
-setups, and experience documents together.</p>
+<h2 id="new-type">Adding tests for a new knowledge type<a class="headerlink" href="#new-type" title="Permanent link">&para;</a></h2>
+<p>When you add a knowledge type (full procedure in
+<a href="../../reference/data-model/">Data Model → adding a type</a>), mirror the existing pattern:</p>
+<ol>
+<li><strong>Model validation</strong> — add cases to <code>test_document_validation.py</code> for the new subclass
+   (required vs optional fields, taxonomy enforcement).</li>
+<li><strong>Body layout</strong> — extend <code>test_body_builder.py</code>: the <code>body</code> text assembly order is
+   <em>pinned</em> by tests, so a new type's section order must be asserted.</li>
+<li><strong>Segmentation</strong> — add routing + parse cases (<code>test_segmentation_routing.py</code>,
+   <code>test_segmentation_parse.py</code>) so the LLM classifier and per-type extractor are covered.</li>
+<li><strong>Spec parity</strong> — <code>test_spec.py</code> checks each <code>config/knowledge_types/*.yaml</code> spec stays
+   consistent with its model; add the new spec there.</li>
+<li><strong>Seed round-trip</strong> — add a CSV header file and confirm the conftest fixture generator
+   handles it.</li>
+</ol>
+<p>Keep new tests in <code>tests/unit</code> unless they genuinely need a live ES, in which case mark
+them <code>@pytest.mark.integration</code> and put them under <code>tests/integration</code>.</p>
 <hr />
-<h2 id="tunables">Tunables<a class="headerlink" href="#tunables" title="Permanent link">&para;</a></h2>
-<p>All under <code>search:</code> in <code>config/settings.yaml</code> or <code>KB_SEARCH__*</code> env vars. See
-<a href="../../configuration/#search">Configuration → Search</a>.</p>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Default</th>
-<th>Effect</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>strict_max_hits</code></td>
-<td><code>8</code></td>
-<td><code>too_many</code> threshold</td>
-</tr>
-<tr>
-<td><code>title_boost</code></td>
-<td><code>3.0</code></td>
-<td>Title field weight vs body in BM25</td>
-</tr>
-<tr>
-<td><code>rrf_window</code></td>
-<td><code>50</code></td>
-<td>How many recall hits are rescored by vector</td>
-</tr>
-<tr>
-<td><code>vector_weight</code></td>
-<td><code>0.5</code></td>
-<td>Balance between BM25 and cosine in final score</td>
-</tr>
-<tr>
-<td><code>max_result_window</code></td>
-<td><code>10000</code></td>
-<td>Deepest <code>from_ + size</code> page; rejected at the model with a 400 instead of failing inside ES</td>
-</tr>
-</tbody>
-</table>
-<p>To find good values for <code>title_boost</code> / <code>vector_weight</code> / <code>rrf_window</code>, use the
-aggregated 👍/👎 signal from the <a href="../../observability/#search-feedback">search feedback</a>
-endpoint.</p>
+<h2 id="dev-server">Local dev server<a class="headerlink" href="#dev-server" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>--build<span class="w"> </span>elasticsearch<span class="w">   </span><span class="c1"># ES only</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>kb<span class="w"> </span>--reload<span class="w">                  </span><span class="c1"># app on KB_SERVER__PORT (default 8000)</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>kb<span class="w"> </span>--port<span class="w"> </span><span class="m">8001</span><span class="w"> </span>--reload<span class="w">      </span><span class="c1"># explicit port override</span>
+</code></pre></div>
+<p><code>python -m kb</code> reads the port from settings; <code>uv run uvicorn kb.main:app --reload</code> runs
+the app directly but does <strong>not</strong> read the port from settings. See
+<a href="../../getting-started/">Getting Started</a> for the full local-dev loop and
+<a href="../deployment/">Deployment</a> for the container path.</p>
 
 
 
@@ -1635,7 +1411,7 @@ endpoint.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../import-pipeline/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Import Pipeline">
+          <a href="../../reference/build-from-scratch/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Build from Scratch">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1645,20 +1421,20 @@ endpoint.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Import Pipeline
+                Build from Scratch
               </div>
             </div>
           </a>
         
         
           
-          <a href="../../configuration/" class="md-footer__link md-footer__link--next" aria-label="Next: Configuration">
+          <a href="../deployment/" class="md-footer__link md-footer__link--next" aria-label="Next: Deployment">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Configuration
+                Deployment
               </div>
             </div>
             <div class="md-footer__button md-icon">

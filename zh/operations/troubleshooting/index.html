@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="en" class="no-js">
+<html lang="zh" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -12,35 +12,35 @@
         <meta name="author" content="Knowledge Base team">
       
       
-        <link rel="canonical" href="https://amazingkenneth.github.io/knowledgebase/architecture/search-ranking/">
+        <link rel="canonical" href="https://amazingkenneth.github.io/knowledgebase/zh/operations/troubleshooting/">
       
       
-        <link rel="prev" href="../import-pipeline/">
+        <link rel="prev" href="../deployment/">
       
       
-        <link rel="next" href="../../configuration/">
+        <link rel="next" href="../security/">
       
       
         
-          <link rel="alternate" href="./" hreflang="en">
+          <link rel="alternate" href="../../../operations/troubleshooting/" hreflang="en">
         
-          <link rel="alternate" href="../../zh/architecture/search-ranking/" hreflang="zh">
+          <link rel="alternate" href="./" hreflang="zh">
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>Search & Ranking - Knowledge Base — Manufacturing Search Engine</title>
+        <title>故障排查 - Knowledge Base — Manufacturing Search Engine</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -59,7 +59,7 @@
       
     
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -84,8 +84,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#search-ranking" class="md-skip">
-          Skip to content
+        <a href="#troubleshooting" class="md-skip">
+          跳转至
         </a>
       
     </div>
@@ -97,8 +97,8 @@
       
 
 <header class="md-header" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="Knowledge Base — Manufacturing Search Engine" class="md-header__button md-logo" aria-label="Knowledge Base — Manufacturing Search Engine" data-md-component="logo">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../../" title="Knowledge Base — Manufacturing Search Engine" class="md-header__button md-logo" aria-label="Knowledge Base — Manufacturing Search Engine" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -118,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Search & Ranking
+              故障排查
             
           </span>
         </div>
@@ -158,20 +158,20 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="Select language">
+    <button class="md-header__button md-icon" aria-label="选择当前语言">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="./" hreflang="en" class="md-select__link">
+            <a href="../../../operations/troubleshooting/" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="../../zh/architecture/search-ranking/" hreflang="zh" class="md-select__link">
+            <a href="./" hreflang="zh" class="md-select__link">
               中文
             </a>
           </li>
@@ -192,16 +192,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="Search">
+      <nav class="md-search__options" aria-label="查找">
         
-        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -214,7 +214,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            Initializing search
+            正在初始化搜索引擎
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -226,7 +226,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/Amazingkenneth/knowledgebase" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/Amazingkenneth/knowledgebase" title="前往仓库" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -247,7 +247,7 @@
         
           
             
-<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
       
@@ -257,13 +257,13 @@
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href="../../" class="md-tabs__link">
         
   
   
     
   
-  Home
+  首页
 
       </a>
     </li>
@@ -282,7 +282,7 @@
   
     
   
-  Getting Started
+  快速开始
 
       </a>
     </li>
@@ -293,17 +293,15 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../overview/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../architecture/overview/" class="md-tabs__link">
           
   
   
-  Architecture
+  架构
 
         </a>
       </li>
@@ -323,7 +321,7 @@
   
     
   
-  Configuration
+  配置
 
       </a>
     </li>
@@ -342,7 +340,7 @@
   
     
   
-  API Reference
+  API 参考
 
       </a>
     </li>
@@ -361,7 +359,7 @@
   
     
   
-  Observability
+  可观测性
 
       </a>
     </li>
@@ -380,7 +378,7 @@
           
   
   
-  Reference
+  参考手册
 
         </a>
       </li>
@@ -392,15 +390,17 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../operations/testing/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../testing/" class="md-tabs__link">
           
   
   
-  Operations
+  运维
 
         </a>
       </li>
@@ -428,9 +428,9 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="Knowledge Base — Manufacturing Search Engine" class="md-nav__button md-logo" aria-label="Knowledge Base — Manufacturing Search Engine" data-md-component="logo">
+    <a href="../../" title="Knowledge Base — Manufacturing Search Engine" class="md-nav__button md-logo" aria-label="Knowledge Base — Manufacturing Search Engine" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -440,7 +440,7 @@
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/Amazingkenneth/knowledgebase" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/Amazingkenneth/knowledgebase" title="前往仓库" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -460,14 +460,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Home
+    首页
   
 
     
@@ -494,7 +494,7 @@
   <span class="md-ellipsis">
     
   
-    Getting Started
+    快速开始
   
 
     
@@ -511,38 +511,33 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Architecture
+    架构
   
 
     
@@ -553,12 +548,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Architecture
+    架构
   
 
           </label>
@@ -571,14 +566,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../overview/" class="md-nav__link">
+      <a href="../../architecture/overview/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Overview
+    总览
   
 
     
@@ -599,14 +594,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../ai-chat/" class="md-nav__link">
+      <a href="../../architecture/ai-chat/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    AI Chat Search
+    AI 对话搜索
   
 
     
@@ -627,14 +622,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../import-pipeline/" class="md-nav__link">
+      <a href="../../architecture/import-pipeline/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Import Pipeline
+    文件导入管道
   
 
     
@@ -652,44 +647,17 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Search & Ranking
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../architecture/search-ranking/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Search & Ranking
+    检索与排序
   
 
     
@@ -698,142 +666,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#two-stage-retrieval" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Two-stage retrieval
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-auto-state-machine" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The auto state machine
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="The auto state machine">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#stage-1-strict-and-keyword-bm25-vector-rescore" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 1 — Strict (AND-keyword BM25 + vector rescore)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stage-2-loose-or-keyword-bm25-vector-rescore" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 2 — Loose (OR-keyword BM25 + vector rescore)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stage-3-vector-only-pure-knn" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 3 — Vector-only (pure kNN)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-ranking-formula" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The ranking formula
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#status-contract" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Status contract
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#faceting-on-too_many" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Faceting on too_many
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#index-selection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Index selection
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#tunables" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tunables
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -860,7 +692,7 @@
   <span class="md-ellipsis">
     
   
-    Configuration
+    配置
   
 
     
@@ -887,7 +719,7 @@
   <span class="md-ellipsis">
     
   
-    API Reference
+    API 参考
   
 
     
@@ -914,7 +746,7 @@
   <span class="md-ellipsis">
     
   
-    Observability
+    可观测性
   
 
     
@@ -957,7 +789,7 @@
   <span class="md-ellipsis">
     
   
-    Reference
+    参考手册
   
 
     
@@ -973,7 +805,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Reference
+    参考手册
   
 
           </label>
@@ -993,7 +825,7 @@
   <span class="md-ellipsis">
     
   
-    Data Model
+    数据模型
   
 
     
@@ -1021,7 +853,7 @@
   <span class="md-ellipsis">
     
   
-    Configuration Reference
+    配置参考
   
 
     
@@ -1049,7 +881,7 @@
   <span class="md-ellipsis">
     
   
-    Build from Scratch
+    从零搭建
   
 
     
@@ -1074,33 +906,38 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
         
           
-          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
             
   
   
   <span class="md-ellipsis">
     
   
-    Operations
+    运维
   
 
     
@@ -1111,12 +948,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Operations
+    运维
   
 
           </label>
@@ -1129,14 +966,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/testing/" class="md-nav__link">
+      <a href="../testing/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Testing & Development
+    测试与开发
   
 
     
@@ -1157,14 +994,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/deployment/" class="md-nav__link">
+      <a href="../deployment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Deployment
+    部署
   
 
     
@@ -1182,17 +1019,44 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../operations/troubleshooting/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    故障排查
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
   <span class="md-ellipsis">
     
   
-    Troubleshooting
+    故障排查
   
 
     
@@ -1201,6 +1065,92 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#startup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        启动与 Elasticsearch
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        搜索与排序
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AI 对话与抽取
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#import" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        文件导入
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#persistence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        持久化与数据
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        文档站点
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1213,14 +1163,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/security/" class="md-nav__link">
+      <a href="../security/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Security
+    安全
   
 
     
@@ -1254,7 +1204,7 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+<nav class="md-nav md-nav--secondary" aria-label="目录">
   
   
   
@@ -1263,15 +1213,15 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      Table of contents
+      目录
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#two-stage-retrieval" class="md-nav__link">
+  <a href="#startup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Two-stage retrieval
+        启动与 Elasticsearch
       
     </span>
   </a>
@@ -1279,60 +1229,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-auto-state-machine" class="md-nav__link">
+  <a href="#search" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The auto state machine
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="The auto state machine">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#stage-1-strict-and-keyword-bm25-vector-rescore" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 1 — Strict (AND-keyword BM25 + vector rescore)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stage-2-loose-or-keyword-bm25-vector-rescore" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 2 — Loose (OR-keyword BM25 + vector rescore)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stage-3-vector-only-pure-knn" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 3 — Vector-only (pure kNN)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-ranking-formula" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The ranking formula
+        搜索与排序
       
     </span>
   </a>
@@ -1340,10 +1240,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#status-contract" class="md-nav__link">
+  <a href="#chat" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Status contract
+        AI 对话与抽取
       
     </span>
   </a>
@@ -1351,10 +1251,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#faceting-on-too_many" class="md-nav__link">
+  <a href="#import" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Faceting on too_many
+        文件导入
       
     </span>
   </a>
@@ -1362,10 +1262,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#index-selection" class="md-nav__link">
+  <a href="#persistence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Index selection
+        持久化与数据
       
     </span>
   </a>
@@ -1373,10 +1273,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#tunables" class="md-nav__link">
+  <a href="#docs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tunables
+        文档站点
       
     </span>
   </a>
@@ -1403,203 +1303,215 @@
   
 
 
-<h1 id="search-ranking">Search &amp; Ranking<a class="headerlink" href="#search-ranking" title="Permanent link">&para;</a></h1>
-<p><code>POST /api/v1/search</code> is the structured retrieval core. It takes a <code>SearchRequest</code>
-with exact-match filters and keywords, runs a two-stage recall + ranking pipeline,
-and returns a <code>SearchResponse</code> tagged with a typed <code>SearchStatus</code>. The handler is
-<code>src/kb/api/search.py</code>; the engine is <code>src/kb/services/search.py</code>.</p>
+<h1 id="troubleshooting">故障排查<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h1>
+<p>按子系统分组的 现象 → 原因 → 处理 矩阵，覆盖你最可能遇到的故障。本页引用的指标与健康探针见
+<a href="../../observability/">可观测性</a>。</p>
 <hr />
-<h2 id="two-stage-retrieval">Two-stage retrieval<a class="headerlink" href="#two-stage-retrieval" title="Permanent link">&para;</a></h2>
+<h2 id="startup">启动与 Elasticsearch<a class="headerlink" href="#startup" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Stage</th>
-<th>What it does</th>
+<th>现象</th>
+<th>原因</th>
+<th>处理</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Recall</strong></td>
-<td>Keyword query (AND for strict, OR for loose) over <code>body</code> with a <code>title^N</code> boost. Filters are exact-match on keyword fields; they never affect relevance, only inclusion.</td>
+<td><code>GET /readyz</code> 返回 <strong>503</strong>，日志显示 <em>"Elasticsearch unreachable … DEGRADED mode"</em></td>
+<td>应用早于 ES 就绪而启动，或 <code>KB_ES__URL</code> 错误</td>
+<td>等待 ES 健康（compose 的 <code>depends_on: service_healthy</code> 已处理）；核对 <code>KB_ES__URL</code>。应用以降级启动并在 ES 起来后恢复 —— 在此之前搜索/索引失败</td>
 </tr>
 <tr>
-<td><strong>Ranking</strong></td>
-<td>The top <code>rrf_window</code> recall hits are rescored by blending the BM25 score with cosine vector similarity on <code>body_vec</code>. Degrades gracefully to BM25-only when the embedder is down.</td>
+<td>索引失败，报<strong>分词器未找到</strong>/映射错误</td>
+<td>ES 无 <code>analysis-ik</code> 插件，但映射要 <code>ik_max_word</code>/<code>ik_smart</code></td>
+<td>使用自带的 <code>elasticsearch/Dockerfile</code>（安装 IK），<strong>或</strong>将 <code>KB_ES__ANALYZER_INDEX</code> 与 <code>KB_ES__ANALYZER_QUERY</code> 都设为 <code>cjk</code>（内置二元分词）</td>
 </tr>
 <tr>
-<td><strong>vector_only</strong></td>
-<td>Pure kNN (semantic-only, no keyword recall). The last fallback in the auto pipeline when keyword recall returns nothing.</td>
+<td>与 ES 的 TLS 握手/证书错误</td>
+<td>HTTPS ES 用自签证书</td>
+<td>设 <code>KB_ES__SSL_FINGERPRINT</code>（ES 启动输出的 SHA-256），或仅本地开发用 <code>KB_ES__VERIFY_CERTS=false</code></td>
 </tr>
 </tbody>
 </table>
-<p>The recall query (<code>_bm25_query</code>) puts the Part-1 fields in a <code>filter</code> clause (no
-scoring impact) and the keyword <code>multi_match</code> in a <code>must</code> clause. With no keywords,
-<code>match_all</code> runs under the filter — returning every doc in scope.</p>
 <hr />
-<h2 id="the-auto-state-machine">The auto state machine<a class="headerlink" href="#the-auto-state-machine" title="Permanent link">&para;</a></h2>
-<p><code>mode="auto"</code> (used by <code>/chat</code>) walks the stages and short-circuits on the first
-success:</p>
-<pre class="mermaid"><code>flowchart TD
-    A["_auto(req)"] --&gt; S["_strict()"]
-    S --&gt;|strict_hit / too_many| RET1["return"]
-    S --&gt;|no_hit| L["_loose()"]
-    L --&gt;|loose_hit| RET2["return"]
-    L --&gt;|no_hit| Q{"query_text present?"}
-    Q --&gt;|yes| V["_vector_only()"]
-    Q --&gt;|no| NH["no_hit"]
-    V --&gt;|vector_only| RET3["return"]
-    V --&gt;|no_hit| NH</code></pre>
-<p>You can also request a single stage directly via <code>mode="strict"</code>, <code>"loose"</code>, or
-<code>"vector_only"</code>.</p>
-<h3 id="stage-1-strict-and-keyword-bm25-vector-rescore">Stage 1 — Strict (AND-keyword BM25 + vector rescore)<a class="headerlink" href="#stage-1-strict-and-keyword-bm25-vector-rescore" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>multi_match</code> across <code>title^{title_boost}</code> and <code>body</code>, operator <code>AND</code>.</li>
-<li>Filter clauses (no score impact): <code>project</code>, <code>equipment</code>, <code>error_codes</code>.</li>
-<li><strong>Gate</strong>: if total hits &gt; <code>strict_max_hits</code> (default 8) → return <code>too_many</code> with
-  facet aggregations and <strong>no documents</strong> — the caller should ask the user to
-  narrow down.</li>
-<li>On a hit (≤ <code>strict_max_hits</code>): optionally rescore the top <code>rrf_window</code> (default
-  50) candidates with BM25 + cosine.</li>
-</ul>
-<h3 id="stage-2-loose-or-keyword-bm25-vector-rescore">Stage 2 — Loose (OR-keyword BM25 + vector rescore)<a class="headerlink" href="#stage-2-loose-or-keyword-bm25-vector-rescore" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Same query structure but operator <code>OR</code> — any keyword match qualifies.</li>
-<li>Same optional rescore step.</li>
-<li>Returns <code>loose_hit</code> with the mandatory banner <em>"没有完全匹配的知识，以下为相关参考，
-  仅供参考。"</em> (no exact match; the following are related references, for reference
-  only).</li>
-</ul>
-<h3 id="stage-3-vector-only-pure-knn">Stage 3 — Vector-only (pure kNN)<a class="headerlink" href="#stage-3-vector-only-pure-knn" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Only runs if <code>query_text</code> is present (the raw last user message).</li>
-<li>ES <code>knn</code> on <code>body_vec</code>; <code>k = req.size</code>, <code>num_candidates = max(k*4, 100)</code>.</li>
-<li>Filters (project/equipment/error_codes) still apply.</li>
-<li>Returns <code>vector_only</code> with a low-confidence banner.</li>
-<li>Requires the embedding service — silently falls through to <code>no_hit</code> if it fails.</li>
-</ul>
-<hr />
-<h2 id="the-ranking-formula">The ranking formula<a class="headerlink" href="#the-ranking-formula" title="Permanent link">&para;</a></h2>
-<p>When the embedding service is available, stages 1 and 2 apply a rescore pass over
-the top <code>rrf_window</code> keyword-recall candidates (<code>_rescore_clause</code>):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>final_score = (1 - vector_weight) × BM25_score
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>            + vector_weight × (cosine_similarity(query_vec, body_vec) + 1)
-</code></pre></div>
-<ul>
-<li><code>vector_weight</code> defaults to <code>0.5</code>; tunable via <code>KB_SEARCH__VECTOR_WEIGHT</code>.</li>
-<li><code>cosine_sim + 1</code> maps <code>[-1, 1]</code> → <code>[0, 2]</code> to keep scores non-negative.</li>
-<li>Docs missing a <code>body_vec</code> (seeded without embeddings) score 0 on the vector
-  component — guarded in the rescore script so they don't error.</li>
-</ul>
-<p>When the embedding service is down, stages 1 and 2 run with BM25 only — no error, no
-degraded status flag. The warning is logged and counted as an upstream error metric.</p>
-<div class="admonition note">
-<p class="admonition-title">Why a rescore window, not native RRF</p>
-<p>Rescoring only the top <code>rrf_window</code> recall candidates keeps the expensive vector
-pass bounded while still re-ordering the head of the result list where it
-matters. The CLAUDE.md shorthand calls this "RRF"; mechanically it is a weighted
-BM25 + cosine blend over the recall window.</p>
-</div>
-<hr />
-<h2 id="status-contract">Status contract<a class="headerlink" href="#status-contract" title="Permanent link">&para;</a></h2>
-<p>Every <code>POST /api/v1/search</code> response carries a <code>status</code> field. <strong>Do not change these
-values</strong> — upstream callers depend on them.</p>
+<h2 id="search">搜索与排序<a class="headerlink" href="#search" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Status</th>
-<th>Condition</th>
-<th>Documents returned</th>
+<th>现象</th>
+<th>原因</th>
+<th>处理</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>strict_hit</code></td>
-<td>All filters + AND-keywords matched, within <code>strict_max_hits</code></td>
-<td>Yes</td>
+<td>有结果但明显<strong>仅关键词</strong>（无语义匹配）；<code>kb_upstream_errors_total{service="embedding"}</code> 上升</td>
+<td>嵌入服务故障/未配置 —— 搜索已静默降级为 BM25</td>
+<td>设置/修复 <code>KB_EMBEDDING__API_KEY</code> + <code>KB_EMBEDDING__URL</code>；确认 <code>GET /readyz?deep=true</code> 报 <code>embedding: ok</code></td>
 </tr>
 <tr>
-<td><code>too_many</code></td>
-<td>Strict matched more than <code>strict_max_hits</code> — caller should ask user to narrow</td>
-<td>No (facets only)</td>
+<td>启用嵌入后每次向量搜索都报错</td>
+<td><code>KB_EMBEDDING__DIMS</code> ≠ 模型真实维度；ES 拒绝 <code>dense_vector</code></td>
+<td>将 <code>dims</code> 设为模型输出（<code>text-embedding-v3</code> 默认 <code>1024</code>）；维度变更需<strong>重新播种</strong>（索引会被重建）</td>
 </tr>
 <tr>
-<td><code>loose_hit</code></td>
-<td>Fell back to OR-keywords — show with "for reference only" banner</td>
-<td>Yes</td>
+<td>状态总是 <code>too_many</code></td>
+<td>严格匹配超过 <code>strict_max_hits</code>（默认 8）</td>
+<td>符合预期 —— 缩小查询，或调大 <code>KB_SEARCH__STRICT_MAX_HITS</code></td>
 </tr>
 <tr>
-<td><code>vector_only</code></td>
-<td>Only vector similarity matched — low confidence</td>
-<td>Yes</td>
+<td><code>POST /api/v1/search</code> 返回 <strong>422</strong></td>
+<td><code>from_ + size &gt; 10000</code>，或某字段越界</td>
+<td>减少翻页深度（上限对齐 ES <code>index.max_result_window</code>）；用缩小代替深翻</td>
 </tr>
 <tr>
-<td><code>no_hit</code></td>
-<td>Nothing matched</td>
-<td>No</td>
+<td>按某 project/equipment 过滤无结果</td>
+<td>该值不在 taxonomy 中（故 LLM 给出的值被丢弃，或你按未知字面量过滤）</td>
+<td>查看 <code>GET /api/v1/facets</code>；将值加入 <code>config/taxonomy.yaml</code> 并重载</td>
 </tr>
 </tbody>
 </table>
-<p><code>loose_hit</code> and <code>vector_only</code> responses carry a non-null <code>banner</code> string that
-callers <strong>must render verbatim</strong> — it signals reduced confidence to the user.</p>
 <hr />
-<h2 id="faceting-on-too_many">Faceting on <code>too_many</code><a class="headerlink" href="#faceting-on-too_many" title="Permanent link">&para;</a></h2>
-<p>When strict recall overflows <code>strict_max_hits</code>, <code>_facet_counts()</code> aggregates
-<code>project</code>, <code>equipment</code>, and <code>error_codes</code> over the strict-filtered set (top 20
-buckets each) so the caller can offer "narrow by…" choices. Each facet also reports
-a <code>facets_truncated[facet]</code> count (ES <code>sum_other_doc_count</code>) — a non-zero value
-means the bucket list is not exhaustive.</p>
-<hr />
-<h2 id="index-selection">Index selection<a class="headerlink" href="#index-selection" title="Permanent link">&para;</a></h2>
-<p><code>_index_for()</code> picks the index to query:</p>
-<ul>
-<li><code>knowledge_type</code> set → the single <code>kb_&lt;type&gt;_v1</code> alias.</li>
-<li><code>knowledge_type</code> omitted → a comma-joined search across <strong>all</strong> type aliases.</li>
-</ul>
-<p>This is why a chat query without a detected knowledge type still searches alarms,
-setups, and experience documents together.</p>
-<hr />
-<h2 id="tunables">Tunables<a class="headerlink" href="#tunables" title="Permanent link">&para;</a></h2>
-<p>All under <code>search:</code> in <code>config/settings.yaml</code> or <code>KB_SEARCH__*</code> env vars. See
-<a href="../../configuration/#search">Configuration → Search</a>.</p>
+<h2 id="chat">AI 对话与抽取<a class="headerlink" href="#chat" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Parameter</th>
-<th>Default</th>
-<th>Effect</th>
+<th>现象</th>
+<th>原因</th>
+<th>处理</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>strict_max_hits</code></td>
-<td><code>8</code></td>
-<td><code>too_many</code> threshold</td>
+<td><code>/chat</code> 或 <code>/extract</code> 返回 <strong>503</strong> "LLM not configured"</td>
+<td>未设 <code>KB_LLM__API_KEY</code></td>
+<td>设置密钥；按部署方式重启或在调用时读取</td>
 </tr>
 <tr>
-<td><code>title_boost</code></td>
-<td><code>3.0</code></td>
-<td>Title field weight vs body in BM25</td>
+<td><code>/extract</code> 返回 <strong>502</strong> "unparseable response"</td>
+<td>LLM 返回非 JSON/格式错误</td>
+<td>通常瞬时 —— 已自动重试（<code>KB_LLM__MAX_RETRIES</code>）；若持续，确认模型能输出近 JSON，且 <code>KB_LLM__MODEL</code> 有效</td>
 </tr>
 <tr>
-<td><code>rrf_window</code></td>
-<td><code>50</code></td>
-<td>How many recall hits are rescored by vector</td>
+<td><code>/chat</code> 回答称检索不可用（<code>search_error: true</code>）</td>
+<td>KB 检索抛错（如 ES 故障）—— <strong>并非</strong>真正的 no-hit</td>
+<td>修复 ES；模型被刻意告知检索宕机，而非凭空作答</td>
 </tr>
 <tr>
-<td><code>vector_weight</code></td>
-<td><code>0.5</code></td>
-<td>Balance between BM25 and cosine in final score</td>
-</tr>
-<tr>
-<td><code>max_result_window</code></td>
-<td><code>10000</code></td>
-<td>Deepest <code>from_ + size</code> page; rejected at the model with a 400 instead of failing inside ES</td>
+<td>抽取的 <code>equipment</code>/<code>project</code> 总返回 <code>null</code></td>
+<td>抽取器只填用户明确点名的 taxonomy 值；"宁填 null 不猜"</td>
+<td>这是对错误过滤的刻意防护 —— 说出确切的 taxonomy 名，或直接向 <code>/search</code> 传过滤值</td>
 </tr>
 </tbody>
 </table>
-<p>To find good values for <code>title_boost</code> / <code>vector_weight</code> / <code>rrf_window</code>, use the
-aggregated 👍/👎 signal from the <a href="../../observability/#search-feedback">search feedback</a>
-endpoint.</p>
+<hr />
+<h2 id="import">文件导入<a class="headerlink" href="#import" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>原因</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>某 PDF 文件以 扫描件/纯图片 错误结束（<code>ScannedPdfError</code>）</td>
+<td>PDF 无文本层且 OCR 关闭</td>
+<td>启用 OCR（<code>KB_INGEST__OCR_ENABLED=true</code> + <code>ocr</code> extra / <code>INSTALL_OCR=true</code> 镜像），或用 <code>force_ocr</code> 重试该文件：<code>POST …/files/{hash}/retry {"force_ocr":true}</code></td>
+</tr>
+<tr>
+<td>文件 <code>status: skipped_duplicate</code></td>
+<td>其 SHA-256 哈希已提交过</td>
+<td>刻意的去重；若确实要重导，上传/扫描时带 <code>force=true</code></td>
+</tr>
+<tr>
+<td>文件 <code>status: unsupported</code></td>
+<td>扩展名不在 <code>allowed_extensions</code> 中</td>
+<td>加入 <code>KB_INGEST__ALLOWED_EXTENSIONS</code>（默认 pdf/xlsx/xls/csv/pptx/docx）</td>
+</tr>
+<tr>
+<td>大文件被拒</td>
+<td>超 <code>max_file_size_mb</code>（50），或 PDF 超 <code>pdf_max_pages</code>（2000）/ XLSX 超 <code>xlsx_max_cells</code>（200 万）</td>
+<td>调大上限，或拆分文件 —— 这些是抽取期防 OOM 的护栏</td>
+</tr>
+<tr>
+<td><code>GET /sessions/{id}</code> 返回 <strong>410</strong></td>
+<td>会话已过期并被 TTL 清理器回收</td>
+<td>重新上传；调 <code>KB_INGEST__SESSION_TTL_MINUTES</code> / <code>SESSION_HARD_TTL_MINUTES</code></td>
+</tr>
+<tr>
+<td><code>GET /sessions/{id}</code> 返回 <strong>404</strong></td>
+<td>该 id 从未存在（区别于 410 = 过期）</td>
+<td>核对 id；它来自最初的 upload/scan 响应</td>
+</tr>
+<tr>
+<td>提交返回 <code>tracking_failed &gt; 0</code></td>
+<td>文档已入 ES 但追踪行未更新</td>
+<td>调用 <code>POST …/recommit-tracking</code> —— 否则下次启动重播种时会丢失</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="persistence">持久化与数据<a class="headerlink" href="#persistence" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>原因</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>改了 CSV 但变更未出现</td>
+<td>播种仅在启动时发生</td>
+<td>重启应用 —— <code>seed()</code> 每次启动清空每个主索引并从 CSV 重载</td>
+</tr>
+<tr>
+<td>重启后导入文档消失</td>
+<td>它们不在 CSV 中；恢复读取追踪索引</td>
+<td>确认 <code>kb_import_files</code> 完好；<code>restore_imports()</code> 在启动时重放已提交导入。若提交时发生 <code>tracking_failed</code>，它们从未被追踪 —— 需重导</td>
+</tr>
+<tr>
+<td>改嵌入模型后文档消失</td>
+<td><code>dims</code> 变更重建索引；随后的强制重播种从 CSV/追踪索引重载</td>
+<td>符合预期；确保追踪索引存活以便导入恢复</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="docs">文档站点<a class="headerlink" href="#docs" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>原因</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mkdocs build --strict</code> 因链接/锚点损坏失败</td>
+<td>跨页链接或 <code>{#anchor}</code> 无法解析</td>
+<td>修复链接；strict 模式还会捕获 <code>navigation.instant</code> ↔ i18n 不兼容</td>
+</tr>
+<tr>
+<td><code>git push</code> 被 <code>pre-push</code> 钩子中止</td>
+<td>strict 文档构建失败</td>
+<td>修复文档，或用 <code>git push --no-verify</code> 一次性绕过（见<a href="../deployment/#docs-publish">部署 → 文档自动发布</a>）</td>
+</tr>
+<tr>
+<td>切换 zh⇄en 时语言切换器 404</td>
+<td>GitHub Pages 子路径下 <code>site_url</code> 缺失/错误</td>
+<td>确保 <code>mkdocs.yml</code> 设了 <code>site_url</code>（切换器需要它来生成带基础前缀的链接）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p>当处理方式不明显时，用请求的 <code>request_id</code>（每条日志都带）在日志中检索，即可重放该次调用的全过程 ——
+见<a href="../../observability/#logging">可观测性 → 日志</a>。</p>
 
 
 
@@ -1623,7 +1535,7 @@ endpoint.</p>
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  Back to top
+  回到页面顶部
 </button>
         
       </main>
@@ -1632,33 +1544,33 @@ endpoint.</p>
   
     
       
-      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      <nav class="md-footer__inner md-grid" aria-label="页脚" >
         
           
-          <a href="../import-pipeline/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Import Pipeline">
+          <a href="../deployment/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 部署">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
             </div>
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                Previous
+                上一页
               </span>
               <div class="md-ellipsis">
-                Import Pipeline
+                部署
               </div>
             </div>
           </a>
         
         
           
-          <a href="../../configuration/" class="md-footer__link md-footer__link--next" aria-label="Next: Configuration">
+          <a href="../security/" class="md-footer__link md-footer__link--next" aria-label="下一页: 安全">
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                Next
+                下一页
               </span>
               <div class="md-ellipsis">
-                Configuration
+                安全
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -1699,10 +1611,10 @@ endpoint.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>

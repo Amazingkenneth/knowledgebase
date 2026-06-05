@@ -64,6 +64,55 @@
         <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/architecture/search-ranking/"/>
     </url>
     <url>
+        <loc>https://amazingkenneth.github.io/knowledgebase/operations/deployment/</loc>
+        <lastmod>2026-06-05</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/operations/deployment/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/operations/deployment/"/>
+    </url>
+    <url>
+        <loc>https://amazingkenneth.github.io/knowledgebase/operations/security/</loc>
+        <lastmod>2026-06-05</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/operations/security/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/operations/security/"/>
+    </url>
+    <url>
+        <loc>https://amazingkenneth.github.io/knowledgebase/operations/testing/</loc>
+        <lastmod>2026-06-05</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/operations/testing/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/operations/testing/"/>
+    </url>
+    <url>
+        <loc>https://amazingkenneth.github.io/knowledgebase/operations/troubleshooting/</loc>
+        <lastmod>2026-06-05</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/operations/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/operations/troubleshooting/"/>
+    </url>
+    <url>
+        <loc>https://amazingkenneth.github.io/knowledgebase/reference/build-from-scratch/</loc>
+        <lastmod>2026-06-05</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/reference/build-from-scratch/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/reference/build-from-scratch/"/>
+    </url>
+    <url>
+        <loc>https://amazingkenneth.github.io/knowledgebase/reference/configuration-reference/</loc>
+        <lastmod>2026-06-05</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/reference/configuration-reference/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/reference/configuration-reference/"/>
+    </url>
+    <url>
+        <loc>https://amazingkenneth.github.io/knowledgebase/reference/data-model/</loc>
+        <lastmod>2026-06-05</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/reference/data-model/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/reference/data-model/"/>
+    </url>
+    <url>
         <loc>https://amazingkenneth.github.io/knowledgebase/zh/</loc>
         <lastmod>2026-06-05</lastmod>
         <changefreq>daily</changefreq>
@@ -125,5 +174,54 @@
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/architecture/search-ranking/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/architecture/search-ranking/"/>
+    </url>
+    <url>
+        <loc>https://amazingkenneth.github.io/knowledgebase/zh/operations/deployment/</loc>
+        <lastmod>2026-06-05</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/operations/deployment/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/operations/deployment/"/>
+    </url>
+    <url>
+        <loc>https://amazingkenneth.github.io/knowledgebase/zh/operations/security/</loc>
+        <lastmod>2026-06-05</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/operations/security/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/operations/security/"/>
+    </url>
+    <url>
+        <loc>https://amazingkenneth.github.io/knowledgebase/zh/operations/testing/</loc>
+        <lastmod>2026-06-05</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/operations/testing/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/operations/testing/"/>
+    </url>
+    <url>
+        <loc>https://amazingkenneth.github.io/knowledgebase/zh/operations/troubleshooting/</loc>
+        <lastmod>2026-06-05</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/operations/troubleshooting/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/operations/troubleshooting/"/>
+    </url>
+    <url>
+        <loc>https://amazingkenneth.github.io/knowledgebase/zh/reference/build-from-scratch/</loc>
+        <lastmod>2026-06-05</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/reference/build-from-scratch/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/reference/build-from-scratch/"/>
+    </url>
+    <url>
+        <loc>https://amazingkenneth.github.io/knowledgebase/zh/reference/configuration-reference/</loc>
+        <lastmod>2026-06-05</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/reference/configuration-reference/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/reference/configuration-reference/"/>
+    </url>
+    <url>
+        <loc>https://amazingkenneth.github.io/knowledgebase/zh/reference/data-model/</loc>
+        <lastmod>2026-06-05</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://amazingkenneth.github.io/knowledgebase/zh/reference/data-model/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://amazingkenneth.github.io/knowledgebase/reference/data-model/"/>
     </url>
 </urlset>

@@ -12,19 +12,19 @@
         <meta name="author" content="Knowledge Base team">
       
       
-        <link rel="canonical" href="https://amazingkenneth.github.io/knowledgebase/architecture/search-ranking/">
+        <link rel="canonical" href="https://amazingkenneth.github.io/knowledgebase/operations/deployment/">
       
       
-        <link rel="prev" href="../import-pipeline/">
+        <link rel="prev" href="../testing/">
       
       
-        <link rel="next" href="../../configuration/">
+        <link rel="next" href="../troubleshooting/">
       
       
         
           <link rel="alternate" href="./" hreflang="en">
         
-          <link rel="alternate" href="../../zh/architecture/search-ranking/" hreflang="zh">
+          <link rel="alternate" href="../../zh/operations/deployment/" hreflang="zh">
         
       
       
@@ -33,7 +33,7 @@
     
     
       
-        <title>Search & Ranking - Knowledge Base — Manufacturing Search Engine</title>
+        <title>Deployment - Knowledge Base — Manufacturing Search Engine</title>
       
     
     
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#search-ranking" class="md-skip">
+        <a href="#deployment" class="md-skip">
           Skip to content
         </a>
       
@@ -118,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Search & Ranking
+              Deployment
             
           </span>
         </div>
@@ -171,7 +171,7 @@
           </li>
         
           <li class="md-select__item">
-            <a href="../../zh/architecture/search-ranking/" hreflang="zh" class="md-select__link">
+            <a href="../../zh/operations/deployment/" hreflang="zh" class="md-select__link">
               中文
             </a>
           </li>
@@ -293,13 +293,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../overview/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../architecture/overview/" class="md-tabs__link">
           
   
   
@@ -392,11 +390,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../operations/testing/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../testing/" class="md-tabs__link">
           
   
   
@@ -511,31 +511,26 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
             
   
   
@@ -553,7 +548,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -571,7 +566,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../overview/" class="md-nav__link">
+      <a href="../../architecture/overview/" class="md-nav__link">
         
   
   
@@ -599,7 +594,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ai-chat/" class="md-nav__link">
+      <a href="../../architecture/ai-chat/" class="md-nav__link">
         
   
   
@@ -627,7 +622,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../import-pipeline/" class="md-nav__link">
+      <a href="../../architecture/import-pipeline/" class="md-nav__link">
         
   
   
@@ -652,37 +647,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Search & Ranking
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../architecture/search-ranking/" class="md-nav__link">
         
   
   
@@ -698,142 +666,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#two-stage-retrieval" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Two-stage retrieval
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-auto-state-machine" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The auto state machine
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="The auto state machine">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#stage-1-strict-and-keyword-bm25-vector-rescore" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 1 — Strict (AND-keyword BM25 + vector rescore)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stage-2-loose-or-keyword-bm25-vector-rescore" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 2 — Loose (OR-keyword BM25 + vector rescore)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stage-3-vector-only-pure-knn" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 3 — Vector-only (pure kNN)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-ranking-formula" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The ranking formula
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#status-contract" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Status contract
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#faceting-on-too_many" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Faceting on too_many
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#index-selection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Index selection
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#tunables" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tunables
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1074,26 +906,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
         
           
-          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
             
   
   
@@ -1111,7 +948,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1129,7 +966,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/testing/" class="md-nav__link">
+      <a href="../testing/" class="md-nav__link">
         
   
   
@@ -1154,10 +991,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../operations/deployment/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1173,6 +1037,120 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#quickstart" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick start
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The compose stack
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The compose stack">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#elasticsearch-container-kb-es" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        elasticsearch (container kb-es)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#app-container-kb-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        app (container kb-app)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#image" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The app image
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production hardening
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data persistence &amp; backup
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docs-publish" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docs auto-publish
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1185,7 +1163,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/troubleshooting/" class="md-nav__link">
+      <a href="../troubleshooting/" class="md-nav__link">
         
   
   
@@ -1213,7 +1191,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/security/" class="md-nav__link">
+      <a href="../security/" class="md-nav__link">
         
   
   
@@ -1268,10 +1246,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#two-stage-retrieval" class="md-nav__link">
+  <a href="#quickstart" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Two-stage retrieval
+        Quick start
       
     </span>
   </a>
@@ -1279,22 +1257,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-auto-state-machine" class="md-nav__link">
+  <a href="#compose" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The auto state machine
+        The compose stack
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="The auto state machine">
+    <nav class="md-nav" aria-label="The compose stack">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#stage-1-strict-and-keyword-bm25-vector-rescore" class="md-nav__link">
+  <a href="#elasticsearch-container-kb-es" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Stage 1 — Strict (AND-keyword BM25 + vector rescore)
+        elasticsearch (container kb-es)
       
     </span>
   </a>
@@ -1302,21 +1280,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#stage-2-loose-or-keyword-bm25-vector-rescore" class="md-nav__link">
+  <a href="#app-container-kb-app" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Stage 2 — Loose (OR-keyword BM25 + vector rescore)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stage-3-vector-only-pure-knn" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 3 — Vector-only (pure kNN)
+        app (container kb-app)
       
     </span>
   </a>
@@ -1329,10 +1296,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-ranking-formula" class="md-nav__link">
+  <a href="#image" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The ranking formula
+        The app image
       
     </span>
   </a>
@@ -1340,10 +1307,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#status-contract" class="md-nav__link">
+  <a href="#hardening" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Status contract
+        Production hardening
       
     </span>
   </a>
@@ -1351,10 +1318,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#faceting-on-too_many" class="md-nav__link">
+  <a href="#backup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Faceting on too_many
+        Data persistence &amp; backup
       
     </span>
   </a>
@@ -1362,21 +1329,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#index-selection" class="md-nav__link">
+  <a href="#docs-publish" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Index selection
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#tunables" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tunables
+        Docs auto-publish
       
     </span>
   </a>
@@ -1403,203 +1359,168 @@
   
 
 
-<h1 id="search-ranking">Search &amp; Ranking<a class="headerlink" href="#search-ranking" title="Permanent link">&para;</a></h1>
-<p><code>POST /api/v1/search</code> is the structured retrieval core. It takes a <code>SearchRequest</code>
-with exact-match filters and keywords, runs a two-stage recall + ranking pipeline,
-and returns a <code>SearchResponse</code> tagged with a typed <code>SearchStatus</code>. The handler is
-<code>src/kb/api/search.py</code>; the engine is <code>src/kb/services/search.py</code>.</p>
+<h1 id="deployment">Deployment<a class="headerlink" href="#deployment" title="Permanent link">&para;</a></h1>
+<p>The supported deployment is <strong>Docker Compose</strong>: a custom Elasticsearch image (with the IK
+analyzer) plus the FastAPI app image. This page documents the compose stack, the app
+image, production hardening, data persistence/backup, and the docs auto-publish hook.</p>
 <hr />
-<h2 id="two-stage-retrieval">Two-stage retrieval<a class="headerlink" href="#two-stage-retrieval" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Stage</th>
-<th>What it does</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Recall</strong></td>
-<td>Keyword query (AND for strict, OR for loose) over <code>body</code> with a <code>title^N</code> boost. Filters are exact-match on keyword fields; they never affect relevance, only inclusion.</td>
-</tr>
-<tr>
-<td><strong>Ranking</strong></td>
-<td>The top <code>rrf_window</code> recall hits are rescored by blending the BM25 score with cosine vector similarity on <code>body_vec</code>. Degrades gracefully to BM25-only when the embedder is down.</td>
-</tr>
-<tr>
-<td><strong>vector_only</strong></td>
-<td>Pure kNN (semantic-only, no keyword recall). The last fallback in the auto pipeline when keyword recall returns nothing.</td>
-</tr>
-</tbody>
-</table>
-<p>The recall query (<code>_bm25_query</code>) puts the Part-1 fields in a <code>filter</code> clause (no
-scoring impact) and the keyword <code>multi_match</code> in a <code>must</code> clause. With no keywords,
-<code>match_all</code> runs under the filter — returning every doc in scope.</p>
-<hr />
-<h2 id="the-auto-state-machine">The auto state machine<a class="headerlink" href="#the-auto-state-machine" title="Permanent link">&para;</a></h2>
-<p><code>mode="auto"</code> (used by <code>/chat</code>) walks the stages and short-circuits on the first
-success:</p>
-<pre class="mermaid"><code>flowchart TD
-    A["_auto(req)"] --&gt; S["_strict()"]
-    S --&gt;|strict_hit / too_many| RET1["return"]
-    S --&gt;|no_hit| L["_loose()"]
-    L --&gt;|loose_hit| RET2["return"]
-    L --&gt;|no_hit| Q{"query_text present?"}
-    Q --&gt;|yes| V["_vector_only()"]
-    Q --&gt;|no| NH["no_hit"]
-    V --&gt;|vector_only| RET3["return"]
-    V --&gt;|no_hit| NH</code></pre>
-<p>You can also request a single stage directly via <code>mode="strict"</code>, <code>"loose"</code>, or
-<code>"vector_only"</code>.</p>
-<h3 id="stage-1-strict-and-keyword-bm25-vector-rescore">Stage 1 — Strict (AND-keyword BM25 + vector rescore)<a class="headerlink" href="#stage-1-strict-and-keyword-bm25-vector-rescore" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>multi_match</code> across <code>title^{title_boost}</code> and <code>body</code>, operator <code>AND</code>.</li>
-<li>Filter clauses (no score impact): <code>project</code>, <code>equipment</code>, <code>error_codes</code>.</li>
-<li><strong>Gate</strong>: if total hits &gt; <code>strict_max_hits</code> (default 8) → return <code>too_many</code> with
-  facet aggregations and <strong>no documents</strong> — the caller should ask the user to
-  narrow down.</li>
-<li>On a hit (≤ <code>strict_max_hits</code>): optionally rescore the top <code>rrf_window</code> (default
-  50) candidates with BM25 + cosine.</li>
-</ul>
-<h3 id="stage-2-loose-or-keyword-bm25-vector-rescore">Stage 2 — Loose (OR-keyword BM25 + vector rescore)<a class="headerlink" href="#stage-2-loose-or-keyword-bm25-vector-rescore" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Same query structure but operator <code>OR</code> — any keyword match qualifies.</li>
-<li>Same optional rescore step.</li>
-<li>Returns <code>loose_hit</code> with the mandatory banner <em>"没有完全匹配的知识，以下为相关参考，
-  仅供参考。"</em> (no exact match; the following are related references, for reference
-  only).</li>
-</ul>
-<h3 id="stage-3-vector-only-pure-knn">Stage 3 — Vector-only (pure kNN)<a class="headerlink" href="#stage-3-vector-only-pure-knn" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Only runs if <code>query_text</code> is present (the raw last user message).</li>
-<li>ES <code>knn</code> on <code>body_vec</code>; <code>k = req.size</code>, <code>num_candidates = max(k*4, 100)</code>.</li>
-<li>Filters (project/equipment/error_codes) still apply.</li>
-<li>Returns <code>vector_only</code> with a low-confidence banner.</li>
-<li>Requires the embedding service — silently falls through to <code>no_hit</code> if it fails.</li>
-</ul>
-<hr />
-<h2 id="the-ranking-formula">The ranking formula<a class="headerlink" href="#the-ranking-formula" title="Permanent link">&para;</a></h2>
-<p>When the embedding service is available, stages 1 and 2 apply a rescore pass over
-the top <code>rrf_window</code> keyword-recall candidates (<code>_rescore_clause</code>):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>final_score = (1 - vector_weight) × BM25_score
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>            + vector_weight × (cosine_similarity(query_vec, body_vec) + 1)
+<h2 id="quickstart">Quick start<a class="headerlink" href="#quickstart" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>cp<span class="w"> </span>.env.example<span class="w"> </span>.env<span class="w">          </span><span class="c1"># fill in KB_LLM__API_KEY / KB_EMBEDDING__API_KEY (optional)</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>--build<span class="w">  </span><span class="c1"># builds ES+IK and the app; app on :8000</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>curl<span class="w"> </span>localhost:8000/readyz<span class="w">    </span><span class="c1"># 200 once ES is reachable</span>
 </code></pre></div>
+<p><code>docker compose up -d --build elasticsearch</code> brings up <strong>only</strong> ES (useful when running
+the app on the host via <code>uv run python -m kb</code>). Missing API keys merely disable the
+matching features (no LLM → chat/extract/ingest return 503; no embedding key → BM25-only).</p>
+<hr />
+<h2 id="compose">The compose stack<a class="headerlink" href="#compose" title="Permanent link">&para;</a></h2>
+<p><code>docker-compose.yml</code> defines two services.</p>
+<h3 id="elasticsearch-container-kb-es"><code>elasticsearch</code> (container <code>kb-es</code>)<a class="headerlink" href="#elasticsearch-container-kb-es" title="Permanent link">&para;</a></h3>
 <ul>
-<li><code>vector_weight</code> defaults to <code>0.5</code>; tunable via <code>KB_SEARCH__VECTOR_WEIGHT</code>.</li>
-<li><code>cosine_sim + 1</code> maps <code>[-1, 1]</code> → <code>[0, 2]</code> to keep scores non-negative.</li>
-<li>Docs missing a <code>body_vec</code> (seeded without embeddings) score 0 on the vector
-  component — guarded in the rescore script so they don't error.</li>
+<li>Built from <code>elasticsearch/Dockerfile</code> — the official <code>elasticsearch:8.15.3</code> image with
+  the <code>analysis-ik</code> plugin installed at build time.</li>
+<li><code>discovery.type=single-node</code>, <code>xpack.security.enabled=false</code>, heap pinned to
+  <code>-Xms1g -Xmx1g</code>.</li>
+<li>Port <code>9200</code> published; data on the named volume <code>es-data</code>
+  (<code>/usr/share/elasticsearch/data</code>) so it survives <code>docker compose down</code>/recreation.</li>
+<li>Healthcheck polls <code>_cluster/health</code> for <code>green</code>/<code>yellow</code> (5s interval, 30 retries).</li>
 </ul>
-<p>When the embedding service is down, stages 1 and 2 run with BM25 only — no error, no
-degraded status flag. The warning is logged and counted as an upstream error metric.</p>
-<div class="admonition note">
-<p class="admonition-title">Why a rescore window, not native RRF</p>
-<p>Rescoring only the top <code>rrf_window</code> recall candidates keeps the expensive vector
-pass bounded while still re-ordering the head of the result list where it
-matters. The CLAUDE.md shorthand calls this "RRF"; mechanically it is a weighted
-BM25 + cosine blend over the recall window.</p>
+<h3 id="app-container-kb-app"><code>app</code> (container <code>kb-app</code>)<a class="headerlink" href="#app-container-kb-app" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Built from the root <code>Dockerfile</code> with build arg <code>INSTALL_OCR</code> (default <code>"false"</code>).</li>
+<li><code>depends_on: elasticsearch</code> with <code>condition: service_healthy</code> — the app waits for ES.</li>
+<li>Reads <code>.env</code> (optional) for API keys, and <strong>overrides</strong> <code>KB_ES__URL=http://elasticsearch:9200</code>
+  so it reaches ES over the compose network regardless of any <code>KB_ES__URL</code> in <code>.env</code>.</li>
+<li>Port <code>8000</code> published; <code>restart: unless-stopped</code>.</li>
+<li>Bind mounts (host → container):</li>
+<li><code>./config</code> → <code>/app/config</code> — so seed-CSV edits <strong>and</strong> the startup taxonomy auto-sync
+    (which rewrites <code>config/taxonomy.yaml</code>) persist to the host. This dir must stay
+    writable.</li>
+<li><code>./data/uploads</code> → <code>/app/data/uploads</code> — so uploaded/imported files survive container
+    recreation.</li>
+<li>Healthcheck: <code>curl -fs http://localhost:8000/readyz</code> (15s interval, 40s start period).</li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Runtime assets are read relative to the working dir</p>
+<p>The image sets <code>WORKDIR /app</code> and the app reads <code>config/</code>, the seed CSVs,
+<code>data/uploads</code>, and <code>Knowledge Base Search.html</code> relative to it. Keep those paths in
+place (compose bind-mounts the first two).</p>
 </div>
 <hr />
-<h2 id="status-contract">Status contract<a class="headerlink" href="#status-contract" title="Permanent link">&para;</a></h2>
-<p>Every <code>POST /api/v1/search</code> response carries a <code>status</code> field. <strong>Do not change these
-values</strong> — upstream callers depend on them.</p>
-<table>
-<thead>
-<tr>
-<th>Status</th>
-<th>Condition</th>
-<th>Documents returned</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>strict_hit</code></td>
-<td>All filters + AND-keywords matched, within <code>strict_max_hits</code></td>
-<td>Yes</td>
-</tr>
-<tr>
-<td><code>too_many</code></td>
-<td>Strict matched more than <code>strict_max_hits</code> — caller should ask user to narrow</td>
-<td>No (facets only)</td>
-</tr>
-<tr>
-<td><code>loose_hit</code></td>
-<td>Fell back to OR-keywords — show with "for reference only" banner</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td><code>vector_only</code></td>
-<td>Only vector similarity matched — low confidence</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td><code>no_hit</code></td>
-<td>Nothing matched</td>
-<td>No</td>
-</tr>
-</tbody>
-</table>
-<p><code>loose_hit</code> and <code>vector_only</code> responses carry a non-null <code>banner</code> string that
-callers <strong>must render verbatim</strong> — it signals reduced confidence to the user.</p>
-<hr />
-<h2 id="faceting-on-too_many">Faceting on <code>too_many</code><a class="headerlink" href="#faceting-on-too_many" title="Permanent link">&para;</a></h2>
-<p>When strict recall overflows <code>strict_max_hits</code>, <code>_facet_counts()</code> aggregates
-<code>project</code>, <code>equipment</code>, and <code>error_codes</code> over the strict-filtered set (top 20
-buckets each) so the caller can offer "narrow by…" choices. Each facet also reports
-a <code>facets_truncated[facet]</code> count (ES <code>sum_other_doc_count</code>) — a non-zero value
-means the bucket list is not exhaustive.</p>
-<hr />
-<h2 id="index-selection">Index selection<a class="headerlink" href="#index-selection" title="Permanent link">&para;</a></h2>
-<p><code>_index_for()</code> picks the index to query:</p>
+<h2 id="image">The app image<a class="headerlink" href="#image" title="Permanent link">&para;</a></h2>
+<p><code>Dockerfile</code> is a multi-stage <code>uv</code> build:</p>
 <ul>
-<li><code>knowledge_type</code> set → the single <code>kb_&lt;type&gt;_v1</code> alias.</li>
-<li><code>knowledge_type</code> omitted → a comma-joined search across <strong>all</strong> type aliases.</li>
+<li><strong>Builder</strong> (<code>python:3.12-slim</code>) — installs deps reproducibly from <code>uv.lock</code> with the
+  <code>ingest</code> extra baked in (PDF/XLSX/PPTX/DOCX import works out of the box), then installs
+  the project as a non-editable wheel into <code>/app/.venv</code>.</li>
+<li><strong>Optional OCR</strong> — <code>--build-arg INSTALL_OCR=true</code> adds <code>paddleocr</code> + <code>paddlepaddle</code>
+  (~1.5–2 GB) and the extra runtime libs <code>libgl1</code> / <code>libglib2.0-0</code>. Off by default to keep
+  the image lean.</li>
+<li><strong>Runtime</strong> (<code>python:3.12-slim</code>) — copies the venv, <code>config/</code>, and the frontend HTML;
+  uses <code>tini</code> as PID 1 for clean signal handling; <code>HEALTHCHECK</code> hits <code>/readyz</code>; entrypoint
+  <code>python -m kb --host 0.0.0.0 --port 8000</code>.</li>
 </ul>
-<p>This is why a chat query without a detected knowledge type still searches alarms,
-setups, and experience documents together.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>kb-app<span class="w"> </span>.<span class="w">                               </span><span class="c1"># slim (no OCR)</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>kb-app<span class="w"> </span>--build-arg<span class="w"> </span><span class="nv">INSTALL_OCR</span><span class="o">=</span><span class="nb">true</span><span class="w"> </span>.<span class="w">  </span><span class="c1"># with PaddleOCR</span>
+</code></pre></div>
+<p>To enable OCR in compose, set <code>args.INSTALL_OCR: "true"</code> under the <code>app</code> service and
+rebuild.</p>
 <hr />
-<h2 id="tunables">Tunables<a class="headerlink" href="#tunables" title="Permanent link">&para;</a></h2>
-<p>All under <code>search:</code> in <code>config/settings.yaml</code> or <code>KB_SEARCH__*</code> env vars. See
-<a href="../../configuration/#search">Configuration → Search</a>.</p>
+<h2 id="hardening">Production hardening<a class="headerlink" href="#hardening" title="Permanent link">&para;</a></h2>
+<p>The default compose stack is a <strong>single-node, security-off</strong> dev setup. For anything
+beyond local use:</p>
 <table>
 <thead>
 <tr>
-<th>Parameter</th>
-<th>Default</th>
-<th>Effect</th>
+<th>Concern</th>
+<th>What to do</th>
+<th>Setting / mechanism</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>strict_max_hits</code></td>
-<td><code>8</code></td>
-<td><code>too_many</code> threshold</td>
+<td><strong>ES over TLS</strong></td>
+<td>Point the app at an HTTPS ES and verify certs</td>
+<td><code>KB_ES__URL=https://…</code>, <code>KB_ES__VERIFY_CERTS=true</code>; for a self-signed node set <code>KB_ES__SSL_FINGERPRINT</code> (SHA-256 from ES startup output)</td>
 </tr>
 <tr>
-<td><code>title_boost</code></td>
-<td><code>3.0</code></td>
-<td>Title field weight vs body in BM25</td>
+<td><strong>ES auth</strong></td>
+<td>Enable <code>xpack.security</code>, create a least-privilege user</td>
+<td><code>KB_ES__USERNAME</code> / <code>KB_ES__PASSWORD</code></td>
 </tr>
 <tr>
-<td><code>rrf_window</code></td>
-<td><code>50</code></td>
-<td>How many recall hits are rescored by vector</td>
+<td><strong>Secrets</strong></td>
+<td>Never bake keys into the image</td>
+<td>Mount <code>.env</code> or inject <code>KB_LLM__API_KEY</code> / <code>KB_EMBEDDING__API_KEY</code> via your orchestrator's secret store</td>
 </tr>
 <tr>
-<td><code>vector_weight</code></td>
-<td><code>0.5</code></td>
-<td>Balance between BM25 and cosine in final score</td>
+<td><strong>AuthN/Z</strong></td>
+<td>The app has none — put it behind a gateway</td>
+<td>Reverse proxy / API gateway enforcing auth (see <a href="../security/">Security</a>)</td>
 </tr>
 <tr>
-<td><code>max_result_window</code></td>
-<td><code>10000</code></td>
-<td>Deepest <code>from_ + size</code> page; rejected at the model with a 400 instead of failing inside ES</td>
+<td><strong>Heap / resources</strong></td>
+<td>1 GB heap is dev-sized</td>
+<td>Raise <code>ES_JAVA_OPTS</code>; size ES to your corpus</td>
+</tr>
+<tr>
+<td><strong>Scaling</strong></td>
+<td>App is stateless except in-memory import sessions</td>
+<td>Run multiple app replicas behind a load balancer; note import-session preview state is per-process (see below)</td>
 </tr>
 </tbody>
 </table>
-<p>To find good values for <code>title_boost</code> / <code>vector_weight</code> / <code>rrf_window</code>, use the
-aggregated 👍/👎 signal from the <a href="../../observability/#search-feedback">search feedback</a>
-endpoint.</p>
+<div class="admonition note">
+<p class="admonition-title">Import sessions are in-process</p>
+<p>Staged import sessions live in memory in the app process (TTL-evicted). Behind a
+load balancer, pin an import review flow to one replica (sticky sessions) or scale the
+app to one replica for the ingest UI — committed documents and the file tracker are in
+ES and are shared, only the <em>preview</em> state is local.</p>
+</div>
+<hr />
+<h2 id="backup">Data persistence &amp; backup<a class="headerlink" href="#backup" title="Permanent link">&para;</a></h2>
+<p>Three kinds of state, all recoverable:</p>
+<ol>
+<li><strong>Search documents in ES</strong> — the source of truth for <em>imported</em> docs is the
+   <code>kb_import_files</code> tracker index plus the seed CSVs. On every startup the app <strong>clears
+   and reseeds</strong> the main indices from the CSVs, then <code>restore_imports()</code> replays committed
+   imports from the tracker (see
+   <a href="../../reference/build-from-scratch/#startup">Build from Scratch → Startup</a>).</li>
+<li><strong>Seed CSVs + <code>config/</code></strong> — version-control these; they fully define the seeded corpus.</li>
+<li><strong>The <code>es-data</code> volume</strong> — back it up if you want point-in-time recovery without a
+   reseed:</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Snapshot the ES data volume to a tarball</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-v<span class="w"> </span>knowledgebase_es-data:/data<span class="w"> </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">&quot;</span>:/backup<span class="w"> </span>alpine<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span>tar<span class="w"> </span>czf<span class="w"> </span>/backup/es-data-<span class="k">$(</span>date<span class="w"> </span>+%F<span class="k">)</span>.tgz<span class="w"> </span>-C<span class="w"> </span>/data<span class="w"> </span>.
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># Restore into a fresh volume</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-v<span class="w"> </span>knowledgebase_es-data:/data<span class="w"> </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">&quot;</span>:/backup<span class="w"> </span>alpine<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span>sh<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;cd /data &amp;&amp; tar xzf /backup/es-data-2026-06-05.tgz&quot;</span>
+</code></pre></div>
+<p>For larger deployments prefer the Elasticsearch
+<a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/snapshot-restore.html">snapshot API</a>
+to a shared repository over a raw volume copy.</p>
+<hr />
+<h2 id="docs-publish">Docs auto-publish<a class="headerlink" href="#docs-publish" title="Permanent link">&para;</a></h2>
+<p>The documentation site (this site) publishes to GitHub Pages via a <strong>local <code>pre-push</code> git
+hook</strong> — deliberately not GitHub Actions, to avoid CI cost.</p>
+<ul>
+<li>Hooks are version-controlled in <code>scripts/git-hooks/</code> and activated by
+  <code>./scripts/install-hooks.sh</code> (which sets <code>core.hooksPath</code>, and is why that dir also
+  carries the repo's Git LFS passthrough hooks: <code>post-checkout</code>, <code>post-commit</code>,
+  <code>post-merge</code>).</li>
+<li>On a push to <code>main</code> that touches <code>docs/</code> or <code>mkdocs.yml</code>, the <code>pre-push</code> hook runs
+  <code>scripts/deploy-docs.sh</code>, which does <code>mkdocs gh-deploy --strict</code> (build + push to
+  <code>gh-pages</code>). A failed strict build <strong>aborts the push</strong>.</li>
+<li>Run <code>scripts/deploy-docs.sh</code> directly to publish on demand; bypass the hook once with
+  <code>git push --no-verify</code>.</li>
+</ul>
+<p>Build/preview locally first:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>uv<span class="w"> </span>sync<span class="w"> </span>--extra<span class="w"> </span>docs
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>serve<span class="w">              </span><span class="c1"># preview EN/中文 at :8000</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>build<span class="w"> </span>--strict<span class="w">     </span><span class="c1"># fails on broken links/anchors; output → ./site (git-ignored)</span>
+</code></pre></div>
 
 
 
@@ -1635,7 +1556,7 @@ endpoint.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../import-pipeline/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Import Pipeline">
+          <a href="../testing/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Testing &amp; Development">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1645,20 +1566,20 @@ endpoint.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Import Pipeline
+                Testing & Development
               </div>
             </div>
           </a>
         
         
           
-          <a href="../../configuration/" class="md-footer__link md-footer__link--next" aria-label="Next: Configuration">
+          <a href="../troubleshooting/" class="md-footer__link md-footer__link--next" aria-label="Next: Troubleshooting">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Configuration
+                Troubleshooting
               </div>
             </div>
             <div class="md-footer__button md-icon">

@@ -1,0 +1,3262 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Zero-fabrication manufacturing knowledge-base API — Elasticsearch-backed verbatim retrieval with hybrid BM25 + vector search and an LLM used only as a query proxy.">
+      
+      
+        <meta name="author" content="Knowledge Base team">
+      
+      
+        <link rel="canonical" href="https://amazingkenneth.github.io/knowledgebase/zh/reference/data-model/">
+      
+      
+        <link rel="prev" href="../../observability/">
+      
+      
+        <link rel="next" href="../configuration-reference/">
+      
+      
+        
+          <link rel="alternate" href="../../../reference/data-model/" hreflang="en">
+        
+          <link rel="alternate" href="./" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>数据模型 - Knowledge Base — Manufacturing Search Engine</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#data-model" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../../" title="Knowledge Base — Manufacturing Search Engine" class="md-header__button md-logo" aria-label="Knowledge Base — Manufacturing Search Engine" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Knowledge Base — Manufacturing Search Engine
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              数据模型
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="选择当前语言">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../reference/data-model/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Amazingkenneth/knowledgebase" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../" class="md-tabs__link">
+        
+  
+  
+    
+  
+  首页
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  快速开始
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/overview/" class="md-tabs__link">
+          
+  
+  
+  架构
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../configuration/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  配置
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../api-reference/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API 参考
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../observability/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  可观测性
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+  参考手册
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../operations/testing/" class="md-tabs__link">
+          
+  
+  
+  运维
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Knowledge Base — Manufacturing Search Engine" class="md-nav__button md-logo" aria-label="Knowledge Base — Manufacturing Search Engine" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Knowledge Base — Manufacturing Search Engine
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Amazingkenneth/knowledgebase" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速开始
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    架构
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    总览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/ai-chat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI 对话搜索
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/import-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    文件导入管道
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/search-ranking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    检索与排序
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    配置
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API 参考
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    可观测性
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    参考手册
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    参考手册
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据模型
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据模型
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#knowledge-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        知识类型枚举
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scalar-aliases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        标量类型别名
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#document-base" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        公共文档字段 DocumentBase
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#document-subclasses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        三个文档子类
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="三个文档子类">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#alarmdoc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AlarmDoc（报警）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setupdoc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SetupDoc（调试）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#experiencedoc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExperienceDoc（经验）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#body-builder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        body 文本拼装格式
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#doc-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        文档 ID 生成
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#taxonomy-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        索引时分类法校验
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#es-mappings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        主索引映射
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="主索引映射">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#analyzers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        分析器选择
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#index-naming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        索引命名与别名
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#auxiliary-indices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        辅助索引
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="辅助索引">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kb-import-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        kb_import_files — 导入跟踪
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kb-search-feedback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        kb_search_feedback — 检索反馈
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#search-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        检索 API 模型
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="检索 API 模型">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#search-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SearchStatus（枚举）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#search-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SearchRequest
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#doc-hit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DocHit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#search-response" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SearchResponse
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ingest-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        导入管道模型
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="导入管道模型">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        状态枚举
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stageddocument" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        StagedDocument（待审文档）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        其他模型
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#taxonomy-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        分类法模型
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#csv-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CSV 列 → 文档字段映射
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CSV 列 → 文档字段映射">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_headercsv-alarmdoc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        机台报警_header.csv → AlarmDoc
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setup_headercsv-setupdoc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        机台setup_header.csv → SetupDoc
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_headercsv-experiencedoc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        设备经验_header.csv → ExperienceDoc
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        知识类型规格 schema
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    配置参考
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../build-from-scratch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    从零搭建
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    运维
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    运维
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试与开发
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    部署
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    故障排查
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安全
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#knowledge-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        知识类型枚举
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scalar-aliases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        标量类型别名
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#document-base" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        公共文档字段 DocumentBase
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#document-subclasses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        三个文档子类
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="三个文档子类">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#alarmdoc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AlarmDoc（报警）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setupdoc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SetupDoc（调试）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#experiencedoc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExperienceDoc（经验）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#body-builder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        body 文本拼装格式
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#doc-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        文档 ID 生成
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#taxonomy-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        索引时分类法校验
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#es-mappings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        主索引映射
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="主索引映射">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#analyzers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        分析器选择
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#index-naming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        索引命名与别名
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#auxiliary-indices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        辅助索引
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="辅助索引">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kb-import-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        kb_import_files — 导入跟踪
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kb-search-feedback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        kb_search_feedback — 检索反馈
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#search-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        检索 API 模型
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="检索 API 模型">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#search-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SearchStatus（枚举）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#search-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SearchRequest
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#doc-hit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DocHit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#search-response" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SearchResponse
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ingest-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        导入管道模型
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="导入管道模型">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        状态枚举
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stageddocument" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        StagedDocument（待审文档）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        其他模型
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#taxonomy-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        分类法模型
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#csv-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CSV 列 → 文档字段映射
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CSV 列 → 文档字段映射">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_headercsv-alarmdoc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        机台报警_header.csv → AlarmDoc
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setup_headercsv-setupdoc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        机台setup_header.csv → SetupDoc
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_headercsv-experiencedoc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        设备经验_header.csv → ExperienceDoc
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        知识类型规格 schema
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="data-model">数据模型与索引映射参考<a class="headerlink" href="#data-model" title="Permanent link">&para;</a></h1>
+<p>本页是<strong>可复现级别</strong>的数据契约参考：把每一个文档字段、Pydantic 校验规则、
+Elasticsearch 映射、<code>body</code> 文本拼装格式、文档 ID 生成算法、辅助索引、API 请求/响应
+模型，以及 CSV / 知识类型规格的字段对应关系全部列出。只要照此实现，即可得到与本项目
+逐字节兼容的索引结构。</p>
+<p>源代码位置：</p>
+<table>
+<thead>
+<tr>
+<th>关注点</th>
+<th>文件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>文档模型（<code>AlarmDoc</code> / <code>SetupDoc</code> / <code>ExperienceDoc</code>）</td>
+<td><code>src/kb/models/document.py</code></td>
+</tr>
+<tr>
+<td>检索请求/响应模型</td>
+<td><code>src/kb/models/search.py</code></td>
+</tr>
+<tr>
+<td>导入管道模型</td>
+<td><code>src/kb/models/ingest.py</code></td>
+</tr>
+<tr>
+<td>分类法模型</td>
+<td><code>src/kb/models/taxonomy.py</code></td>
+</tr>
+<tr>
+<td>主索引映射</td>
+<td><code>src/kb/es/mappings.py</code></td>
+</tr>
+<tr>
+<td><code>body</code> 文本拼装</td>
+<td><code>src/kb/es/body_builder.py</code></td>
+</tr>
+<tr>
+<td>文档 ID + 索引时校验</td>
+<td><code>src/kb/services/indexing.py</code></td>
+</tr>
+<tr>
+<td>导入跟踪索引映射</td>
+<td><code>src/kb/es/import_mappings.py</code></td>
+</tr>
+<tr>
+<td>检索反馈索引映射</td>
+<td><code>src/kb/es/feedback_mappings.py</code></td>
+</tr>
+<tr>
+<td>知识类型规格（分段提示词）</td>
+<td><code>src/kb/services/spec.py</code>、<code>config/knowledge_types/*.yaml</code></td>
+</tr>
+<tr>
+<td>CSV → 文档映射</td>
+<td><code>src/kb/services/csv_loader.py</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="knowledge-type">知识类型枚举<a class="headerlink" href="#knowledge-type" title="Permanent link">&para;</a></h2>
+<p><code>KnowledgeType</code>（<code>StrEnum</code>）是整个系统的根枚举，决定文档进入哪个索引、用哪个子类校验、
+走哪套分段提示词：</p>
+<table>
+<thead>
+<tr>
+<th>取值</th>
+<th>中文含义</th>
+<th>文档子类</th>
+<th>索引别名</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>alarm</code></td>
+<td>机台报警</td>
+<td><code>AlarmDoc</code></td>
+<td><code>kb_alarm</code></td>
+</tr>
+<tr>
+<td><code>setup</code></td>
+<td>机台 setup / 调试规范</td>
+<td><code>SetupDoc</code></td>
+<td><code>kb_setup</code></td>
+</tr>
+<tr>
+<td><code>experience</code></td>
+<td>设备经验 / 故障案例</td>
+<td><code>ExperienceDoc</code></td>
+<td><code>kb_experience</code></td>
+</tr>
+</tbody>
+</table>
+<p>新增知识类型需要同时改动：<code>KnowledgeType</code> 枚举、新增一个 <code>DocumentBase</code> 子类、
+<code>doc_class_for()</code> 的 <code>match</code>、<code>config/knowledge_types/&lt;type&gt;.yaml</code> 规格文件、以及
+<code>config/taxonomy.yaml</code> 的 <code>knowledge_types</code> 列表。</p>
+<hr />
+<h2 id="scalar-aliases">标量类型别名<a class="headerlink" href="#scalar-aliases" title="Permanent link">&para;</a></h2>
+<p><code>src/kb/models/document.py</code> 顶部定义了几个带约束的字符串别名，所有文档字段都复用它们：</p>
+<table>
+<thead>
+<tr>
+<th>别名</th>
+<th>定义</th>
+<th>约束</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NonEmptyStr</code></td>
+<td><code>Annotated[str, StringConstraints(min_length=1, strip_whitespace=True)]</code></td>
+<td>去除首尾空白后至少 1 个字符</td>
+</tr>
+<tr>
+<td><code>TitleStr</code></td>
+<td><code>Annotated[str, StringConstraints(min_length=1, max_length=200, strip_whitespace=True)]</code></td>
+<td>标题：1–200 字符</td>
+</tr>
+<tr>
+<td><code>SummaryStr</code></td>
+<td><code>Annotated[str, StringConstraints(max_length=50, strip_whitespace=True)]</code></td>
+<td>摘要：≤50 字符</td>
+</tr>
+</tbody>
+</table>
+<p>报警码校验正则（<code>error_codes</code> 字段使用）：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">ERROR_CODE_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[A-Z0-9][A-Z0-9_\-]{0,63}$&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>即：首字符为大写字母或数字，其后可接大写字母 / 数字 / 下划线 / 连字符，总长 1–64。
+校验器会先 <code>strip().upper()</code>，再做唯一性检查，任何不匹配项都会抛出 <code>ValueError</code>。</p>
+<hr />
+<h2 id="document-base">公共文档字段 <code>DocumentBase</code><a class="headerlink" href="#document-base" title="Permanent link">&para;</a></h2>
+<p>所有知识文档的共同基类。字段分三组（与 ES 映射一一对应，见 <a href="#es-mappings">索引映射</a>）：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>默认</th>
+<th>组别</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>knowledge_type</code></td>
+<td><code>KnowledgeType</code></td>
+<td>—（由子类锁定）</td>
+<td>Part 1</td>
+<td>文档类型</td>
+</tr>
+<tr>
+<td><code>project</code></td>
+<td><code>str</code></td>
+<td><code>""</code></td>
+<td>Part 1</td>
+<td>项目，索引时校验是否在分类法内</td>
+</tr>
+<tr>
+<td><code>equipment</code></td>
+<td><code>str</code></td>
+<td><code>""</code></td>
+<td>Part 1</td>
+<td>设备/机台，索引时校验是否在分类法内</td>
+</tr>
+<tr>
+<td><code>error_codes</code></td>
+<td><code>list[str]</code></td>
+<td><code>[]</code></td>
+<td>Part 1</td>
+<td>报警码列表，逐项匹配 <code>ERROR_CODE_RE</code>，转大写、去重</td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td><code>TitleStr</code></td>
+<td>必填</td>
+<td>Part 3</td>
+<td>标题，参与 BM25 与向量召回</td>
+</tr>
+<tr>
+<td><code>source_file</code></td>
+<td><code>str \| None</code></td>
+<td><code>None</code></td>
+<td>Part 2</td>
+<td>来源文件名（仅展示，不索引）</td>
+</tr>
+<tr>
+<td><code>source_pages</code></td>
+<td><code>list[str]</code></td>
+<td><code>[]</code></td>
+<td>Part 2</td>
+<td>来源页码（仅展示，不索引）</td>
+</tr>
+<tr>
+<td><code>summary</code></td>
+<td><code>SummaryStr \| None</code></td>
+<td><code>None</code></td>
+<td>Part 2</td>
+<td>≤50 字摘要，用于结果列表与控制 LLM 上下文长度</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td><code>datetime \| None</code></td>
+<td><code>None</code></td>
+<td>审计</td>
+<td>创建时间</td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td><code>datetime \| None</code></td>
+<td><code>None</code></td>
+<td>审计</td>
+<td>更新时间</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">三组字段的检索语义</p>
+<ul>
+<li><strong>Part 1（keyword）</strong>：精确过滤（<code>term</code>/<code>terms</code>），不分词，不影响 BM25 打分。</li>
+<li><strong>Part 2（display-only）</strong>：<code>index: False</code> / <code>enabled: False</code>，逐字返回用于渲染，
+  永不参与查询或打分。</li>
+<li><strong>Part 3（full-text）</strong>：用配置的分析器分词，参与 BM25 关键词召回与向量重排。</li>
+</ul>
+</div>
+<p>每个子类必须实现 <code>content_sections() -&gt; list[tuple[str, str]]</code>，返回有序的
+<code>(段名, 文本)</code> 对。<code>body_builder</code> 用它拼装 <code>body</code> 与 <code>sections</code>（段名本身<strong>不会</strong>进入
+<code>body</code> 文本，仅供 builder 跳过空段）。</p>
+<hr />
+<h2 id="document-subclasses">三个文档子类<a class="headerlink" href="#document-subclasses" title="Permanent link">&para;</a></h2>
+<h3 id="alarmdoc"><code>AlarmDoc</code>（报警）<a class="headerlink" href="#alarmdoc" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>默认</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>content</code></td>
+<td><code>NonEmptyStr</code></td>
+<td>必填</td>
+<td>报警内容 / 触发条件，逐字</td>
+</tr>
+<tr>
+<td><code>resolution</code></td>
+<td><code>NonEmptyStr</code></td>
+<td>必填</td>
+<td>解除流程，逐字</td>
+</tr>
+<tr>
+<td><code>notes</code></td>
+<td><code>str</code></td>
+<td><code>""</code></td>
+<td>注意事项（可选）</td>
+</tr>
+</tbody>
+</table>
+<p><code>content_sections()</code> 顺序：<code>content</code> → <code>resolution</code> →（<code>notes</code> 非空时）<code>notes</code>。</p>
+<h3 id="setupdoc"><code>SetupDoc</code>（调试）<a class="headerlink" href="#setupdoc" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>默认</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>procedure</code></td>
+<td><code>NonEmptyStr</code></td>
+<td>必填</td>
+<td>调试步骤，逐字</td>
+</tr>
+<tr>
+<td><code>prerequisites</code></td>
+<td><code>str</code></td>
+<td><code>""</code></td>
+<td>规格/要求、工具等前置条件</td>
+</tr>
+<tr>
+<td><code>notes</code></td>
+<td><code>str</code></td>
+<td><code>""</code></td>
+<td>注意事项（可选）</td>
+</tr>
+</tbody>
+</table>
+<p><code>content_sections()</code> 顺序：（<code>prerequisites</code> 非空时）<code>prerequisites</code> → <code>procedure</code> →
+（<code>notes</code> 非空时）<code>notes</code>。</p>
+<h3 id="experiencedoc"><code>ExperienceDoc</code>（经验）<a class="headerlink" href="#experiencedoc" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>默认</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>body_text</code></td>
+<td><code>NonEmptyStr</code></td>
+<td>必填</td>
+<td>失败描述（含失败分析/根因的拼接正文），逐字</td>
+</tr>
+<tr>
+<td><code>procedure</code></td>
+<td><code>str</code></td>
+<td><code>""</code></td>
+<td>纠正步骤</td>
+</tr>
+<tr>
+<td><code>notes</code></td>
+<td><code>str</code></td>
+<td><code>""</code></td>
+<td>注意事项（可选）</td>
+</tr>
+</tbody>
+</table>
+<p><code>content_sections()</code> 顺序：<code>body</code> → （<code>procedure</code> 非空时）<code>procedure</code> →
+（<code>notes</code> 非空时）<code>notes</code>。</p>
+<div class="admonition tip">
+<p class="admonition-title">判别联合（discriminated union）</p>
+<p><code>KnowledgeDoc = AlarmDoc | SetupDoc | ExperienceDoc</code>。每个子类的
+<code>knowledge_type</code> 字段被注解为 <code>Literal[...]</code> 锁死为自身类型，因此
+<code>_parse_doc()</code> 注入 <code>knowledge_type</code> 后只有匹配子类能通过校验。
+<code>doc_class_for(kt)</code> 用 <code>match</code> 把枚举映射回子类。</p>
+</div>
+<hr />
+<h2 id="body-builder"><code>body</code> 文本拼装格式<a class="headerlink" href="#body-builder" title="Permanent link">&para;</a></h2>
+<p><code>build_body(doc)</code>（<code>src/kb/es/body_builder.py</code>）按固定格式拼出索引到 ES <code>body</code> 字段的
+文本。<strong>该格式被测试钉死，修改必须升级索引版本并 reindex。</strong></p>
+<p>分隔符常量：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">CONTENT_SEPARATOR</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">---</span><span class="se">\n\n</span><span class="s2">&quot;</span>   <span class="c1"># 段与段、段与元数据块之间</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">META_SEPARATOR</span>    <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>             <span class="c1"># 元数据块内部行间</span>
+</code></pre></div>
+<p>布局（以一篇含 notes 的报警为例）：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>&lt;content 文本&gt;
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>---
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>&lt;resolution 文本&gt;
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>---
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>&lt;notes 文本&gt;
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>---
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>&lt;title&gt;
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>project: &lt;project&gt;
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>equipment: &lt;equipment&gt;
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>error_codes: &lt;code1&gt; &lt;code2&gt; ...
+</code></pre></div>
+<p>要点：</p>
+<ul>
+<li>先按 <code>content_sections()</code> 顺序拼接各段（用 <code>CONTENT_SEPARATOR</code> 连接）。</li>
+<li>最后追加一个<strong>元数据块</strong>：第一行是 <code>title</code>，随后是 <code>project: …</code>、<code>equipment: …</code>，
+  若有报警码再加 <code>error_codes: c1 c2</code>（空格分隔）。整个块用 <code>META_SEPARATOR</code> 连接。</li>
+<li>之所以把元数据并入 <code>body</code>，是为了让关键词查询（如搜 "MHK"）即使该词只出现在
+  <code>project</code> 字段也能召回——分词器会把 <code>project:</code> 与 <code>MHK</code> 切开。</li>
+</ul>
+<p><code>build_title_text(doc)</code> 目前直接返回 <code>doc.title</code>（保留此函数只为与 <code>build_body</code> 对称，
+便于将来在索引标题前拼 project/equipment）。</p>
+<p><code>title</code> 与 <code>body</code> 各自生成一个向量：<code>title_vec</code>、<code>body_vec</code>（见 <a href="#es-mappings">索引映射</a>）。
+当前检索仅在 <code>body_vec</code> 上做向量重排与 kNN。</p>
+<hr />
+<h2 id="doc-id">文档 ID 生成<a class="headerlink" href="#doc-id" title="Permanent link">&para;</a></h2>
+<p><code>doc_id(doc)</code>（<code>src/kb/services/indexing.py</code>）生成<strong>内容寻址</strong>的稳定 ID，保证同一逻辑
+文档幂等 upsert（改 notes/content 会更新原文档而非新建）：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">payload</span> <span class="o">=</span> <span class="s2">&quot;|&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">doc</span><span class="o">.</span><span class="n">knowledge_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">doc</span><span class="o">.</span><span class="n">project</span><span class="p">,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">doc</span><span class="o">.</span><span class="n">equipment</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">doc</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">error_codes</span><span class="p">)),</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="p">])</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">h</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">payload</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()[:</span><span class="mi">24</span><span class="p">]</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="n">doc_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">doc</span><span class="o">.</span><span class="n">knowledge_type</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">h</span><span class="si">}</span><span class="s2">&quot;</span>   <span class="c1"># 例如 alarm:9f2c…（共 24 位 hex）</span>
+</code></pre></div>
+<p>即 ID = <code>&lt;type&gt;:&lt;sha256(type|project|equipment|title|sorted_codes)[:24]&gt;</code>。
+改动 <code>project</code>/<code>equipment</code>/<code>title</code>/<code>error_codes</code> 任一项都会得到新 ID（即新文档）。</p>
+<hr />
+<h2 id="taxonomy-validation">索引时分类法校验<a class="headerlink" href="#taxonomy-validation" title="Permanent link">&para;</a></h2>
+<p><code>validate_against_taxonomy(doc, tax)</code> 在嵌入与写入前运行，违反即抛 <code>IndexingError</code>：</p>
+<ol>
+<li><code>doc.knowledge_type</code> 必须在 <code>tax.knowledge_types</code> 内；</li>
+<li>若 <code>doc.project</code> 非空，必须在 <code>tax.projects</code> 内；</li>
+<li>若 <code>doc.equipment</code> 非空，必须在 <code>tax.equipment</code> 内。</li>
+</ol>
+<p>空字符串的 project/equipment 被允许（视为"未指定"），但非空的未知值会被拒绝——
+这是"分类法强制"约束的落点。</p>
+<hr />
+<h2 id="es-mappings">主索引映射<a class="headerlink" href="#es-mappings" title="Permanent link">&para;</a></h2>
+<p>三个知识类型共用同一份映射（<code>_base_mapping</code>），区别只在应用层（哪些段进入 <code>body</code>）。
+共用映射让跨类型检索变得简单。所有映射 <code>dynamic: "strict"</code>——未知字段在写入时被拒绝。</p>
+<p><code>index_body(dims, index_analyzer, query_analyzer)</code> 完整 create-index body：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">&quot;settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">&quot;analysis&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">      </span><span class="nt">&quot;analyzer&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">        </span><span class="nt">&quot;kb_index&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;custom&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;tokenizer&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ik_max_word&quot;</span><span class="p">},</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">        </span><span class="nt">&quot;kb_query&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;custom&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;tokenizer&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ik_smart&quot;</span><span class="p">}</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">      </span><span class="p">}</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">  </span><span class="nt">&quot;mappings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">    </span><span class="nt">&quot;dynamic&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;strict&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">    </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">      </span><span class="nt">&quot;knowledge_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;keyword&quot;</span><span class="p">},</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">      </span><span class="nt">&quot;project&quot;</span><span class="p">:</span><span class="w">        </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;keyword&quot;</span><span class="p">},</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">      </span><span class="nt">&quot;equipment&quot;</span><span class="p">:</span><span class="w">      </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;keyword&quot;</span><span class="p">},</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">      </span><span class="nt">&quot;error_codes&quot;</span><span class="p">:</span><span class="w">    </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;keyword&quot;</span><span class="p">},</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">      </span><span class="nt">&quot;source_file&quot;</span><span class="p">:</span><span class="w">  </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;keyword&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;index&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">},</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">      </span><span class="nt">&quot;source_pages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;keyword&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;index&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">},</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="w">      </span><span class="nt">&quot;sections&quot;</span><span class="p">:</span><span class="w">     </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">},</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="w">      </span><span class="nt">&quot;summary&quot;</span><span class="p">:</span><span class="w">      </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;keyword&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;index&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">},</span>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;text&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a><span class="w">        </span><span class="nt">&quot;analyzer&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ik_max_word&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="w">        </span><span class="nt">&quot;search_analyzer&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ik_smart&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a><span class="w">        </span><span class="nt">&quot;fields&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;keyword&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;keyword&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;ignore_above&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">256</span><span class="p">}}</span>
+<a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a><span class="w">      </span><span class="p">},</span>
+<a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="w">      </span><span class="nt">&quot;body&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a><span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;text&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a><span class="w">        </span><span class="nt">&quot;analyzer&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ik_max_word&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a><span class="w">        </span><span class="nt">&quot;search_analyzer&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ik_smart&quot;</span>
+<a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a><span class="w">      </span><span class="p">},</span>
+<a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a>
+<a id="__codelineno-4-35" name="__codelineno-4-35" href="#__codelineno-4-35"></a><span class="w">      </span><span class="nt">&quot;title_vec&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;dense_vector&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;dims&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1024</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;index&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-4-36" name="__codelineno-4-36" href="#__codelineno-4-36"></a><span class="w">                    </span><span class="nt">&quot;similarity&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cosine&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;index_options&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;hnsw&quot;</span><span class="p">}},</span>
+<a id="__codelineno-4-37" name="__codelineno-4-37" href="#__codelineno-4-37"></a><span class="w">      </span><span class="nt">&quot;body_vec&quot;</span><span class="p">:</span><span class="w">  </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;dense_vector&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;dims&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1024</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;index&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-4-38" name="__codelineno-4-38" href="#__codelineno-4-38"></a><span class="w">                    </span><span class="nt">&quot;similarity&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cosine&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;index_options&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;hnsw&quot;</span><span class="p">}},</span>
+<a id="__codelineno-4-39" name="__codelineno-4-39" href="#__codelineno-4-39"></a>
+<a id="__codelineno-4-40" name="__codelineno-4-40" href="#__codelineno-4-40"></a><span class="w">      </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;date&quot;</span><span class="p">},</span>
+<a id="__codelineno-4-41" name="__codelineno-4-41" href="#__codelineno-4-41"></a><span class="w">      </span><span class="nt">&quot;updated_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;date&quot;</span><span class="p">}</span>
+<a id="__codelineno-4-42" name="__codelineno-4-42" href="#__codelineno-4-42"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-4-43" name="__codelineno-4-43" href="#__codelineno-4-43"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-4-44" name="__codelineno-4-44" href="#__codelineno-4-44"></a><span class="p">}</span>
+</code></pre></div>
+<p>字段逐项说明：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>ES 类型</th>
+<th>关键属性</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>knowledge_type</code></td>
+<td>keyword</td>
+<td>—</td>
+<td>过滤/精确匹配</td>
+</tr>
+<tr>
+<td><code>project</code></td>
+<td>keyword</td>
+<td>—</td>
+<td>过滤；facet 聚合</td>
+</tr>
+<tr>
+<td><code>equipment</code></td>
+<td>keyword</td>
+<td>—</td>
+<td>过滤；facet 聚合</td>
+</tr>
+<tr>
+<td><code>error_codes</code></td>
+<td>keyword</td>
+<td>多值</td>
+<td>过滤（<code>terms</code>，命中任一即可）；facet 聚合</td>
+</tr>
+<tr>
+<td><code>source_file</code></td>
+<td>keyword</td>
+<td><code>index: false</code></td>
+<td>仅存储、仅展示</td>
+</tr>
+<tr>
+<td><code>source_pages</code></td>
+<td>keyword</td>
+<td><code>index: false</code></td>
+<td>仅存储、仅展示</td>
+</tr>
+<tr>
+<td><code>summary</code></td>
+<td>keyword</td>
+<td><code>index: false</code></td>
+<td>≤50 字摘要，仅展示</td>
+</tr>
+<tr>
+<td><code>sections</code></td>
+<td>object</td>
+<td><code>enabled: false</code></td>
+<td>原始段落字典，逐字返回，永不索引</td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td>text</td>
+<td><code>analyzer</code>/<code>search_analyzer</code>；子字段 <code>title.keyword</code>（<code>ignore_above:256</code>）</td>
+<td>BM25（带 <code>title^N</code> 加权）+ 向量；<code>.keyword</code> 可做精确排序</td>
+</tr>
+<tr>
+<td><code>body</code></td>
+<td>text</td>
+<td><code>analyzer</code>/<code>search_analyzer</code></td>
+<td>BM25 召回主字段</td>
+</tr>
+<tr>
+<td><code>title_vec</code></td>
+<td>dense_vector</td>
+<td><code>dims</code>、<code>index:true</code>、<code>cosine</code>、<code>hnsw</code></td>
+<td>标题向量（当前未用于打分，预留）</td>
+</tr>
+<tr>
+<td><code>body_vec</code></td>
+<td>dense_vector</td>
+<td><code>dims</code>、<code>index:true</code>、<code>cosine</code>、<code>hnsw</code></td>
+<td>向量重排与 kNN 的目标字段</td>
+</tr>
+<tr>
+<td><code>created_at</code> / <code>updated_at</code></td>
+<td>date</td>
+<td>—</td>
+<td>审计时间戳</td>
+</tr>
+</tbody>
+</table>
+<h3 id="analyzers">分析器选择<a class="headerlink" href="#analyzers" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>_analyzer_settings()</code> <strong>仅在</strong>请求 IK 分词器（<code>ik_max_word</code> / <code>ik_smart</code>）时才输出
+  <code>settings.analysis</code> 块（定义 <code>kb_index</code> / <code>kb_query</code> 两个自定义分析器）。</li>
+<li>但映射里 <code>title</code>/<code>body</code> 的 <code>analyzer</code> 直接写的是传入的 <code>index_analyzer</code> /
+  <code>query_analyzer</code> 名字（默认 <code>ik_max_word</code> / <code>ik_smart</code>）——IK 插件本身就注册了这两个
+  分析器名。</li>
+<li><strong>无 IK 插件的回退</strong>：把 <code>KB_ES__ANALYZER_INDEX</code> 与 <code>KB_ES__ANALYZER_QUERY</code> 都设为
+  <code>cjk</code>（ES 内置 CJK 二元分词），此时不输出自定义 settings 块。</li>
+<li><code>dims</code> 来自 <code>KB_EMBEDDING__DIMS</code>（默认 1024）。<strong>两个向量字段的维度必须等于嵌入模型
+  输出维度</strong>，否则写入报维度不匹配。</li>
+</ul>
+<h3 id="index-naming">索引命名与别名<a class="headerlink" href="#index-naming" title="Permanent link">&para;</a></h3>
+<p><code>src/kb/es/mappings.py</code>：</p>
+<table>
+<thead>
+<tr>
+<th>函数</th>
+<th>返回</th>
+<th>示例（prefix=<code>kb</code>）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>index_name(prefix, kt, version=1)</code></td>
+<td><code>{prefix}_{kt}_v{version}</code></td>
+<td><code>kb_alarm_v1</code></td>
+</tr>
+<tr>
+<td><code>alias_name(prefix, kt)</code></td>
+<td><code>{prefix}_{kt}</code></td>
+<td><code>kb_alarm</code></td>
+</tr>
+<tr>
+<td><code>all_alias_pattern(prefix)</code></td>
+<td><code>{prefix}_*</code></td>
+<td><code>kb_*</code></td>
+</tr>
+</tbody>
+</table>
+<p>物理索引带版本号（<code>kb_alarm_v1</code>），稳定别名（<code>kb_alarm</code>）指向它。reindex 时创建新版本
+索引并<strong>原子切换别名</strong>（<code>src/kb/es/migrations.py</code> 的 <code>create_one</code> / <code>reindex</code>），实现
+零停机更换映射或嵌入模型。检索时 <code>_index_for()</code>：指定 <code>knowledge_type</code> 用单个别名，
+否则逗号拼接所有别名做跨类型检索。</p>
+<hr />
+<h2 id="auxiliary-indices">辅助索引<a class="headerlink" href="#auxiliary-indices" title="Permanent link">&para;</a></h2>
+<p>两个辅助索引<strong>不参与启动重排（reseed）</strong>，因此跨重启持久。</p>
+<h3 id="kb-import-files"><code>kb_import_files</code> — 导入跟踪<a class="headerlink" href="#kb-import-files" title="Permanent link">&para;</a></h3>
+<p><code>src/kb/es/import_mappings.py</code>。按文件内容 SHA-256 去重，并存下已提交文档的完整 ES
+源载荷，供启动时 <code>restore_imports()</code> 在 reseed 清空主索引后重新写回。</p>
+<p><code>settings</code>: <code>number_of_shards: 1</code>、<code>number_of_replicas: 0</code>；<code>mappings.dynamic: "strict"</code>。</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>file_hash</code></td>
+<td>keyword</td>
+<td>文件内容 SHA-256，同时也是文档 <code>_id</code></td>
+</tr>
+<tr>
+<td><code>file_name</code></td>
+<td>keyword</td>
+<td>原始文件名</td>
+</tr>
+<tr>
+<td><code>file_path</code></td>
+<td>keyword</td>
+<td>落盘路径（供失败重试）</td>
+</tr>
+<tr>
+<td><code>file_size</code></td>
+<td>long</td>
+<td>字节数</td>
+</tr>
+<tr>
+<td><code>file_type</code></td>
+<td>keyword</td>
+<td>扩展名</td>
+</tr>
+<tr>
+<td><code>import_status</code></td>
+<td>keyword</td>
+<td><code>pending</code> / <code>committed</code> / <code>failed</code></td>
+</tr>
+<tr>
+<td><code>committed_docs</code></td>
+<td>nested</td>
+<td>子字段：<code>_index</code>(keyword)、<code>_id</code>(keyword)、<code>_source</code>(object, <code>enabled:false</code>)</td>
+</tr>
+<tr>
+<td><code>error_message</code></td>
+<td>text</td>
+<td><code>index: false</code></td>
+</tr>
+<tr>
+<td><code>created_at</code> / <code>updated_at</code></td>
+<td>date</td>
+<td>时间戳</td>
+</tr>
+</tbody>
+</table>
+<h3 id="kb-search-feedback"><code>kb_search_feedback</code> — 检索反馈<a class="headerlink" href="#kb-search-feedback" title="Permanent link">&para;</a></h3>
+<p><code>src/kb/es/feedback_mappings.py</code>。轻量 👍/👎 信号，<strong>纯观测</strong>，永不回流影响检索结果。</p>
+<p><code>settings</code>: <code>number_of_shards: 1</code>、<code>number_of_replicas: 0</code>；<code>mappings.dynamic: "strict"</code>。</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>doc_id</code></td>
+<td>keyword</td>
+</tr>
+<tr>
+<td><code>helpful</code></td>
+<td>boolean</td>
+</tr>
+<tr>
+<td><code>query_text</code></td>
+<td>keyword</td>
+</tr>
+<tr>
+<td><code>knowledge_type</code> / <code>project</code> / <code>equipment</code> / <code>search_status</code></td>
+<td>keyword</td>
+</tr>
+<tr>
+<td><code>request_id</code></td>
+<td>keyword</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>date</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="search-models">检索 API 模型<a class="headerlink" href="#search-models" title="Permanent link">&para;</a></h2>
+<p><code>src/kb/models/search.py</code>。</p>
+<h3 id="search-status"><code>SearchStatus</code>（枚举）<a class="headerlink" href="#search-status" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>取值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>strict_hit</code></td>
+<td>全部过滤 + AND 关键词命中，且在阈值内</td>
+</tr>
+<tr>
+<td><code>too_many</code></td>
+<td>strict 命中数 &gt; <code>strict_max_hits</code>，应引导用户缩小范围</td>
+</tr>
+<tr>
+<td><code>loose_hit</code></td>
+<td>退化到 OR 关键词，须带"仅供参考"横幅</td>
+</tr>
+<tr>
+<td><code>vector_only</code></td>
+<td>仅向量相似命中（低置信）</td>
+</tr>
+<tr>
+<td><code>no_hit</code></td>
+<td>全部未命中</td>
+</tr>
+</tbody>
+</table>
+<p><code>SearchMode = Literal["auto", "strict", "loose", "vector_only"]</code>。</p>
+<h3 id="search-request"><code>SearchRequest</code><a class="headerlink" href="#search-request" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>默认</th>
+<th>约束</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>knowledge_type</code></td>
+<td><code>KnowledgeType \| None</code></td>
+<td><code>None</code></td>
+<td>为空则跨所有索引</td>
+</tr>
+<tr>
+<td><code>project</code></td>
+<td><code>str \| None</code></td>
+<td><code>None</code></td>
+<td><code>max_length=200</code></td>
+</tr>
+<tr>
+<td><code>equipment</code></td>
+<td><code>str \| None</code></td>
+<td><code>None</code></td>
+<td><code>max_length=200</code></td>
+</tr>
+<tr>
+<td><code>error_codes</code></td>
+<td><code>list[str]</code></td>
+<td><code>[]</code></td>
+<td>列表 <code>max_length=64</code>，每项 <code>max_length=64</code></td>
+</tr>
+<tr>
+<td><code>keywords</code></td>
+<td><code>list[str]</code></td>
+<td><code>[]</code></td>
+<td>列表 <code>max_length=64</code>，每项 <code>max_length=200</code></td>
+</tr>
+<tr>
+<td><code>query_text</code></td>
+<td><code>str \| None</code></td>
+<td><code>None</code></td>
+<td><code>max_length=4000</code>；向量召回/重排所需的原始文本</td>
+</tr>
+<tr>
+<td><code>mode</code></td>
+<td><code>SearchMode</code></td>
+<td><code>"auto"</code></td>
+<td>见上</td>
+</tr>
+<tr>
+<td><code>size</code></td>
+<td><code>int</code></td>
+<td><code>10</code></td>
+<td><code>1 ≤ size ≤ 50</code></td>
+</tr>
+<tr>
+<td><code>from_</code></td>
+<td><code>int</code></td>
+<td><code>0</code></td>
+<td><code>≥ 0</code></td>
+</tr>
+</tbody>
+</table>
+<p>模型级校验：<code>from_ + size ≤ 10000</code>（<code>_MAX_RESULT_WINDOW</code>，对应 ES
+<code>index.max_result_window</code>），超出在模型层返回 400 而非让 ES 报不透明错误。</p>
+<h3 id="doc-hit"><code>DocHit</code><a class="headerlink" href="#doc-hit" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>str</td>
+<td>ES <code>_id</code></td>
+</tr>
+<tr>
+<td><code>score</code></td>
+<td>float</td>
+<td>最终打分</td>
+</tr>
+<tr>
+<td><code>knowledge_type</code></td>
+<td><code>KnowledgeType</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>project</code> / <code>equipment</code></td>
+<td>str</td>
+<td></td>
+</tr>
+<tr>
+<td><code>error_codes</code></td>
+<td><code>list[str]</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td>str</td>
+<td></td>
+</tr>
+<tr>
+<td><code>source_file</code></td>
+<td><code>str \| None</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>source_pages</code></td>
+<td><code>list[str]</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>summary</code></td>
+<td><code>str \| None</code></td>
+<td>≤50 字</td>
+</tr>
+<tr>
+<td><code>sections</code></td>
+<td><code>dict[str, str]</code></td>
+<td>原始段落，逐字、永不 AI 改写</td>
+</tr>
+</tbody>
+</table>
+<h3 id="search-response"><code>SearchResponse</code><a class="headerlink" href="#search-response" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>status</code></td>
+<td><code>SearchStatus</code></td>
+<td>见状态契约</td>
+</tr>
+<tr>
+<td><code>total</code></td>
+<td>int</td>
+<td>命中总数</td>
+</tr>
+<tr>
+<td><code>hits</code></td>
+<td><code>list[DocHit]</code></td>
+<td><code>too_many</code>/<code>no_hit</code> 时为空</td>
+</tr>
+<tr>
+<td><code>effective_params</code></td>
+<td><code>EffectiveParams</code></td>
+<td>归一化后实际生效的参数（回显给上游展示）</td>
+</tr>
+<tr>
+<td><code>facets</code></td>
+<td><code>dict[str, dict[str, int]]</code></td>
+<td>仅 <code>too_many</code> 时填充：project/equipment/error_codes 桶计数</td>
+</tr>
+<tr>
+<td><code>facets_truncated</code></td>
+<td><code>dict[str, int]</code></td>
+<td>每个 facet 落在 top 桶之外的数量（ES <code>sum_other_doc_count</code>），非零表示桶列表不完整</td>
+</tr>
+<tr>
+<td><code>banner</code></td>
+<td><code>str \| None</code></td>
+<td><code>loose_hit</code>/<code>vector_only</code>/<code>no_hit</code> 时必须逐字展示</td>
+</tr>
+</tbody>
+</table>
+<p><code>EffectiveParams</code> 字段：<code>knowledge_type</code>、<code>project</code>、<code>equipment</code>、<code>error_codes</code>、
+<code>keywords</code>。</p>
+<p>固定横幅文案（<code>src/kb/services/search.py</code>）：</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>文案</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>loose_hit</code></td>
+<td>没有完全匹配的知识，以下为相关参考，仅供参考。</td>
+</tr>
+<tr>
+<td><code>vector_only</code></td>
+<td>没有关键词匹配的知识，以下基于语义相似度的相关参考，仅供参考。</td>
+</tr>
+<tr>
+<td><code>no_hit</code></td>
+<td>没有找到匹配的知识。请补充关键词或调整筛选条件后重试。</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ingest-models">导入管道模型<a class="headerlink" href="#ingest-models" title="Permanent link">&para;</a></h2>
+<p><code>src/kb/models/ingest.py</code>。</p>
+<h3 id="_1">状态枚举<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>ImportStatus</code>：<code>pending</code> / <code>extracting</code> / <code>ready_for_review</code> / <code>committed</code> / <code>failed</code></li>
+<li><code>FileStatus</code>：<code>processing</code> / <code>skipped_duplicate</code> / <code>unsupported</code> / <code>failed</code> / <code>done</code></li>
+</ul>
+<h3 id="stageddocument"><code>StagedDocument</code>（待审文档）<a class="headerlink" href="#stageddocument" title="Permanent link">&para;</a></h3>
+<p>预览阶段的可编辑文档，提交时转回 <code>KnowledgeDoc</code> 校验。关键字段：<code>index</code>、
+<code>knowledge_type</code>、<code>project</code>、<code>equipment</code>、<code>title</code>、<code>error_codes</code>，以及各类型专有字段
+（<code>content</code>/<code>resolution</code>、<code>procedure</code>/<code>prerequisites</code>、<code>body_text</code>）、<code>notes</code>、
+<code>source_file</code>、<code>source_pages</code>、<code>raw_text_excerpt</code>、<code>confidence</code>(0–1)、<code>warnings</code>、
+<code>accepted</code>(默认 True)。</p>
+<h3 id="_2">其他模型<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>SkippedChunk</code>：<code>source_file</code>、<code>page_range</code>、<code>reason</code>(<code>non_content</code>/<code>no_entries</code>/<code>parse_failed</code>)、<code>hint</code></li>
+<li><code>FileInfo</code>：文件级状态 + 分段进度（<code>chunks_total</code>/<code>chunks_done</code>/<code>skipped_chunks</code>）</li>
+<li><code>ImportSession</code>：会话整体（<code>session_id</code>、<code>status</code>、<code>files</code>、<code>documents</code>、各 <code>*_hint</code>、<code>created_at</code>）</li>
+<li>请求/响应：<code>UploadResponse</code>、<code>ScanRequest</code>、<code>SessionResponse</code>、<code>SessionListItem</code>、
+  <code>DocumentUpdate</code>、<code>AcceptReject</code>、<code>AcceptAllRequest</code>、<code>RetryRequest</code>、<code>CommitResponse</code>、
+  <code>RecommitTrackingResponse</code>（字段细节见 <a href="../../api-reference/">API 参考</a>）。</li>
+</ul>
+<hr />
+<h2 id="taxonomy-model">分类法模型<a class="headerlink" href="#taxonomy-model" title="Permanent link">&para;</a></h2>
+<p><code>src/kb/models/taxonomy.py</code> 的 <code>Taxonomy</code>：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>约束</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>version</code></td>
+<td>str</td>
+<td>任意字符串，引擎不解释；变更时建议手动 bump</td>
+</tr>
+<tr>
+<td><code>knowledge_types</code></td>
+<td><code>list[KnowledgeType]</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>projects</code></td>
+<td><code>list[str]</code></td>
+<td><code>min_length=1</code>；非空、无首尾空白、唯一</td>
+</tr>
+<tr>
+<td><code>equipment</code></td>
+<td><code>list[str]</code></td>
+<td><code>min_length=1</code>；非空、无首尾空白、唯一</td>
+</tr>
+</tbody>
+</table>
+<p>辅助方法：<code>has_project(p)</code>、<code>has_equipment(e)</code>。校验器 <code>_no_blanks</code> 拒绝空白项、带首尾
+空白项与重复项。</p>
+<p>启动时 <code>_sync_taxonomy_from_es()</code> 会聚合 ES 中实际存在的 project/equipment，把缺失值
+追加回 <code>config/taxonomy.yaml</code> 并把 <code>version</code> 改写为 <code>auto-&lt;时间戳&gt;</code>——因此该文件在运行时
+必须可写。</p>
+<hr />
+<h2 id="csv-mapping">CSV 列 → 文档字段映射<a class="headerlink" href="#csv-mapping" title="Permanent link">&para;</a></h2>
+<p>启动 seeder（<code>src/kb/services/csv_loader.py</code>）从 <code>config/</code> 下三个 CSV 读取文档。
+列名为中文，编码 <code>utf-8-sig</code>。</p>
+<h3 id="_headercsv-alarmdoc"><code>机台报警_header.csv</code> → <code>AlarmDoc</code><a class="headerlink" href="#_headercsv-alarmdoc" title="Permanent link">&para;</a></h3>
+<p><code>项目,机台,代码,英文标题,中文标题,内容,解除流程,注意事项,ppt文件,ppt页面</code></p>
+<table>
+<thead>
+<tr>
+<th>CSV 列</th>
+<th>文档字段</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>项目</td>
+<td><code>project</code></td>
+<td>strip</td>
+</tr>
+<tr>
+<td>机台</td>
+<td><code>equipment</code></td>
+<td>strip</td>
+</tr>
+<tr>
+<td>代码</td>
+<td><code>error_codes</code></td>
+<td>按 <code>[\s,，;&amp;、]+</code> 拆分为多码</td>
+</tr>
+<tr>
+<td>中文标题 + 英文标题</td>
+<td><code>title</code></td>
+<td><code>中文（英文）</code>，截断 200</td>
+</tr>
+<tr>
+<td>内容</td>
+<td><code>content</code></td>
+<td>空则 <code>—</code></td>
+</tr>
+<tr>
+<td>解除流程</td>
+<td><code>resolution</code></td>
+<td>空则 <code>—</code></td>
+</tr>
+<tr>
+<td>注意事项</td>
+<td><code>notes</code></td>
+<td></td>
+</tr>
+<tr>
+<td>ppt文件</td>
+<td><code>source_file</code></td>
+<td></td>
+</tr>
+<tr>
+<td>ppt页面</td>
+<td><code>source_pages</code></td>
+<td>按 <code>,</code> 拆分</td>
+</tr>
+</tbody>
+</table>
+<p><code>summary</code> 取 <code>content</code> 首个非空行（截断 50）。</p>
+<h3 id="setup_headercsv-setupdoc"><code>机台setup_header.csv</code> → <code>SetupDoc</code><a class="headerlink" href="#setup_headercsv-setupdoc" title="Permanent link">&para;</a></h3>
+<p><code>项目,设备,工站/部件/站位,规格/要求,调试步骤,调试工具,注意事项,ppt文件,PPT页面</code></p>
+<table>
+<thead>
+<tr>
+<th>CSV 列</th>
+<th>文档字段</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>项目</td>
+<td><code>project</code></td>
+<td></td>
+</tr>
+<tr>
+<td>设备</td>
+<td><code>equipment</code></td>
+<td></td>
+</tr>
+<tr>
+<td>工站/部件/站位</td>
+<td><code>title</code></td>
+<td><code>{设备} · {站位} 调试</code>（无站位则 <code>{设备} 调试</code>）</td>
+</tr>
+<tr>
+<td>规格/要求 + 调试工具</td>
+<td><code>prerequisites</code></td>
+<td>各成一行：<code>规格/要求：…</code> / <code>调试工具：…</code></td>
+</tr>
+<tr>
+<td>调试步骤</td>
+<td><code>procedure</code></td>
+<td>空则 <code>—</code></td>
+</tr>
+<tr>
+<td>注意事项</td>
+<td><code>notes</code></td>
+<td></td>
+</tr>
+<tr>
+<td>ppt文件</td>
+<td><code>source_file</code></td>
+<td></td>
+</tr>
+<tr>
+<td>PPT页面</td>
+<td><code>source_pages</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="_headercsv-experiencedoc"><code>设备经验_header.csv</code> → <code>ExperienceDoc</code><a class="headerlink" href="#_headercsv-experiencedoc" title="Permanent link">&para;</a></h3>
+<p><code>项目,机台,问题,失败描述,失败分析,根因,纠正步骤,PPT文件,PPT页面</code></p>
+<table>
+<thead>
+<tr>
+<th>CSV 列</th>
+<th>文档字段</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>项目</td>
+<td><code>project</code></td>
+<td></td>
+</tr>
+<tr>
+<td>机台</td>
+<td><code>equipment</code></td>
+<td></td>
+</tr>
+<tr>
+<td>问题</td>
+<td><code>title</code></td>
+<td>截断 200</td>
+</tr>
+<tr>
+<td>失败描述</td>
+<td><code>body_text</code></td>
+<td>正文首段</td>
+</tr>
+<tr>
+<td>失败分析</td>
+<td><code>body_text</code></td>
+<td>追加 <code>【失败分析】…</code></td>
+</tr>
+<tr>
+<td>根因</td>
+<td><code>body_text</code></td>
+<td>追加 <code>【根因】…</code></td>
+</tr>
+<tr>
+<td>纠正步骤</td>
+<td><code>procedure</code></td>
+<td></td>
+</tr>
+<tr>
+<td>PPT文件</td>
+<td><code>source_file</code></td>
+<td></td>
+</tr>
+<tr>
+<td>PPT页面</td>
+<td><code>source_pages</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>任一 CSV 缺失只记一条 warning 并跳过；任一行 Pydantic 校验失败也只跳过该行。</p>
+<hr />
+<h2 id="type-spec">知识类型规格 schema<a class="headerlink" href="#type-spec" title="Permanent link">&para;</a></h2>
+<p><code>config/knowledge_types/&lt;type&gt;.yaml</code> 是 LLM 分段提示词与 <code>Doc</code> 模型之间的<strong>单一事实源</strong>
+（<code>src/kb/services/spec.py</code> 加载，进程级 <code>lru_cache</code>）。三个文件全部存在才能通过加载
+（否则抛错）。</p>
+<p>顶层键：</p>
+<table>
+<thead>
+<tr>
+<th>键</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td>str</td>
+<td><code>KnowledgeType</code> 取值</td>
+</tr>
+<tr>
+<td><code>display_name</code></td>
+<td>str</td>
+<td>提示词中展示的类型名</td>
+</tr>
+<tr>
+<td><code>summary_zh</code> / <code>summary_en</code></td>
+<td>str</td>
+<td>路由提示词里的一句话简介（兼容旧 <code>summary</code>）</td>
+</tr>
+<tr>
+<td><code>csv_source</code></td>
+<td>str</td>
+<td>对应 CSV 文件路径（仅文档/示例用）</td>
+</tr>
+<tr>
+<td><code>fields</code></td>
+<td>list</td>
+<td>见下</td>
+</tr>
+<tr>
+<td><code>boundary_hints</code></td>
+<td>list[str]</td>
+<td>条目边界提示</td>
+</tr>
+<tr>
+<td><code>confidence_guide</code></td>
+<td>str</td>
+<td>置信度打分指南</td>
+</tr>
+<tr>
+<td><code>skip_if</code></td>
+<td>list[str]</td>
+<td>何时返回空数组 <code>[]</code></td>
+</tr>
+<tr>
+<td><code>example_input</code> / <code>example_output</code></td>
+<td>str / list[dict]</td>
+<td>喂给 LLM 的样例</td>
+</tr>
+</tbody>
+</table>
+<p><code>fields[]</code> 每项（<code>FieldSpec</code>）：<code>name</code>、<code>desc</code>、<code>label_zh</code>、<code>csv_column</code>、
+<code>required</code>(bool)。<code>required: true</code> 的字段会进入分段的"必填校验"——LLM 抽取结果若必填字段
+为空（<code>""</code>/<code>—</code>/<code>-</code>/<code>n/a</code> 等）或置信度 &lt; 0.3，该条目被丢弃。</p>
+<p><code>render_segmentation_prompt(spec)</code> 与 <code>render_router_prompt(specs)</code> 把规格渲染成 LLM
+系统提示词（详见 <a href="../../architecture/import-pipeline/">文件导入管道</a> 与
+<a href="../../architecture/ai-chat/">AI 对话搜索</a>）。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+        
+          
+          <a href="../../observability/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 可观测性">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              <div class="md-ellipsis">
+                可观测性
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../configuration-reference/" class="md-footer__link md-footer__link--next" aria-label="下一页: 配置参考">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              <div class="md-ellipsis">
+                配置参考
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Documentation for the manufacturing knowledge-base API
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -18,6 +18,8 @@
         <link rel="prev" href="../api-reference/">
       
       
+        <link rel="next" href="../reference/data-model/">
+      
       
         
           <link rel="alternate" href="../../observability/" hreflang="en">
@@ -363,6 +365,46 @@
 
       </a>
     </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../reference/data-model/" class="md-tabs__link">
+          
+  
+  
+  参考手册
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../operations/testing/" class="md-tabs__link">
+          
+  
+  
+  运维
+
+        </a>
+      </li>
+    
   
 
       
@@ -757,7 +799,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#logging" class="md-nav__link">
     <span class="md-ellipsis">
       
         日志
@@ -768,10 +810,71 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#metrics" class="md-nav__link">
     <span class="md-ellipsis">
       
         指标
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="指标">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#instruments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        暴露的指标
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#degradation-signal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        静默降级如何显现
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scrape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        抓取配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        告警规则示例
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#health" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        健康检查接口
       
     </span>
   </a>
@@ -791,10 +894,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        记录一次信号
+        记录信号
       
     </span>
   </a>
@@ -802,7 +905,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
         读取聚合
@@ -820,6 +923,320 @@
     </ul>
   
 </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    参考手册
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    参考手册
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据模型
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/configuration-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    配置参考
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/build-from-scratch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    从零搭建
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    运维
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    运维
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../operations/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试与开发
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../operations/deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    部署
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../operations/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    故障排查
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../operations/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安全
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
       
     </li>
   
@@ -852,7 +1269,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#logging" class="md-nav__link">
     <span class="md-ellipsis">
       
         日志
@@ -863,10 +1280,71 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#metrics" class="md-nav__link">
     <span class="md-ellipsis">
       
         指标
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="指标">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#instruments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        暴露的指标
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#degradation-signal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        静默降级如何显现
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scrape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        抓取配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        告警规则示例
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#health" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        健康检查接口
       
     </span>
   </a>
@@ -886,10 +1364,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        记录一次信号
+        记录信号
       
     </span>
   </a>
@@ -897,7 +1375,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
         读取聚合
@@ -933,55 +1411,236 @@
 
 
 <h1 id="_1">可观测性<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
-<p>应用内置结构化日志、Prometheus 指标，以及一个观察用的搜索反馈信号。在<a href="../configuration/#observability">设置</a>的 <code>observability:</code> 段配置。</p>
+<p>应用内置结构化日志、Prometheus 指标、观测型搜索反馈信号，以及存活/就绪探针。相关配置位于
+<a href="../configuration/#observability">settings</a> 的 <code>observability:</code> 块，实现位于
+<code>src/kb/observability/</code>。</p>
 <hr />
-<h2 id="_2">日志<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
-<p><code>src/kb/observability/logging_config.py</code> 配置根日志器。</p>
-<ul>
-<li><code>observability.json_logs = true</code> → 每行一个 JSON 对象（机器可读）。</li>
-<li><code>observability.json_logs = false</code>（默认）→ 仍携带请求 id 的人类可读行。</li>
-<li><code>observability.log_level</code> 设置级别（默认 <code>INFO</code>）。</li>
-</ul>
-<p>每个请求都被打上 <code>request_id</code>（见 <code>observability/middleware.py</code>），传播到日志并存入反馈记录，因此一次 👎 可追溯到产生它的那次具体搜索。</p>
-<hr />
-<h2 id="_3">指标<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
-<p>当 <code>observability.metrics_enabled = true</code>（默认）时，Prometheus 指标在以下位置暴露：</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>GET /metrics
+<h2 id="logging">日志<a class="headerlink" href="#logging" title="Permanent link">&para;</a></h2>
+<p><code>src/kb/observability/logging_config.py</code> 配置根 logger。两个开关：</p>
+<table>
+<thead>
+<tr>
+<th>配置</th>
+<th>默认</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>observability.json_logs</code></td>
+<td><code>false</code></td>
+<td><code>true</code> → 每行一个 JSON 对象（机器可读）</td>
+</tr>
+<tr>
+<td><code>observability.log_level</code></td>
+<td><code>INFO</code></td>
+<td>标准 Python 级别名</td>
+</tr>
+</tbody>
+</table>
+<p>每个请求都带一个 <code>request_id</code>（由 <code>observability/middleware.py</code> 生成的 UUID），贯穿该请求处理
+期间的每条日志，并记录到反馈记录中 —— 这样一次 👎 就能追溯到产生它的那次具体搜索。</p>
+<p><strong>人类可读行</strong>（<code>json_logs = false</code>）：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>2026-06-05 09:14:22 INFO [kb.chat] req=3f9c1a2e search status=strict_hit total=2
 </code></pre></div>
-<p>应用通过 <code>src/kb/observability/metrics.py</code> 中的辅助函数（<code>measure_upstream(...)</code>、<code>record_upstream_error(...)</code>）记录其依赖项——Elasticsearch、embedding 服务、LLM——的上游调用延迟与错误计数。一次静默的 embedding 服务故障正是这样显现的：搜索照常用 BM25 成功，但 <code>embedding</code> 上游错误计数器持续攀升。</p>
-<p>将 Prometheus 抓取任务指向 <code>/metrics</code>，并对上升的上游错误计数器或延迟告警。</p>
+<p><strong>JSON 行</strong>（<code>json_logs = true</code>）—— 将日志采集器对准 stdout，按行解析每个对象：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span><span class="nt">&quot;ts&quot;</span><span class="p">:</span><span class="s2">&quot;2026-06-05T09:14:22.481Z&quot;</span><span class="p">,</span><span class="nt">&quot;level&quot;</span><span class="p">:</span><span class="s2">&quot;INFO&quot;</span><span class="p">,</span><span class="nt">&quot;logger&quot;</span><span class="p">:</span><span class="s2">&quot;kb.chat&quot;</span><span class="p">,</span><span class="nt">&quot;request_id&quot;</span><span class="p">:</span><span class="s2">&quot;3f9c1a2e&quot;</span><span class="p">,</span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="s2">&quot;search status=strict_hit total=2&quot;</span><span class="p">}</span>
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">追溯一个糟糕的结果</p>
+<p><code>kb_search_feedback</code> 记录里存有同一个 <code>request_id</code>。用该 id 在日志中检索，即可重放那一轮
+抽取了哪些参数、执行了哪条 ES 查询、发生了哪些上游调用（LLM/嵌入）。</p>
+</div>
+<hr />
+<h2 id="metrics">指标<a class="headerlink" href="#metrics" title="Permanent link">&para;</a></h2>
+<p>当 <code>observability.metrics_enabled = true</code>（默认）时，Prometheus 指标以文本格式暴露在：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>GET /metrics
+</code></pre></div>
+<p>所有 collector 均为 <code>src/kb/observability/metrics.py</code> 中的模块级单例。HTTP 指标由
+<code>MetricsMiddleware</code> 记录；上游指标由包裹 ES、嵌入服务和 LLM 调用的
+<code>measure_upstream(...)</code> / <code>record_upstream_error(...)</code> 辅助函数记录；导入指标由管道记录。</p>
+<h3 id="instruments">暴露的指标<a class="headerlink" href="#instruments" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>类型</th>
+<th>标签</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kb_http_requests_total</code></td>
+<td>Counter</td>
+<td><code>method</code>、<code>path</code>、<code>status</code></td>
+<td>处理的 HTTP 请求总数</td>
+</tr>
+<tr>
+<td><code>kb_http_request_duration_seconds</code></td>
+<td>Histogram</td>
+<td><code>method</code>、<code>path</code></td>
+<td>请求时延</td>
+</tr>
+<tr>
+<td><code>kb_http_requests_in_progress</code></td>
+<td>Gauge</td>
+<td>—</td>
+<td>当前正在处理的请求数</td>
+</tr>
+<tr>
+<td><code>kb_upstream_errors_total</code></td>
+<td>Counter</td>
+<td><code>service</code> = <code>llm</code>|<code>embedding</code>|<code>es</code></td>
+<td>与依赖通信的错误</td>
+</tr>
+<tr>
+<td><code>kb_upstream_latency_seconds</code></td>
+<td>Histogram</td>
+<td><code>service</code> = <code>llm</code>|<code>embedding</code>|<code>es</code></td>
+<td>依赖调用时延</td>
+</tr>
+<tr>
+<td><code>kb_import_files_total</code></td>
+<td>Counter</td>
+<td><code>status</code> = <code>done</code>|<code>failed</code>|<code>skipped_duplicate</code>|<code>unsupported</code></td>
+<td>到达终态的导入文件</td>
+</tr>
+<tr>
+<td><code>kb_import_docs_total</code></td>
+<td>Counter</td>
+<td><code>outcome</code> = <code>extracted</code>|<code>committed</code>|<code>rejected</code></td>
+<td>按结果分类的暂存文档</td>
+</tr>
+<tr>
+<td><code>kb_import_commit_duration_seconds</code></td>
+<td>Histogram</td>
+<td>—</td>
+<td>提交一次导入会话的耗时</td>
+</tr>
+</tbody>
+</table>
+<p>Histogram 还会暴露常规的 <code>_bucket</code>、<code>_sum</code>、<code>_count</code> 序列，因此速率、均值、分位数都开箱即用。</p>
+<h3 id="degradation-signal">静默降级如何显现<a class="headerlink" href="#degradation-signal" title="Permanent link">&para;</a></h3>
+<p>嵌入服务是可选的：不可达时，搜索仍以 BM25 成功（对用户无报错）。信号在指标里 ——
+<code>kb_upstream_errors_total{service="embedding"}</code> 上升，而
+<code>kb_http_requests_total{path="/api/v1/search",status="200"}</code> 仍在增长。应对<strong>上游</strong>计数器告警，
+而非对 HTTP 5xx 告警。</p>
+<h3 id="scrape">抓取配置<a class="headerlink" href="#scrape" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># prometheus.yml</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nt">scrape_configs</span><span class="p">:</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">job_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">knowledge-base</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="nt">metrics_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/metrics</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="nt">static_configs</span><span class="p">:</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">targets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;kb-app:8000&quot;</span><span class="p p-Indicator">]</span>
+</code></pre></div>
+<h3 id="alerts">告警规则示例<a class="headerlink" href="#alerts" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">groups</span><span class="p">:</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">knowledge-base</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">rules</span><span class="p">:</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">      </span><span class="c1"># 嵌入服务故障：向量检索已静默降级为 BM25。</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">alert</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">KBEmbeddingDegraded</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">        </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rate(kb_upstream_errors_total{service=&quot;embedding&quot;}[5m]) &gt; 0</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">        </span><span class="nt">for</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10m</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">        </span><span class="nt">labels</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> severity</span><span class="p">:</span><span class="w"> </span><span class="nv">warning</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">        </span><span class="nt">annotations</span><span class="p">:</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">          </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;嵌入上游报错</span><span class="nv"> </span><span class="s">——</span><span class="nv"> </span><span class="s">搜索仅剩</span><span class="nv"> </span><span class="s">BM25&quot;</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">      </span><span class="c1"># p99 请求时延超过 2s 持续 10 分钟。</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">alert</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">KBHighLatency</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">        </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">          </span><span class="no">histogram_quantile(0.99,</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">            </span><span class="no">sum(rate(kb_http_request_duration_seconds_bucket[5m])) by (le)) &gt; 2</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">        </span><span class="nt">for</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10m</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">        </span><span class="nt">labels</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> severity</span><span class="p">:</span><span class="w"> </span><span class="nv">warning</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">        </span><span class="nt">annotations</span><span class="p">:</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="w">          </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;p99</span><span class="nv"> </span><span class="s">API</span><span class="nv"> </span><span class="s">时延超过</span><span class="nv"> </span><span class="s">2s&quot;</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="w">      </span><span class="c1"># 导入失败。</span>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">alert</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">KBImportFailures</span>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="w">        </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">increase(kb_import_files_total{status=&quot;failed&quot;}[15m]) &gt; 0</span>
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a><span class="w">        </span><span class="nt">labels</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> severity</span><span class="p">:</span><span class="w"> </span><span class="nv">info</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="w">        </span><span class="nt">annotations</span><span class="p">:</span>
+<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a><span class="w">          </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;有文件在导入管道中失败&quot;</span>
+</code></pre></div>
+<p>请与<a href="#search-feedback">搜索反馈</a>信号配合使用：指标告诉你<em>系统</em>是否健康，反馈告诉你<em>结果</em>是否优质。</p>
+<hr />
+<h2 id="health">健康检查接口<a class="headerlink" href="#health" title="Permanent link">&para;</a></h2>
+<p>两个探针（定义于 <code>src/kb/main.py</code>），供编排器与 Docker <code>HEALTHCHECK</code> 使用：</p>
+<table>
+<thead>
+<tr>
+<th>接口</th>
+<th>探测内容</th>
+<th>返回</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /healthz</code></td>
+<td>无 —— 仅存活性</td>
+<td>恒返回 <code>200 {"status":"ok"}</code></td>
+</tr>
+<tr>
+<td><code>GET /readyz</code></td>
+<td>ping Elasticsearch</td>
+<td>ES 可达返回 <code>200</code>，否则 <code>503</code>（降级）</td>
+</tr>
+<tr>
+<td><code>GET /readyz?deep=true</code></td>
+<td>额外往返嵌入服务</td>
+<td>增加 <code>embedding: ok\|down</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>/readyz</code> 响应体：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ok&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;es&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ok&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;embedding&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;configured&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;llm&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;configured&quot;</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<ul>
+<li><code>embedding</code>：<code>disabled</code>（无密钥）· <code>configured</code>（已配置密钥但未探测）· <code>ok</code>/<code>down</code>
+  （仅在 <code>?deep=true</code> 时）。</li>
+<li><code>llm</code>：<code>configured</code> 或 <code>disabled</code>。</li>
+</ul>
+<p>默认的 <code>/readyz</code> 保持低开销（仅 ES ping），适合每次健康检查节拍调用；<code>?deep=true</code> 因会产生一次
+上游嵌入调用，仅供偶尔检查。compose/Docker 的 <code>HEALTHCHECK</code> 指向纯 <code>/readyz</code>。启动时若 ES 不可
+达，服务会以 <strong>DEGRADED</strong>（降级）状态启动（搜索/索引在 ES 恢复前失败）而非拒绝启动 —— 见
+<a href="../reference/build-from-scratch/#startup">从零搭建 → 启动</a>。</p>
 <hr />
 <h2 id="search-feedback">搜索反馈<a class="headerlink" href="#search-feedback" title="Permanent link">&para;</a></h2>
-<p>针对单条搜索结果的轻量 👍/👎 信号，记录在 <code>kb_search_feedback</code> 索引（<code>src/kb/api/feedback.py</code>）。它<strong>仅观察用</strong>——绝不改变搜索结果，因此零编造契约依然成立。</p>
-<h3 id="_4">记录一次信号<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>POST /api/v1/search/feedback   →  202 Accepted
+<p>对单条搜索结果的轻量 👍/👎 信号，记录到 <code>kb_search_feedback</code> 索引（<code>src/kb/api/feedback.py</code>）。
+它<strong>仅作观测</strong> —— 绝不改变搜索结果，因此零编造契约依然成立。</p>
+<h3 id="_2">记录信号<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>POST /api/v1/search/feedback   →  202 Accepted
 </code></pre></div>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">&quot;doc_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kb_alarm_v1:abc123&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">&quot;helpful&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">&quot;query_text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;E-1234 aligner fault&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="nt">&quot;knowledge_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;alarm&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span><span class="nt">&quot;project&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PDX&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span><span class="nt">&quot;equipment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Aligner&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span><span class="nt">&quot;search_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;loose_hit&quot;</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="nt">&quot;doc_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kb_alarm_v1:abc123&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="nt">&quot;helpful&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="nt">&quot;query_text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;E-1234 aligner fault&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="nt">&quot;knowledge_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;alarm&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">  </span><span class="nt">&quot;project&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PDX&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">  </span><span class="nt">&quot;equipment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Aligner&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">  </span><span class="nt">&quot;search_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;loose_hit&quot;</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="p">}</span>
 </code></pre></div>
-<p>记录是尽力而为的：存储故障返回 <strong>503</strong> 而非打断用户流程。记录还会存入请求的 <code>request_id</code> 与 UTC 时间戳。</p>
-<h3 id="_5">读取聚合<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>GET /api/v1/admin/search-feedback?limit=20
+<p>记录尽力而为：存储故障返回 <strong>503</strong> 而非中断用户流程。存储的文档会在上述字段基础上追加请求的
+<code>request_id</code> 和 UTC <code>created_at</code> 时间戳（完整映射见
+<a href="../reference/data-model/">数据模型 → 反馈索引</a>）。</p>
+<h3 id="_3">读取聚合<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>GET /api/v1/admin/search-feedback?limit=20
 </code></pre></div>
-<p>返回 <code>FeedbackSummary</code>：</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">&quot;total&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">142</span><span class="p">,</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">&quot;helpful&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">118</span><span class="p">,</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">&quot;unhelpful&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span><span class="p">,</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="nt">&quot;helpful_ratio&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.83</span><span class="p">,</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span><span class="nt">&quot;top_unhelpful_queries&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;heater overtemp&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;unhelpful&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="p">}</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">  </span><span class="p">]</span>
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="p">}</span>
+<p>返回 <code>FeedbackSummary</code>（ES 聚合统计布尔字段 <code>helpful</code> 及最常见的不满意 <code>query_text</code>）：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">&quot;total&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">142</span><span class="p">,</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span><span class="nt">&quot;helpful&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">118</span><span class="p">,</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">  </span><span class="nt">&quot;unhelpful&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span><span class="p">,</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">  </span><span class="nt">&quot;helpful_ratio&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.83</span><span class="p">,</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">  </span><span class="nt">&quot;top_unhelpful_queries&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;heater overtemp&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;unhelpful&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">  </span><span class="p">]</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="p">}</span>
 </code></pre></div>
-<p>用有用率与表现最差的查询，判断是否需要调 <code>title_boost</code>、<code>vector_weight</code> 或 <code>rrf_window</code>——见<a href="../architecture/search-ranking/#the-ranking-formula">检索与排序</a>。</p>
+<p>依据满意率和表现最差的查询，判断是否需要调优 <code>title_boost</code>、<code>vector_weight</code> 或 <code>rrf_window</code>
+—— 见<a href="../architecture/search-ranking/#the-ranking-formula">检索与排序</a>。</p>
 
 
 
@@ -1032,6 +1691,22 @@
             </div>
           </a>
         
+        
+          
+          <a href="../reference/data-model/" class="md-footer__link md-footer__link--next" aria-label="下一页: 数据模型">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              <div class="md-ellipsis">
+                数据模型
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
         
       </nav>
     
