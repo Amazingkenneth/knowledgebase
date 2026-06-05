@@ -50,7 +50,7 @@ services:
       timeout: 5s
       start_period: 40s
       retries: 5
-    restart: unless-stopped
+    restart: "no"
 
 volumes:
   es-data:
