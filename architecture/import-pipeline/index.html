@@ -1,0 +1,1835 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Zero-fabrication manufacturing knowledge-base API — Elasticsearch-backed verbatim retrieval with hybrid BM25 + vector search and an LLM used only as a query proxy.">
+      
+      
+        <meta name="author" content="Knowledge Base team">
+      
+      
+      
+        <link rel="prev" href="../ai-chat/">
+      
+      
+        <link rel="next" href="../search-ranking/">
+      
+      
+        
+          <link rel="alternate" href="./" hreflang="en">
+        
+          <link rel="alternate" href="../../zh/architecture/import-pipeline/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Import Pipeline - Knowledge Base — Manufacturing Search Engine</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#file-import-pipeline-architecture" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Knowledge Base — Manufacturing Search Engine" class="md-header__button md-logo" aria-label="Knowledge Base — Manufacturing Search Engine" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Knowledge Base — Manufacturing Search Engine
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Import Pipeline
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../zh/architecture/import-pipeline/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../overview/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../configuration/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Configuration
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../api-reference/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../observability/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Observability
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Knowledge Base — Manufacturing Search Engine" class="md-nav__button md-logo" aria-label="Knowledge Base — Manufacturing Search Engine" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Knowledge Base — Manufacturing Search Engine
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ai-chat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Chat Search
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Import Pipeline
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Import Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#end-to-end-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        End-to-end flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#extraction-servicesextractionpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extraction (services/extraction.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#knowledge-type-specs-configknowledge_typesyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Knowledge-type specs (config/knowledge_types/*.yaml)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#segmentation-servicessegmentationpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Segmentation (services/segmentation.py)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Segmentation (services/segmentation.py)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#chunking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chunking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#json-robustness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        JSON robustness
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entry-validation-router-false-positive-guard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entry validation (router false-positive guard)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deduplication-across-overlapping-chunks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deduplication across overlapping chunks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#per-chunk-multi-type-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-chunk multi-type routing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#non-content-handling-covers-tocs-prefaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-content handling (covers, TOCs, prefaces)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fidelity-check-anti-fabrication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fidelity check (anti-fabrication)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#project-equipment-resolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Project &amp; equipment resolution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeouts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#session-state-and-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session state and review
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#commit-path-commit_session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commit path (commit_session)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#file-tracker-kb_import_files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File tracker (kb_import_files index)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-design-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key design constraints
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../search-ranking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Search & Ranking
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#end-to-end-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        End-to-end flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#extraction-servicesextractionpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extraction (services/extraction.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#knowledge-type-specs-configknowledge_typesyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Knowledge-type specs (config/knowledge_types/*.yaml)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#segmentation-servicessegmentationpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Segmentation (services/segmentation.py)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Segmentation (services/segmentation.py)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#chunking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chunking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#json-robustness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        JSON robustness
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entry-validation-router-false-positive-guard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entry validation (router false-positive guard)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deduplication-across-overlapping-chunks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deduplication across overlapping chunks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#per-chunk-multi-type-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-chunk multi-type routing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#non-content-handling-covers-tocs-prefaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-content handling (covers, TOCs, prefaces)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fidelity-check-anti-fabrication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fidelity check (anti-fabrication)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#project-equipment-resolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Project &amp; equipment resolution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeouts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#session-state-and-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session state and review
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#commit-path-commit_session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commit path (commit_session)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#file-tracker-kb_import_files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File tracker (kb_import_files index)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-design-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key design constraints
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="file-import-pipeline-architecture">File Import Pipeline Architecture<a class="headerlink" href="#file-import-pipeline-architecture" title="Permanent link">&para;</a></h1>
+<p>The import pipeline turns arbitrary office documents (PDF, XLSX/XLS, CSV, PPTX,
+DOCX) into validated <code>KnowledgeDoc</code> entries in Elasticsearch. The pipeline is
+<strong>review-gated</strong>: the LLM extracts structure, but no document reaches the
+searchable indices until a human accepts the staged result.</p>
+<p>Same zero-fabrication contract as the rest of the system: the LLM only segments and
+labels — it must copy source text verbatim. Endpoints live under
+<code>POST /api/v1/ingest/*</code> and return <strong>HTTP 503</strong> when <code>KB_LLM__API_KEY</code> is unset.</p>
+<ul>
+<li><code>POST /api/v1/ingest/upload</code> — multipart upload, returns a session</li>
+<li><code>POST /api/v1/ingest/scan</code> — scan a server-side folder</li>
+<li><code>GET  /api/v1/ingest/sessions[/{id}]</code> — list / inspect</li>
+<li><code>PUT  /api/v1/ingest/sessions/{id}/documents/{idx}</code> — edit staged doc</li>
+<li><code>PATCH /api/v1/ingest/sessions/{id}/documents/{idx}</code> — accept / reject</li>
+<li><code>POST /api/v1/ingest/sessions/{id}/commit</code> — write accepted docs to ES</li>
+</ul>
+<p>Orchestration lives in <code>src/kb/services/import_pipeline.py</code>.</p>
+<hr />
+<h2 id="end-to-end-flow">End-to-end flow<a class="headerlink" href="#end-to-end-flow" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Client (files or folder path + optional hints)
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>        │
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>        ▼
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>[0] Hash &amp; dedupe
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>        │  SHA-256 of bytes → check kb_import_files index
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        │  committed before → SKIPPED_DUPLICATE (unless force=true)
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        │  else → record_pending() in tracker, persist file to upload_dir
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>        │
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        ▼
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>[1] Extraction (per filetype)
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>        │  PDF: pymupdf text → OCR fallback (PaddleOCR) when page is image-only
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        │  XLSX/XLS: openpyxl, one &quot;page&quot; per sheet
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>        │  CSV: stdlib csv, one &quot;page&quot; per row block
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        │  PPTX: python-pptx, one &quot;page&quot; per slide
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>        │  DOCX: python-docx, paragraphs grouped into pages
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>        │  → list[(page_number, text)]
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>        │
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>        ▼
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>[2] Per-chunk routing (skipped when knowledge_type_hint locks the file)
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>        │  pages chunked by ingest.segmentation_chunk_chars (default 12000)
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>        │  for each chunk → LLM router returns the type list (one dominant by default):
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>        │      {&quot;types&quot;: [&quot;alarm&quot;]}                 ← single dominant type (default)
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>        │      {&quot;types&quot;: [&quot;alarm&quot;, &quot;setup&quot;]}        ← only when both types stand
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>        │                                              alone with distinct structure
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>        │      {&quot;types&quot;: [&quot;skip&quot;]}                  ← non-content (cover/TOC/preface)
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>        │  skip → drop the chunk with a friendly SkippedChunk (reason, hint)
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>        │
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>        ▼
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>[3] LLM segmentation (one call per detected type per chunk)
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>        │  prompts rendered from config/knowledge_types/&lt;type&gt;.yaml — single
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>        │    source of truth for the LLM contract AND the pydantic model
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>        │  each per-type call carries an &quot;ignore other-type content&quot; rule and a
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>        │    &quot;return [] — never emit empty skeletons&quot; rule so mixed chunks and
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>        │    router false-positives don&#39;t pollute the output
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>        │  oversized single pages structurally subdivided (heading/paragraph/line)
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>        │  1-page overlap; duplicates collapsed per knowledge type
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>        │  on JSON failure: salvage longest valid prefix → object sweep →
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>        │                   repair retry → binary-split chunk and recurse (floor: 1 page)
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>        │  entry validation: drop entries with empty required fields or
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>        │                   confidence &lt; 0.3 (router false-positive guard)
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>        │  project/equipment: LLM-extracted verbatim &gt; filename/upload hint &gt; 所有项目
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>        │  → (StagedDocument[], SkippedChunk[])
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>        │  on_chunk_progress reports &quot;AI analysis: i/n&quot; to the session
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>        │
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>        ▼
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>[4] Session moves to READY
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>        │  ImportSession.documents populated; status = ready_for_review
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>        │
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>        ▼ (client reviews / edits / accept-rejects)
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>        │
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>[5] POST /commit
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>        │  for each accepted StagedDocument:
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>        │    → _staged_to_knowledge_doc(): cast to Alarm/Setup/ExperienceDoc
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>        │    → validate_against_taxonomy()
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>        │    → embed [title_text, body_text] via DashScope (best-effort)
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>        │    → ES index into kb_&lt;type&gt;_v1 alias with refresh=&quot;wait_for&quot;
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>        │    → group by file_hash for tracker update
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>        │  record_committed(file_hash, [es_actions])
+<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>        │  → CommitResponse {committed, skipped, errors}
+</code></pre></div>
+<p>Steps 1–4 run in a background <code>asyncio.create_task</code>; the upload/scan endpoints
+return <code>202 Accepted</code> immediately with the <code>session_id</code>. Clients poll
+<code>GET /sessions/{id}</code> (which carries <code>files_processed</code>, per-file <code>status</code>/<code>message</code>,
+and the human-readable session <code>message</code>) until <code>status == ready_for_review</code>.</p>
+<hr />
+<h2 id="extraction-servicesextractionpy">Extraction (<code>services/extraction.py</code>)<a class="headerlink" href="#extraction-servicesextractionpy" title="Permanent link">&para;</a></h2>
+<p>Each filetype has a dedicated extractor that returns <code>list[PageText] =
+list[(int, str)]</code>. Page numbers are preserved end-to-end so segmented documents
+carry <code>source_pages</code> back to the original.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Backend</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PDF</td>
+<td><code>pymupdf</code> (fitz)</td>
+<td>Prose via <code>page.get_text</code> + tables via <code>page.find_tables()</code> rendered as pipe-grids; OCR fallback when direct text is short and the page contains images</td>
+</tr>
+<tr>
+<td>XLSX/XLS</td>
+<td><code>openpyxl</code></td>
+<td>One sheet = one page; rows rendered as <code>\| col \| col \|</code> pipe-grids; sheet name tagged at the top</td>
+</tr>
+<tr>
+<td>CSV</td>
+<td>stdlib <code>csv</code></td>
+<td>Encoding auto-detected (utf-8-sig / utf-8 / gb18030 / latin-1); rows tab-joined</td>
+</tr>
+<tr>
+<td>PPTX</td>
+<td><code>python-pptx</code></td>
+<td>One slide = one page; tables rendered as pipe-grids; speaker notes appended</td>
+</tr>
+<tr>
+<td>DOCX</td>
+<td><code>python-docx</code></td>
+<td>Body walked in <strong>document order</strong> (<code>body.iterchildren()</code>), so paragraphs and tables stay interleaved as written; tables rendered as pipe-grids</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Table awareness.</strong> For PDF, DOCX, PPTX, and XLSX, tables are rendered as
+<code>| cell | cell | cell |</code> rows so column/row relationships survive into the LLM
+prompt — both horizontal (header-on-top) and vertical (header-on-left) layouts are
+preserved as whatever the underlying library returns. The flat-token view from
+<code>get_text</code> is kept alongside the grid view; the LLM sees both. Embedded <code>|</code> inside
+cells is replaced with <code>/</code> to keep the grid parseable.</p>
+<p><strong>DOCX document order.</strong> DOCX extraction walks the document body in true reading
+order (<code>doc.element.body.iterchildren()</code>, dispatching on the <code>w:p</code> / <code>w:tbl</code> tags)
+rather than the old "all paragraphs, then all tables" two-pass. The two-pass
+destroyed locality between an entry written in prose and a following one-row table
+that named its Project / Equipment — interleaving them keeps that relationship
+intact for the segmenter and for the verbatim project/equipment extraction below.</p>
+<p><strong>PDF text cleaning.</strong> <code>_clean_extracted_text</code> strips NULs, soft hyphens (<code>\xad</code>),
+BOMs, form feeds, and other stray C0 controls that PDF extractors commonly leak;
+collapses Windows/Mac line endings; and collapses runs of 3+ blank lines. So
+downstream segmentation and ES indexing don't have to defend against invisible
+characters that would otherwise break search or JSON parsing.</p>
+<p><strong>OCR fallback</strong> runs only when <code>ingest.ocr_enabled = true</code> and the direct text is
+short (or low printable-ratio) on a page that contains images. PaddleOCR
+(<code>ocr_lang</code> defaults to <code>ch</code>) is loaded lazily on first use and adds noticeable
+cold-start latency. The OCR result <strong>replaces</strong> the direct text only when it is
+meaningfully longer (&gt;20%) <strong>and</strong> passes a printable-character sanity check — this
+prevents OCR garbage from clobbering good extracted text on pages where both happen
+to produce output. OCR failures are caught and logged; the direct text wins by
+default.</p>
+<p>Optional dependencies are imported via <code>_try_import</code> — a missing optional backend
+(e.g. PaddleOCR) does not crash the server, but the affected file fails with a clear
+<code>ImportError</code> message. Install the extras with <code>pip install -e ".[ingest]"</code>.</p>
+<hr />
+<h2 id="knowledge-type-specs-configknowledge_typesyaml">Knowledge-type specs (<code>config/knowledge_types/*.yaml</code>)<a class="headerlink" href="#knowledge-type-specs-configknowledge_typesyaml" title="Permanent link">&para;</a></h2>
+<p>Every knowledge type has a single spec file that drives both the LLM prompt and the
+storage contract. Editing the YAML changes what the LLM is told to extract <em>and</em>
+what the parity test enforces against the pydantic model — they cannot drift.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>config/knowledge_types/
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>├── alarm.yaml        ← mirrors config/机台报警_header.csv
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>├── setup.yaml        ← mirrors config/机台setup_header.csv
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>└── experience.yaml   ← mirrors config/设备经验_header.csv
+</code></pre></div>
+<p>Each spec carries:</p>
+<table>
+<thead>
+<tr>
+<th>Block</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>summary_zh</code> / <code>summary_en</code></td>
+<td>One-liner shown in the router prompt so the LLM knows when to pick this type</td>
+</tr>
+<tr>
+<td><code>fields[]</code></td>
+<td>Output JSON shape — each field has <code>name</code>, <code>desc</code>, optional <code>label_zh</code>, <code>csv_column</code>, and <code>required</code> flag. All three specs include <code>project</code> and <code>equipment</code> fields the LLM fills <strong>verbatim from the source</strong> ("Project: X" / "项目: X" cells), or <code>""</code> when not stated — it must never guess them from the filename or context</td>
+</tr>
+<tr>
+<td><code>boundary_hints[]</code></td>
+<td>What to look for when splitting entries</td>
+</tr>
+<tr>
+<td><code>skip_if[]</code></td>
+<td>Patterns that mean "this isn't content" (cover, TOC, preface…)</td>
+</tr>
+<tr>
+<td><code>confidence_guide</code></td>
+<td>Rubric for the per-entry <code>confidence</code> score</td>
+</tr>
+<tr>
+<td><code>example_input</code> / <code>example_output</code></td>
+<td>Worked few-shot example drawn from the canonical CSV row</td>
+</tr>
+</tbody>
+</table>
+<p><code>services/spec.py</code> loads and caches the YAMLs, then renders two prompts:</p>
+<ul>
+<li><strong><code>render_segmentation_prompt(spec)</code></strong> — the per-type extractor prompt. Includes
+  the field list (with zh labels and CSV-column links shown to the LLM), the worked
+  example, and several explicit rules: (a) <em>"ONLY extract <code>&lt;type&gt;</code> entries. If the
+  chunk also contains other knowledge-type content, IGNORE it"</em> — lets a single
+  chunk be parsed safely by both the alarm and setup extractors without
+  cross-pollination; (b) <em>"if the chunk contains NO <code>&lt;type&gt;</code> entries, return an
+  empty array <code>[]</code>. Do NOT emit skeleton entries with empty required fields just to
+  fill the array"</em>; (c) <em>"required fields (<code>&lt;computed from spec&gt;</code>) MUST be populated
+  verbatim for every emitted entry — if you can't find a required field's value,
+  DROP the entry."</em> The required-field list in (b)/(c) is computed from the spec's
+  <code>required: true</code> fields, so the prompt always matches what entry validation
+  enforces.</li>
+<li><strong><code>render_router_prompt(specs)</code></strong> — the classifier prompt. Returns
+  <code>{"types": [...]}</code> (a list), but the rules bias toward <strong>exactly one dominant
+  type</strong>: multiple types are returned only when entries of each type stand alone
+  with their own distinct structure (e.g. a standalone alarm-code table <em>and</em> a
+  separate numbered tuning procedure). The prompt carries negative examples — an
+  alarm's "Remedy / 解除流程" numbered steps are still <code>["alarm"]</code> (not setup), and a
+  setup procedure that references alarm codes inline is still <code>["setup"]</code>. This
+  curbs the over-fanout that produced router false-positives.</li>
+</ul>
+<p>A parity test (<code>tests/unit/test_spec.py</code>) asserts that every required pydantic field
+is covered by a spec field, and that the spec's <code>example_output</code> round-trips through
+<code>_parsed_to_staged()</code> without losing any required content — drift between prompt and
+model is caught at test time, not at commit time.</p>
+<hr />
+<h2 id="segmentation-servicessegmentationpy">Segmentation (<code>services/segmentation.py</code>)<a class="headerlink" href="#segmentation-servicessegmentationpy" title="Permanent link">&para;</a></h2>
+<p>The LLM acts as a <strong>structuring parser</strong>, not a writer. Per-type system prompts are
+rendered from the spec YAMLs above and instruct the model to:</p>
+<ol>
+<li>Copy source text verbatim — never paraphrase, fabricate, or summarize.</li>
+<li>Use <code>""</code> for <em>optional</em> fields absent from the source. Required content fields
+   must be filled verbatim, or the entry is dropped — do not invent placeholders.</li>
+<li>Treat <code>| col | col | col |</code> lines as table rows and preserve cell order.</li>
+<li>Emit a JSON array of typed segments with a per-entry <code>confidence</code> score
+   (0.0–1.0). When the chunk contains no entries of the target type, emit an empty
+   array <code>[]</code> — never a skeleton entry with blank fields.</li>
+<li>Extract ONLY the prompt's target type; ignore other-type content in the same
+   chunk.</li>
+</ol>
+<blockquote>
+<p>The robustness pipeline is layered outer → inner: <strong>structural chunking → JSON
+salvage (longest-prefix + object sweep) → repair retry → binary-split recovery →
+entry validation → cross-chunk dedup.</strong> Each layer is detailed below.</p>
+</blockquote>
+<h3 id="chunking">Chunking<a class="headerlink" href="#chunking" title="Permanent link">&para;</a></h3>
+<p><code>chunk_pages()</code> packs pages into <code>segmentation_chunk_chars</code>-bounded chunks with
+<code>_OVERLAP_PAGES = 1</code> page of overlap so entries spanning a chunk boundary are still
+seen whole.</p>
+<p>Before packing, <code>_split_oversized_page()</code> structurally subdivides any single page
+that exceeds <code>max_chars</code>. The split tries, in order:</p>
+<ol>
+<li><strong>Heading-like boundaries</strong> — markdown headings, Chinese <code>第N章/节</code>, English
+   <code>Chapter N</code>, numbered sections (<code>1.2.3 …</code>), all-caps lines.</li>
+<li><strong>Paragraph breaks</strong> (<code>\n\n</code>).</li>
+<li><strong>Line breaks</strong> (<code>\n</code>).</li>
+<li><strong>Hard character cut</strong> (last resort, for a single line larger than <code>max_chars</code>).</li>
+</ol>
+<p>Sub-pages keep the <strong>original page number</strong>, so <code>source_pages</code> traceability is
+preserved. This closes the silent hole where a single oversized page (e.g. a
+one-page DOCX, a huge spreadsheet sheet, or a long-form PDF page) used to be fed to
+the LLM beyond its input budget.</p>
+<h3 id="json-robustness">JSON robustness<a class="headerlink" href="#json-robustness" title="Permanent link">&para;</a></h3>
+<p>The LLM can fail in several ways: truncated output (hit <code>max_tokens</code> mid-element),
+illegal control chars copied from a noisy PDF, leading prose like "Here is the
+JSON:", or markdown fences. <code>_parse_json_array()</code> handles all of these:</p>
+<ol>
+<li>Strip markdown fences and sanitize control chars (see below).</li>
+<li>Try a direct <code>json.loads</code>.</li>
+<li>On failure, scan for <code>[</code>, then walk bracket/quote depth to find the <strong>longest
+   valid prefix</strong> of the array — recovers complete entries even when the response is
+   truncated mid-element.</li>
+<li>Promote a bare object to a single-element list.</li>
+<li><strong>Object sweep</strong> (last-ditch): <code>_sweep_json_objects()</code> walks the whole text
+   collecting every balanced <code>{…}</code> substring that parses as a dict on its own —
+   ignoring commas and array syntax entirely. This catches responses shaped like
+   <code>[ prose… {…}{…} ]</code> where the outer-array salvage gives up because nothing legal
+   sits between the objects, the failure mode seen when a per-type segmenter is
+   asked to extract from a chunk with no entries and improvises.</li>
+</ol>
+<p><strong>Control-char sanitization</strong> (<code>_sanitize_json</code>) is string-aware rather than a
+blanket strip. Per RFC 8259, raw TAB/LF/CR are illegal <em>inside</em> JSON string
+literals, and models like Qwen-turbo routinely emit them inside <code>content</code> /
+<code>resolution</code> strings — the dominant root cause of the old <code>Unrecoverable JSON: char
+0</code> failures. The sanitizer tracks string vs. non-string context: <strong>inside</strong> a string
+it escapes TAB/LF/CR to <code>\t</code>/<code>\n</code>/<code>\r</code> and drops other C0 controls; <strong>outside</strong> a
+string it leaves whitespace untouched.</p>
+<p>If parsing still fails for a chunk, <code>_segment_chunk_with_fallback()</code> applies two
+recovery layers:</p>
+<ul>
+<li><strong>Repair retry</strong> (once per chunk): the LLM is shown its own bad output and asked
+  to re-emit valid JSON (the repair prompt also says "if there are no entries,
+  return <code>[]</code>"). <code>_try_repair_json()</code> returns <code>None</code> — distinct from an empty list —
+  when the repair call or its parse also fails, signalling the caller to fall
+  through to binary-split rather than treating a failure as "no entries".</li>
+<li><strong>Binary-split recovery</strong>: the failed chunk is split in half on a page boundary
+  and each half is re-segmented (recursion floor: a single page). This is the answer
+  to the <code>max_tokens</code>-exceeded-by-a-single-entry case — the chunk shrinks until the
+  entry fits.</li>
+</ul>
+<p>Network/HTTP errors from the LLM also trigger binary-split recovery rather than
+dropping the chunk. A chunk which <strong>parses</strong> but yields only skeleton/low-confidence
+entries is <em>not</em> a parse failure — it is filtered by entry validation (below) and
+returns empty without retrying or splitting.</p>
+<h3 id="entry-validation-router-false-positive-guard">Entry validation (router false-positive guard)<a class="headerlink" href="#entry-validation-router-false-positive-guard" title="Permanent link">&para;</a></h3>
+<p><code>_filter_valid_entries()</code> runs on every parsed (and repaired) entry list before the
+entries are accepted. An entry is <strong>dropped</strong> when:</p>
+<ul>
+<li>its <code>confidence</code> is below <code>_HARD_DROP_CONFIDENCE = 0.3</code>, <strong>or</strong></li>
+<li>any field marked <code>required: true</code> in the spec is empty (value in
+  <code>{"", "—", "-", "n/a", "na", "none", "null"}</code>, or an empty list/dict).</li>
+</ul>
+<p>This is the primary defense against the <strong>router-false-positive</strong> failure mode: when
+the classifier fans a chunk out to a type it doesn't actually contain, the per-type
+segmenter is asked to extract entries that aren't there and the LLM tends to emit
+skeleton dicts with blank fields and <code>confidence: 0.0</code> instead of an empty array.
+Dropping them upstream means a routed type that returns nothing is treated as a
+genuine no-entry, not surfaced as a low-confidence document for the reviewer to wade
+through.</p>
+<h3 id="deduplication-across-overlapping-chunks">Deduplication across overlapping chunks<a class="headerlink" href="#deduplication-across-overlapping-chunks" title="Permanent link">&para;</a></h3>
+<p><code>_deduplicate_entries()</code> collapses duplicates produced by the 1-page chunk overlap,
+with type-specific keys:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Dedup key</th>
+<th>Tie-break</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ALARM</td>
+<td>normalized <code>error_code</code></td>
+<td>higher <code>confidence</code> wins</td>
+</tr>
+<tr>
+<td>SETUP</td>
+<td>normalized <code>station</code> + first 80 chars of <code>procedure</code></td>
+<td>higher <code>confidence</code> wins</td>
+</tr>
+<tr>
+<td>EXPERIENCE</td>
+<td>normalized <code>problem</code> + first 80 chars of <code>failure_desc</code></td>
+<td>higher <code>confidence</code> wins</td>
+</tr>
+</tbody>
+</table>
+<p>Entries with an empty key are <strong>kept as-is</strong> rather than collapsed together —
+borderline data is surfaced to the human reviewer instead of silently merged.</p>
+<h3 id="per-chunk-multi-type-routing">Per-chunk multi-type routing<a class="headerlink" href="#per-chunk-multi-type-routing" title="Permanent link">&para;</a></h3>
+<p><code>classify_chunk_types()</code> classifies each chunk independently and returns the
+<strong>list</strong> of knowledge types present:</p>
+<ul>
+<li><code>[]</code> (router said <code>skip</code>) → drop the chunk; surface a
+  <code>SkippedChunk(reason="non_content")</code> with a friendly hint.</li>
+<li><code>[KnowledgeType.ALARM]</code> → one segmenter call, alarm prompt. <strong>This is the
+  default</strong> — the router prompt asks for exactly one dominant type.</li>
+<li><code>[KnowledgeType.ALARM, KnowledgeType.SETUP]</code> → two segmenter calls on the <strong>same
+  chunk text</strong>; each parser extracts only its own entries because the prompt
+  explicitly tells it to ignore other-type content. The router only fans out like
+  this when entries of each type stand alone with their own distinct structure.</li>
+</ul>
+<p>When the client passes <code>knowledge_type_hint</code> on upload, the hint <strong>locks</strong> every
+chunk to that type and the router is skipped entirely — use this when you know the
+whole file is one type and don't want to pay the classifier cost.
+<code>detect_knowledge_type()</code> is retained as a thin wrapper returning the first entry
+from <code>classify_chunk_types</code>.</p>
+<h3 id="non-content-handling-covers-tocs-prefaces">Non-content handling (covers, TOCs, prefaces)<a class="headerlink" href="#non-content-handling-covers-tocs-prefaces" title="Permanent link">&para;</a></h3>
+<p>Pages that aren't content (cover, table of contents, preface, revision history,
+glossary, index, copyright notice, or pure prose) are detected by the router via
+each spec's <code>skip_if[]</code> rules and dropped before segmentation. They surface to the
+UI as <code>FileInfo.skipped_chunks: list[SkippedChunk]</code>, each carrying:</p>
+<ul>
+<li><code>page_range</code> — which pages were skipped</li>
+<li><code>reason</code> — <code>non_content</code> | <code>no_entries</code></li>
+<li><code>hint</code> — a plain-language explanation the reviewer can act on</li>
+</ul>
+<p>A whole-chunk <code>no_entries</code> hint is only raised when <strong>every</strong> routed type came back
+empty. The file-card <code>message</code> summarizes the counts: <em>"Extracted 14 documents. 2
+non-content page(s) skipped (covers/TOC/preface)."</em></p>
+<h3 id="fidelity-check-anti-fabrication">Fidelity check (anti-fabrication)<a class="headerlink" href="#fidelity-check-anti-fabrication" title="Permanent link">&para;</a></h3>
+<p>After segmentation, each verbatim-required field (<code>content</code>, <code>resolution</code>,
+<code>procedure</code>, <code>failure_desc</code>) is checked against the source text via
+<code>verify_extraction_fidelity()</code>. The check runs against the <strong>chunk text first</strong>
+(strict), then falls back to the <strong>full-file text</strong> (catches content that
+legitimately spans a chunk boundary). On failure the field is kept but the staged
+document carries a <code>fabrication_warning: &lt;field&gt;</code> entry for the reviewer.</p>
+<h3 id="project-equipment-resolution">Project &amp; equipment resolution<a class="headerlink" href="#project-equipment-resolution" title="Permanent link">&para;</a></h3>
+<p><code>project</code> / <code>equipment</code> are resolved through a three-tier priority chain so every
+staged doc lands with a usable, taxonomy-valid project without ever blocking the
+reviewer:</p>
+<ol>
+<li><strong>LLM-extracted, verbatim</strong> — each spec declares <code>project</code> / <code>equipment</code> fields.
+   The segmenter fills them only when the source explicitly names them; otherwise
+   <code>""</code>. <code>_parsed_to_staged()</code> reads <code>entry["project"]</code> / <code>entry["equipment"]</code> and
+   prefers them over the upload hint.</li>
+<li><strong>Filename / upload hint</strong> — when the entry carries no value, the upload-time
+   <code>project_hint</code> / <code>equipment_hint</code> is used. If those weren't supplied,
+   <code>_detect_taxonomy_from_filename()</code> tokenizes the filename stem and matches a
+   taxonomy value only as a <strong>whole lowercase token</strong> — so <code>PDX-aligner-faults.pdf</code>
+   → <code>project=PDX, equipment=Aligner</code>, but <code>stages.pdf</code> won't match a <code>Stage</code>
+   equipment.</li>
+<li><strong>Taxonomy resolution</strong> — after segmentation, <code>_resolve_taxonomy_fields()</code>
+   validates each doc's <code>project</code> / <code>equipment</code> against <code>taxonomy.yaml</code>
+   (case-insensitive, stored in canonical casing). Unknown values are <strong>cleared</strong>
+   with a reviewer-visible warning (<code>unknown_project:</code> / <code>unknown_equipment:</code>).
+   Project then falls back to the cross-project bucket <code>所有项目</code>; equipment is left
+   empty when unknown (it is optional).</li>
+</ol>
+<p>The reviewer can override any of these per-doc in the preview UI. The "missing
+required field" warning flags only docs with an empty <strong>project</strong>.</p>
+<h3 id="timeouts">Timeouts<a class="headerlink" href="#timeouts" title="Permanent link">&para;</a></h3>
+<p><code>_estimate_timeout()</code> derives the HTTP read-timeout from the actual payload size
+using a CJK-aware token estimator (CJK ≈ 1.5 tok/char, Latin ≈ 0.25 tok/char). Long
+chunks won't time out — they'll hit the <code>max_tokens</code> ceiling first and recover via
+the binary-split path.</p>
+<hr />
+<h2 id="session-state-and-review">Session state and review<a class="headerlink" href="#session-state-and-review" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ImportSession</span><span class="p">:</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>          <span class="c1"># uuid4</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">status</span><span class="p">:</span> <span class="n">ImportStatus</span>     <span class="c1"># extracting | ready_for_review | committed | failed</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">files</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">FileInfo</span><span class="p">]</span>    <span class="c1"># per-file extraction status</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">documents</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">StagedDocument</span><span class="p">]</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="o">...</span><span class="n">hints</span><span class="p">,</span> <span class="n">created_at</span>
+</code></pre></div>
+<p>Sessions are <strong>in-memory only</strong> (<code>ImportPipeline._sessions: dict[str,
+ImportSession]</code>). A server restart drops all in-flight sessions; the user must
+re-upload. Already-committed files are unaffected — those live in ES and are
+restored automatically on next startup (see <a href="#file-tracker-kb_import_files">File Tracker</a>).</p>
+<p><code>StagedDocument</code> carries all type-specific fields union-style (<code>content</code>/<code>resolution</code>
+for alarms, <code>procedure</code>/<code>prerequisites</code> for setup, <code>body_text</code> for experience).
+<code>accepted</code> defaults to <code>True</code>; the client toggles it via the PATCH endpoint. Field
+edits go through PUT and mutate the object directly — there is no diff history.</p>
+<p>Idle sessions are reclaimed by a background sweeper: a soft TTL
+(<code>session_ttl_minutes</code>, default 120) evicts COMMITTED/FAILED sessions, and a hard
+TTL (<code>session_hard_ttl_minutes</code>, default 480) evicts <em>any</em> session including
+under-review ones, bounding memory against abandoned previews.</p>
+<hr />
+<h2 id="commit-path-commit_session">Commit path (<code>commit_session</code>)<a class="headerlink" href="#commit-path-commit_session" title="Permanent link">&para;</a></h2>
+<p>For each <code>StagedDocument</code> with <code>accepted=True</code>:</p>
+<ol>
+<li><code>_staged_to_knowledge_doc</code> builds the correct subclass (<code>AlarmDoc</code> / <code>SetupDoc</code> /
+   <code>ExperienceDoc</code>) from the staged fields. Missing required strings default to
+   <code>"—"</code>; a missing setup title falls back to <code>f"{equipment} 调试"</code>.</li>
+<li><code>validate_against_taxonomy</code> rejects unknown <code>project</code> / <code>equipment</code> values —
+   these surface as validation errors aggregated into the <code>errors</code> array.</li>
+<li><code>EmbeddingClient.embed([title_text, body_text])</code> runs <strong>best-effort</strong>: any
+   failure logs a warning and the document is indexed with <code>null</code> vectors (BM25
+   still works; vector rescore silently drops it).</li>
+<li><code>es.index(...)</code> with <code>refresh="wait_for"</code> writes into the type-appropriate alias,
+   keyed by <code>doc_id(doc)</code> — a stable hash so re-commits are idempotent.</li>
+<li>The ES action is collected per source-file <code>file_hash</code>.</li>
+</ol>
+<p>After the loop, <code>record_committed(file_hash, actions)</code> updates the tracker.
+Validation/indexing failures <strong>break</strong> the loop for that doc so the user can fix and
+re-commit without partial-state surprises.</p>
+<p><strong>Friendly commit errors.</strong> <code>_friendly_validation_message()</code> converts raw pydantic
+errors into one-line hints keyed to the offending field, e.g. <em>"'resolution' is
+empty. Required for alarms — paste the Remedy / 解除流程 section."</em> Each entry in
+<code>CommitResponse.errors[]</code> carries both <code>error</code> (the message) and <code>hint</code> (what to do
+about it).</p>
+<hr />
+<h2 id="file-tracker-kb_import_files">File tracker (<code>kb_import_files</code> index)<a class="headerlink" href="#file-tracker-kb_import_files" title="Permanent link">&para;</a></h2>
+<p>The tracker has two jobs: <strong>dedupe</strong> and <strong>auto-restore</strong>.</p>
+<p><strong>Dedupe:</strong> keyed by SHA-256 of file bytes. <code>start_upload</code> checks
+<code>tracker.exists(hash)</code> before persisting; if the prior import is <code>committed</code> and the
+user did not pass <code>force=true</code>, the file is marked <code>SKIPPED_DUPLICATE</code>. Failed files
+can be reprocessed via the retry endpoint (optionally forcing OCR).</p>
+<p><strong>Auto-restore:</strong> each committed doc's full ES source is stored under
+<code>committed_docs[]</code> on the tracker record. On startup, <code>seed</code> clears the main indices
+from CSV; then <code>restore_imports()</code> (in <code>services/seed.py</code>) calls
+<code>tracker.get_all_committed()</code> and bulk re-indexes every payload back into the
+appropriate alias. This is why imported documents survive the always-reseed-on-
+startup behavior — the tracker, not the source files, is the source of truth for
+imports.</p>
+<p>Lifecycle states stored on the tracker record:</p>
+<table>
+<thead>
+<tr>
+<th><code>import_status</code></th>
+<th>Set by</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pending</code></td>
+<td><code>record_pending()</code> at upload time</td>
+<td>File persisted, awaiting extraction</td>
+</tr>
+<tr>
+<td><code>committed</code></td>
+<td><code>record_committed()</code> after commit</td>
+<td>All accepted docs indexed; payloads cached for restore</td>
+</tr>
+<tr>
+<td><code>failed</code></td>
+<td><code>record_failed()</code> on extraction error</td>
+<td>Error message stored; will not auto-restore</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
+<p>All knobs live under <code>ingest:</code> in <code>config/settings.yaml</code> or as <code>KB_INGEST__*</code> env
+vars — see <a href="../../configuration/#ingest">Configuration → Ingest</a>.</p>
+<hr />
+<h2 id="key-design-constraints">Key design constraints<a class="headerlink" href="#key-design-constraints" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Review-gated</strong> — nothing reaches the search indices without an explicit commit
+  step. Even the "fast path" (scan an entire folder) ends at <code>ready_for_review</code>.</li>
+<li><strong>Spec-driven</strong> — each knowledge type is defined once in
+  <code>config/knowledge_types/&lt;type&gt;.yaml</code>. The LLM prompt, the worked example, the skip
+  rules, and the parity check all read from that file.</li>
+<li><strong>Mixed-type files supported</strong> — routing is per chunk, not per file. The router
+  biases toward a single dominant type and only fans out when each type stands alone
+  structurally.</li>
+<li><strong>Verbatim only</strong> — segmentation prompts forbid paraphrase. Entries below the 0.3
+  confidence floor or with empty required fields are dropped outright.</li>
+<li><strong>Project/equipment never block commit</strong> — values are taken verbatim, else
+  inferred from the filename, else defaulted to <code>所有项目</code>. Equipment is optional.</li>
+<li><strong>Friendly feedback</strong> — skipped chunks and commit errors carry an actionable
+  <code>hint</code> rather than a raw stack trace.</li>
+<li><strong>Best-effort embedding</strong> — embedding errors during commit never abort indexing.</li>
+<li><strong>Dedupe by content hash</strong> — the same bytes uploaded twice short-circuit unless
+  <code>force=true</code>.</li>
+<li><strong>Imports survive CSV re-seed</strong> — the tracker's <code>committed_docs</code> cache is replayed
+  after the startup reseed.</li>
+<li><strong>In-memory sessions</strong> — a server restart loses any session not yet committed.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../ai-chat/" class="md-footer__link md-footer__link--prev" aria-label="Previous: AI Chat Search">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                AI Chat Search
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../search-ranking/" class="md-footer__link md-footer__link--next" aria-label="Next: Search &amp; Ranking">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Search & Ranking
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Documentation for the manufacturing knowledge-base API
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
