@@ -100,7 +100,7 @@ def test_example_output_round_trips_to_doc(specs):
         for i, entry in enumerate(spec.example_output):
             staged = _parsed_to_staged(
                 i, entry, kt, "example.pdf", None, None,
-                normalized_chunk_text="", normalized_full_raw="",
+                raw_chunk_text="", normalized_full_raw="",
             )
             # Required fields should be populated from the example.
             assert staged.title, f"{kt.value} example {i}: empty title"

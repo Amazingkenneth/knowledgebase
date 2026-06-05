@@ -707,11 +707,11 @@ async def segment_text(
     docs: list[StagedDocument] = []
     idx = 0
     for kt, entries in parsed_by_type.items():
-        for entry, normalized_chunk in _deduplicate_entries(entries, kt):
+        for entry, raw_chunk in _deduplicate_entries(entries, kt):
             doc = _parsed_to_staged(
                 idx, entry, kt, file_name,
                 project_hint, equipment_hint,
-                normalized_chunk, normalized_full_raw,
+                raw_chunk, normalized_full_raw,
             )
             docs.append(doc)
             idx += 1
@@ -750,7 +750,6 @@ async def _segment_chunk_with_fallback(
          and recurse. (Single-page chunks just return empty + log.)
     """
     chunk_text = "\n\n".join(text for _, text in chunk)
-    normalized_chunk = " ".join(chunk_text.split())
     page_range = (
         f"{chunk[0][0]}-{chunk[-1][0]}" if len(chunk) > 1 else str(chunk[0][0])
     )
@@ -785,7 +784,7 @@ async def _segment_chunk_with_fallback(
         entries = _parse_json_array(raw_response)
         valid = _filter_valid_entries(entries, spec, knowledge_type, page_range)
         if valid:
-            return [(e, normalized_chunk) for e in valid]
+            return [(e, chunk_text) for e in valid]
         # Parsed OK but nothing valid. Two sub-cases:
         #   - LLM correctly returned [] → empty array, no salvage needed.
         #   - LLM returned skeleton/low-confidence noise that all got filtered.
@@ -817,7 +816,7 @@ async def _segment_chunk_with_fallback(
         if repaired is not None:
             valid = _filter_valid_entries(repaired, spec, knowledge_type, page_range)
             if valid:
-                return [(e, normalized_chunk) for e in valid]
+                return [(e, chunk_text) for e in valid]
             if repaired:
                 log.info(
                     "Repair retry parsed %d entr%s for pages %s but none passed "
@@ -1106,10 +1105,13 @@ def _parsed_to_staged(
     file_name: str,
     project_hint: str | None,
     equipment_hint: str | None,
-    normalized_chunk_text: str,
+    raw_chunk_text: str,
     normalized_full_raw: str,
 ) -> StagedDocument:
     """Convert LLM-parsed entry to a StagedDocument."""
+    # Fidelity checks compare against whitespace-collapsed text; the displayed
+    # excerpt keeps the raw layout (table rows / line breaks) intact.
+    normalized_chunk_text = " ".join(raw_chunk_text.split())
     source_pages = [str(p) for p in entry.get("source_pages", [])]
     try:
         confidence = float(entry.get("confidence", 0.5))
@@ -1192,9 +1194,61 @@ def _parsed_to_staged(
         ):
             warnings.append("fabrication_warning: failure_desc")
 
-    doc.raw_text_excerpt = normalized_chunk_text[:500]
+    doc.raw_text_excerpt = _build_raw_excerpt(entry, knowledge_type, raw_chunk_text)
     doc.warnings = warnings
     return doc
+
+
+# Identifying tokens, in priority order, that tie a parsed entry back to its
+# own slice of the source text. The first one found in the chunk anchors the
+# excerpt.
+def _entry_anchors(entry: dict[str, Any], knowledge_type: KnowledgeType) -> list[str]:
+    keys: tuple[str, ...]
+    if knowledge_type == KnowledgeType.ALARM:
+        keys = ("error_code", "title_zh", "title_en", "title")
+    elif knowledge_type == KnowledgeType.SETUP:
+        keys = ("station", "title")
+    elif knowledge_type == KnowledgeType.EXPERIENCE:
+        keys = ("problem", "title")
+    else:
+        keys = ()
+    return [str(entry.get(k, "") or "").strip() for k in keys]
+
+
+def _build_raw_excerpt(
+    entry: dict[str, Any],
+    knowledge_type: KnowledgeType,
+    raw_chunk_text: str,
+    max_len: int = 500,
+) -> str:
+    """Return the slice of raw source text that backs *this* entry.
+
+    A single chunk routinely yields many entries — every row of an alarm
+    table, several experiences on a page. The whole document also arrives as
+    one chunk for DOCX (`extract_docx` emits a single page), and tabular DOCX
+    is rendered as a pipe-grid where each alarm code sits on its own row. A
+    chunk-wide head excerpt would therefore show the same leading rows on
+    every card, so a card whose code lives further down displays raw text that
+    never mentions it. Anchor on the entry's most identifying token and return
+    a window starting at the line that contains it, preserving the original
+    layout (the UI renders it in a <pre>). Fall back to the chunk head when no
+    anchor matches.
+    """
+    if not raw_chunk_text:
+        return ""
+    lowered = raw_chunk_text.lower()
+    for anchor in _entry_anchors(entry, knowledge_type):
+        # Single-char anchors are too noisy to locate a unique row.
+        if len(anchor) < 2:
+            continue
+        pos = lowered.find(anchor.lower())
+        if pos == -1:
+            continue
+        # Start at the beginning of the line holding the anchor so a table row
+        # (`| CODE | ... |`) is shown whole rather than mid-cell.
+        line_start = raw_chunk_text.rfind("\n", 0, pos) + 1
+        return raw_chunk_text[line_start: line_start + max_len].strip()
+    return raw_chunk_text[:max_len].strip()
 
 
 def _fidelity_ok(value: str, normalized_chunk: str, normalized_full_raw: str) -> bool:
