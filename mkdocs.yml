@@ -7,8 +7,12 @@ site_author: Knowledge Base team
 copyright: Documentation for the manufacturing knowledge-base API
 docs_dir: docs
 
-# The site has no public GitHub Pages target wired in yet; set `site_url` and
-# `repo_url` when you publish. `mkdocs gh-deploy` works without them.
+# Published to GitHub Pages under the repo subpath. `site_url` MUST be set for the
+# mkdocs-static-i18n language switcher to emit correct, base-prefixed links — without
+# it the switcher emits absolute "/" links that ignore the "/knowledgebase/" subpath,
+# so switching zh→en 404s.
+site_url: https://amazingkenneth.github.io/knowledgebase/
+repo_url: https://github.com/Amazingkenneth/knowledgebase
 
 theme:
   name: material
