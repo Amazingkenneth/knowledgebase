@@ -535,3 +535,57 @@ async def test_process_one_force_ocr_overrides_disabled_setting(monkeypatch, tmp
     assert captured["ocr_enabled"] is True
     assert docs == []
     assert info.status == FileStatus.FAILED
+
+
+def test_build_duplicate_info_summarizes_committed_docs() -> None:
+    # A tracker record (as returned by FileTracker.exists) for a file the KB
+    # already holds. _build_duplicate_info turns its committed_docs into the
+    # summary shown on the duplicate card — without another ES round-trip.
+    existing = {
+        "file_name": "siemens-alarms.docx",
+        "updated_at": "2026-06-05T07:52:52+00:00",
+        "import_status": "committed",
+        "committed_docs": [
+            {"_index": "kb_alarm", "_id": "alarm:1", "_source": {
+                "knowledge_type": "alarm", "title": "Drive fault",
+                "error_codes": ["300406", "300410"],
+            }},
+            {"_index": "kb_alarm", "_id": "alarm:2", "_source": {
+                "knowledge_type": "alarm", "title": "Bus error",
+                "error_codes": ["380001"],
+            }},
+        ],
+    }
+    info = ip._build_duplicate_info(existing)
+    assert info.doc_count == 2
+    assert info.original_file_name == "siemens-alarms.docx"
+    assert info.imported_at == "2026-06-05T07:52:52+00:00"
+    assert [d.title for d in info.documents] == ["Drive fault", "Bus error"]
+    assert info.documents[0].error_codes == ["300406", "300410"]
+
+
+def test_build_duplicate_info_caps_preview_but_keeps_true_count() -> None:
+    # Hundreds of committed docs must not bloat the response: the item list is
+    # capped while doc_count still reports the real total for a "+N more" label.
+    existing = {
+        "file_name": "big.xlsx",
+        "updated_at": "2026-06-05T00:00:00+00:00",
+        "committed_docs": [
+            {"_index": "kb_alarm", "_id": f"alarm:{i}", "_source": {
+                "knowledge_type": "alarm", "title": f"A{i}", "error_codes": [str(i)],
+            }}
+            for i in range(120)
+        ],
+    }
+    info = ip._build_duplicate_info(existing)
+    assert info.doc_count == 120
+    assert len(info.documents) == ip._DUPLICATE_DOC_PREVIEW_CAP
+
+
+def test_build_duplicate_info_tolerates_missing_fields() -> None:
+    # A sparse / legacy tracker record (no committed_docs, no file_name) must
+    # not raise — the duplicate card just shows zero items.
+    info = ip._build_duplicate_info({"updated_at": "2026-06-05T00:00:00+00:00"})
+    assert info.doc_count == 0
+    assert info.documents == []
+    assert info.original_file_name is None

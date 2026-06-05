@@ -25,6 +25,8 @@ from kb.es.body_builder import build_body, build_title_text
 from kb.es.mappings import alias_name
 from kb.models.document import AlarmDoc, ExperienceDoc, KnowledgeDoc, SetupDoc
 from kb.models.ingest import (
+    DuplicateDocSummary,
+    DuplicateInfo,
     FileInfo,
     FileStatus,
     ImportSession,
@@ -206,6 +208,7 @@ class ImportPipeline:
                         file_name=filename, file_hash=file_hash, file_type=ext,
                         file_size=len(content), status=FileStatus.SKIPPED_DUPLICATE,
                         message=f"Already imported on {existing.get('updated_at', 'unknown')}",
+                        duplicate_info=_build_duplicate_info(existing),
                     )
                     session.files.append(info)
                     file_paths.append((info, None))
@@ -495,11 +498,21 @@ class ImportPipeline:
             info.chunks_done = 0
             session.message = f"Segmenting: {info.file_name}"
 
-            def _on_progress(i: int, total: int, _info: FileInfo = info) -> None:
-                _info.message = f"AI analysis: chunk {i}/{total}…"
+            def _on_progress(done: int, total: int, _info: FileInfo = info) -> None:
+                # `done` = chunks whose analysis has finished; the one still in
+                # flight is done+1 (clamped). Driving the bar off completed work
+                # keeps it from reading 100% while the last chunk is still being
+                # analyzed. When every chunk is done, label the brief
+                # dedup/assembly tail as "Finalizing".
                 _info.chunks_total = total
-                _info.chunks_done = i
-                session.message = f"Segmenting {_info.file_name}: {i}/{total}"
+                _info.chunks_done = done
+                if done >= total:
+                    _info.message = "Finalizing…"
+                    session.message = f"Finalizing: {_info.file_name}"
+                else:
+                    in_progress = min(done + 1, total)
+                    _info.message = f"AI analysis: chunk {in_progress}/{total}…"
+                    session.message = f"Segmenting {_info.file_name}: {done}/{total}"
 
             # If no knowledge_type_hint, pass None → per-chunk routing
             # (supports mixed-type files and skips non-content pages).
@@ -541,6 +554,8 @@ class ImportPipeline:
             # then filename-detected hints (already folded into the doc by
             # the segmenter), then the cross-project bucket "所有项目" so
             # the reviewer is never blocked from committing.
+            info.message = "Finalizing…"
+            session.message = f"Finalizing: {info.file_name}"
             idx = start_index
             for doc in docs:
                 _resolve_taxonomy_fields(doc, self._taxonomy, info.file_name)
@@ -782,6 +797,37 @@ class ImportPipeline:
             if f.file_name == source_file and f.file_hash:
                 return f.file_hash
         return None
+
+
+# Cap on per-file item summaries embedded in a duplicate card. doc_count still
+# carries the true total so the UI can render "+N more"; this only bounds the
+# response payload when a single file contributed hundreds of documents.
+_DUPLICATE_DOC_PREVIEW_CAP = 50
+
+
+def _build_duplicate_info(existing: dict[str, Any]) -> DuplicateInfo:
+    """Summarize a tracker record into the DuplicateInfo shown on a skipped file.
+
+    ``existing`` is the ``kb_import_files`` source already fetched by
+    ``FileTracker.exists`` — no extra ES round-trip. Each committed doc is stored
+    as ``{"_index", "_id", "_source"}``; ``_source`` carries the knowledge-type
+    fields, title, and error_codes we surface.
+    """
+    committed = existing.get("committed_docs") or []
+    summaries: list[DuplicateDocSummary] = []
+    for entry in committed[:_DUPLICATE_DOC_PREVIEW_CAP]:
+        src = entry.get("_source", {}) if isinstance(entry, dict) else {}
+        summaries.append(DuplicateDocSummary(
+            knowledge_type=str(src.get("knowledge_type", "") or ""),
+            title=str(src.get("title", "") or ""),
+            error_codes=[str(c) for c in (src.get("error_codes") or [])],
+        ))
+    return DuplicateInfo(
+        imported_at=existing.get("updated_at") or existing.get("created_at"),
+        original_file_name=existing.get("file_name"),
+        doc_count=len(committed),
+        documents=summaries,
+    )
 
 
 def _safe_upload_path(upload_dir: Path, file_hash: str, filename: str) -> Path:

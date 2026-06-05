@@ -4927,11 +4927,16 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
   const [processMsg, setProcessMsg] = React.useState('');
   const [elapsed, setElapsed]       = React.useState(0);
   const [expanded, setExpanded]     = React.useState({});
+  const [dupExpanded, setDupExpanded] = React.useState({}); // duplicate cards, keyed by file_hash
   const [commitResult, setCommitResult] = React.useState(null);
   const [commitProgress, setCommitProgress] = React.useState({ current: 0, total: 0, phase: 'syncing' });
   const [toast, setToast]           = React.useState(null);
   const [loading, setLoading]       = React.useState(false);
   const elapsedTimerRef             = React.useRef(null);
+  // The File objects from the last user-initiated upload, kept so "Re-import
+  // anyway" can re-POST a duplicate's original bytes with force=true (the
+  // server only sends back file metadata, not the content).
+  const lastFilesRef                = React.useRef([]);
 
   // Hints
   const [ktHint, setKtHint]         = React.useState('');
@@ -4947,14 +4952,17 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
   };
 
   // ── Upload handler ──
-  const handleFiles = async (fileList) => {
-    if (!fileList || fileList.length === 0) return;
+  // POST a set of File objects and transition into the processing phase.
+  // `force` bypasses the server-side duplicate check (used by "Re-import anyway").
+  const submitUpload = async (filesArr, force = false) => {
+    if (!filesArr || filesArr.length === 0) return;
     setLoading(true);
     const formData = new FormData();
-    for (const f of fileList) formData.append('files', f);
+    for (const f of filesArr) formData.append('files', f);
     if (ktHint) formData.append('knowledge_type_hint', ktHint);
     if (projHint) formData.append('project_hint', projHint);
     if (equipHint) formData.append('equipment_hint', equipHint);
+    if (force) formData.append('force', 'true');
 
     try {
       const resp = await fetch('/api/v1/ingest/upload', { method: 'POST', body: formData });
@@ -4962,6 +4970,7 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
       const data = await resp.json();
       setSessionId(data.session_id);
       setFiles(data.files);
+      setDocuments([]);
       setProcessMsg('');
       setElapsed(0);
       setPhase('processing');
@@ -4971,6 +4980,24 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
       showToast(err.message, 'err');
     }
     setLoading(false);
+  };
+
+  const handleFiles = async (fileList) => {
+    if (!fileList || fileList.length === 0) return;
+    // Remember the originals so a later "Re-import anyway" can re-send the bytes.
+    lastFilesRef.current = Array.from(fileList);
+    await submitUpload(lastFilesRef.current, false);
+  };
+
+  // ── Re-import a duplicate, bypassing the dup check ──
+  const reimportDuplicate = async (fileName) => {
+    const file = lastFilesRef.current.find(f => f.name === fileName);
+    if (!file) {
+      showToast('请重新选择该文件再导入 · Please re-select this file to re-import', 'err');
+      setPhase('upload');
+      return;
+    }
+    await submitUpload([file], true);
   };
 
   // ── Folder scan handler ──
@@ -5043,11 +5070,29 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
           clearInterval(interval);
           stopElapsedTimer();
           setProcessMsg('');
-          setDocuments(data.documents || []);
-          setPhase(data.documents?.length > 0 ? 'preview' : 'upload');
-          if (data.status === 'failed') showToast('处理失败 Processing failed', 'err');
-          else if (data.documents?.length > 0) showToast(`提取了 ${data.documents.length} 条文档 — Extracted ${data.documents.length} documents`);
-          else showToast('未提取到文档 No documents extracted', 'err');
+          const docs = data.documents || [];
+          const allFiles = data.files || [];
+          setDocuments(docs);
+          // Files worth showing even when nothing was extracted: duplicates
+          // (explain what's already imported + offer re-import), and
+          // failed/unsupported (offer retry). Only bounce back to the upload
+          // screen when there is genuinely nothing to show.
+          const dupes = allFiles.filter(f => f.status === 'skipped_duplicate');
+          const showableFiles = allFiles.filter(f =>
+            ['skipped_duplicate', 'failed', 'unsupported'].includes(f.status));
+          const hasShowable = docs.length > 0 || showableFiles.length > 0;
+          setPhase(hasShowable ? 'preview' : 'upload');
+          if (docs.length > 0) {
+            showToast(`提取了 ${docs.length} 条文档 — Extracted ${docs.length} documents`);
+          } else if (dupes.length > 0 && dupes.length === showableFiles.length) {
+            // All non-extracted files were already in the KB — informational,
+            // not an error, and no longer the misleading "No documents extracted".
+            showToast(`${dupes.length} 个文件已导入过 · ${dupes.length} file(s) already imported`);
+          } else if (data.status === 'failed' && !hasShowable) {
+            showToast('处理失败 Processing failed', 'err');
+          } else if (!hasShowable) {
+            showToast('未提取到文档 No documents extracted', 'err');
+          }
         }
       } catch (_) {}
     }, 2000);
@@ -5449,13 +5494,70 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
                     </div>
                   );
                 })}
-                {skippedFiles.map((f, i) => (
-                  <div key={`skip-${i}`} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0', fontSize: '12.5px' }}>
-                    <span className="import-file-status skip" style={{ flexShrink: 0 }}>{f.status === 'unsupported' ? '不支持' : 'Skipped'}</span>
-                    <span className="import-file-name" style={{ flex: 1 }}>{f.file_name}</span>
-                    <span style={{ color: 'var(--muted)', flexShrink: 0 }}>{f.message}</span>
-                  </div>
-                ))}
+                {skippedFiles.map((f, i) => {
+                  // Unsupported files: simple one-liner (nothing more to show).
+                  if (f.status !== 'skipped_duplicate') {
+                    return (
+                      <div key={`skip-${i}`} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0', fontSize: '12.5px' }}>
+                        <span className="import-file-status skip" style={{ flexShrink: 0 }}>不支持 · Unsupported</span>
+                        <span className="import-file-name" style={{ flex: 1 }}>{f.file_name}</span>
+                        <span style={{ color: 'var(--muted)', flexShrink: 0 }}>{f.message}</span>
+                      </div>
+                    );
+                  }
+                  // Duplicate: explain what the KB already holds + offer re-import.
+                  const di = f.duplicate_info || {};
+                  const items = di.documents || [];
+                  const total = di.doc_count || 0;
+                  const moreCount = total - items.length;
+                  const open = !!dupExpanded[f.file_hash];
+                  let importedAt = di.imported_at || '';
+                  try { if (importedAt) importedAt = new Date(importedAt).toLocaleString(); } catch (_) {}
+                  const renamedFrom = di.original_file_name && di.original_file_name !== f.file_name
+                    ? di.original_file_name : null;
+                  return (
+                    <div key={`skip-${i}`} style={{ padding: '6px 0', fontSize: '12.5px', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <span className="import-file-status skip" style={{ flexShrink: 0 }}>已导入 · Already imported</span>
+                        <span className="import-file-name" style={{ fontWeight: 500 }}>{f.file_name}</span>
+                        <span style={{ flex: 1, color: 'var(--muted)', minWidth: 120 }}>
+                          {total} 条文档 · {total} item{total === 1 ? '' : 's'}{importedAt ? ` · 导入于 ${importedAt}` : ''}
+                        </span>
+                        {total > 0 && (
+                          <button className="btn btn-sm" onClick={() => setDupExpanded(e => ({ ...e, [f.file_hash]: !e[f.file_hash] }))}>
+                            {open ? '收起 Hide' : '查看条目 View items'}
+                          </button>
+                        )}
+                        <button className="btn btn-sm" onClick={() => reimportDuplicate(f.file_name)} title="忽略重复检测，重新导入此文件">
+                          仍然重新导入 · Re-import anyway
+                        </button>
+                      </div>
+                      {renamedFrom && (
+                        <div style={{ color: 'var(--muted-2)', marginTop: 2 }}>
+                          原文件名 · originally imported as: {renamedFrom}
+                        </div>
+                      )}
+                      {open && items.length > 0 && (
+                        <ul style={{ margin: '6px 0 2px', paddingLeft: 0, listStyle: 'none', borderLeft: '2px solid var(--border)' }}>
+                          {items.map((d, j) => (
+                            <li key={j} style={{ display: 'flex', alignItems: 'baseline', gap: 6, padding: '2px 0 2px 10px' }}>
+                              <span className="mono" style={{ fontSize: '10.5px', color: 'var(--muted)', flexShrink: 0 }}>
+                                {d.knowledge_type === 'alarm' ? '报警' : d.knowledge_type === 'setup' ? '调试' : d.knowledge_type === 'experience' ? '经验' : (d.knowledge_type || '?')}
+                              </span>
+                              {d.error_codes && d.error_codes.length > 0 && (
+                                <span className="mono" style={{ fontSize: '11px', color: 'var(--loose)', flexShrink: 0 }}>{d.error_codes.join(', ')}</span>
+                              )}
+                              <span style={{ color: 'var(--ink-2)' }}>{d.title || '（无标题 · untitled）'}</span>
+                            </li>
+                          ))}
+                          {moreCount > 0 && (
+                            <li style={{ padding: '2px 0 2px 10px', color: 'var(--muted)' }}>+{moreCount} 更多 · more…</li>
+                          )}
+                        </ul>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
 

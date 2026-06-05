@@ -83,6 +83,14 @@ class FileTracker:
                 result[fh] = {"exists": False}
         return result
 
+    # Guard shared by record_pending / record_failed: a row that is already
+    # `committed` carries the durable `committed_docs` that restore_imports()
+    # replays after a reseed. Only record_committed may replace that payload, so
+    # any *other* writer must leave a committed row untouched — otherwise a force
+    # re-import that the user abandons (or that fails extraction) would wipe the
+    # previously-good import out of the tracker and drop it on the next reseed.
+    _PRESERVE_COMMITTED = "if (ctx._source.import_status == 'committed') { ctx.op = 'noop'; }"
+
     async def record_pending(
         self,
         file_hash: str,
@@ -92,21 +100,48 @@ class FileTracker:
         file_type: str,
     ) -> None:
         now = datetime.now(UTC).isoformat()
-        await self._es.index(
+        new_doc = {
+            "file_hash": file_hash,
+            "file_name": file_name,
+            "file_path": file_path,
+            "file_size": file_size,
+            "file_type": file_type,
+            "import_status": "pending",
+            "committed_docs": [],
+            "error_message": "",
+            "created_at": now,
+            "updated_at": now,
+        }
+        # Atomic upsert. A brand-new file inserts `new_doc` (the script does not
+        # run on insert). An existing row runs the script: a `committed` row is a
+        # no-op (durable payload preserved — see _PRESERVE_COMMITTED); any other
+        # prior state (pending/failed) is reset to a fresh pending attempt.
+        await self._es.update(
             index=IMPORT_INDEX_NAME,
             id=file_hash,
-            document={
-                "file_hash": file_hash,
-                "file_name": file_name,
-                "file_path": file_path,
-                "file_size": file_size,
-                "file_type": file_type,
-                "import_status": "pending",
-                "committed_docs": [],
-                "error_message": "",
-                "created_at": now,
-                "updated_at": now,
+            script={
+                "lang": "painless",
+                "source": (
+                    f"{self._PRESERVE_COMMITTED} else {{"
+                    " ctx._source.import_status = 'pending';"
+                    " ctx._source.committed_docs = [];"
+                    " ctx._source.error_message = '';"
+                    " ctx._source.file_name = params.file_name;"
+                    " ctx._source.file_path = params.file_path;"
+                    " ctx._source.file_size = params.file_size;"
+                    " ctx._source.file_type = params.file_type;"
+                    " ctx._source.updated_at = params.now;"
+                    " }"
+                ),
+                "params": {
+                    "file_name": file_name,
+                    "file_path": file_path,
+                    "file_size": file_size,
+                    "file_type": file_type,
+                    "now": now,
+                },
             },
+            upsert=new_doc,
             # No refresh wait: this marker only has to be durable, not instantly
             # searchable. exists() reads it via a real-time GET-by-id (refresh
             # independent), so blocking the synchronous upload path on an ES
@@ -150,15 +185,22 @@ class FileTracker:
     async def record_failed(self, file_hash: str, error_message: str) -> None:
         now = datetime.now(UTC).isoformat()
         try:
+            # Don't downgrade an already-committed row: a failed *re*-process
+            # must not invalidate the previously-good import (see
+            # _PRESERVE_COMMITTED). Non-committed rows are marked failed as usual.
             await self._es.update(
                 index=IMPORT_INDEX_NAME,
                 id=file_hash,
-                body={
-                    "doc": {
-                        "import_status": "failed",
-                        "error_message": error_message,
-                        "updated_at": now,
-                    }
+                script={
+                    "lang": "painless",
+                    "source": (
+                        f"{self._PRESERVE_COMMITTED} else {{"
+                        " ctx._source.import_status = 'failed';"
+                        " ctx._source.error_message = params.error_message;"
+                        " ctx._source.updated_at = params.now;"
+                        " }"
+                    ),
+                    "params": {"error_message": error_message, "now": now},
                 },
                 refresh="wait_for",
             )

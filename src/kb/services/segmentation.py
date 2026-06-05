@@ -384,7 +384,13 @@ def _split_oversized_page(page: PageText, max_chars: int) -> list[PageText]:
     heading_positions = [m.start() for m in _HEADING_RE.finditer(text)]
     segments: list[str] = []
     if len(heading_positions) >= 2:
-        bounds = heading_positions + [len(text)]
+        # Anchor the first boundary at 0 so any preamble *before* the first
+        # detected heading is kept as its own segment. Dropping text[:first]
+        # silently loses entries that sit above the first heading line — e.g.
+        # table-rendered alarm rows (`| 300406 | … |`) that precede the first
+        # plain-text alarm code the heading regex matches. That data loss could
+        # leave a file with zero extracted documents ("no documents found").
+        bounds = ([0] if heading_positions[0] != 0 else []) + heading_positions + [len(text)]
         for i in range(len(bounds) - 1):
             seg = text[bounds[i]: bounds[i + 1]].strip()
             if seg:
@@ -477,9 +483,20 @@ def chunk_pages(pages: list[PageText], max_chars: int = 12000) -> list[list[Page
         page_len = len(page[1])
         if current and current_len + page_len > max_chars:
             chunks.append(current)
-            overlap = [current[-1]] if current else []
-            current = overlap
-            current_len = sum(len(p[1]) for p in current)
+            # Carry a 1-page overlap for cross-boundary context, but only when
+            # the overlap page plus the incoming page still fit the budget.
+            # Re-adding the previous page unconditionally let a near-full
+            # overlap (e.g. an 11.8k page) combine with the next one into a
+            # chunk well over max_chars (16k against a 12k budget) — an
+            # over-budget chunk the LLM can truncate, which corrupts the JSON
+            # and can drop every entry on the page ("No documents extracted").
+            prev = current[-1]
+            if len(prev[1]) + page_len <= max_chars:
+                current = [prev]
+                current_len = len(prev[1])
+            else:
+                current = []
+                current_len = 0
         current.append(page)
         current_len += page_len
 
@@ -616,6 +633,12 @@ async def segment_text(
 
     ``llm`` is the shared client; when omitted a short-lived one is built from
     ``settings`` and closed before returning.
+
+    ``on_chunk_progress(completed, total)`` reports the number of chunks whose
+    analysis has *finished* (not started), so a progress bar driven off it never
+    reads 100% while the last — often largest — chunk's LLM call is still in
+    flight. It fires with ``completed=0`` before the first chunk and with
+    ``completed=total`` once the loop is done.
     """
     if not pages:
         return [], []
@@ -623,6 +646,24 @@ async def segment_text(
     specs = load_specs()
     chunk_chars = settings.ingest.segmentation_chunk_chars
     chunks = chunk_pages(pages, max_chars=chunk_chars)
+
+    # Diagnostic: surface the chunk plan so a "No documents extracted" report can
+    # be traced to its cause from the server log alone. An over-budget chunk
+    # (size > chunk_chars) is the classic precursor to LLM truncation → corrupt
+    # JSON → dropped entries, so flag it loudly rather than only logging sizes.
+    chunk_sizes = [sum(len(t) for _, t in c) for c in chunks]
+    log.info(
+        "Segmenting %s: %d page(s) → %d chunk(s), sizes=%s (budget %d), locked_type=%s",
+        file_name, len(pages), len(chunks), chunk_sizes, chunk_chars,
+        knowledge_type.value if knowledge_type else None,
+    )
+    oversized = [s for s in chunk_sizes if s > chunk_chars]
+    if oversized:
+        log.warning(
+            "%s: %d chunk(s) exceed the %d-char budget (%s) — the LLM may "
+            "truncate these and drop entries",
+            file_name, len(oversized), chunk_chars, oversized,
+        )
 
     full_raw_text = "\n\n".join(text for _, text in pages)
     normalized_full_raw = " ".join(full_raw_text.split())
@@ -639,8 +680,13 @@ async def segment_text(
     client = llm or LLMClient(settings.llm)
     try:
         for chunk_idx, chunk in enumerate(chunks):
+            # Report chunks finished *before* this one (chunk_idx) rather than the
+            # one now starting, so the UI bar tracks completed work and never
+            # reads 100% mid-analysis. Robust to the `continue` paths below — the
+            # next iteration counts this chunk as done; a final flush to total
+            # happens after the loop. completed=0 fires here on the first pass.
             if on_chunk_progress:
-                on_chunk_progress(chunk_idx + 1, total_chunks)
+                on_chunk_progress(chunk_idx, total_chunks)
 
             page_range = _page_range(chunk)
             chunk_text = "\n\n".join(text for _, text in chunk)
@@ -681,6 +727,12 @@ async def segment_text(
                 if entries:
                     parsed_by_type.setdefault(kt, []).extend(entries)
 
+            log.info(
+                "Chunk %d/%d (pages %s) of %s → %s",
+                chunk_idx + 1, total_chunks, page_range, file_name,
+                {kt.value: n for kt, n in per_type_results.items()} or "no entries",
+            )
+
             # Whole-chunk no-entry hint only if EVERY routed type came back empty
             # AND no page was lost to a parse failure (that's reported separately
             # as `parse_failed`, so don't also call it "no entries").
@@ -697,6 +749,10 @@ async def segment_text(
                         "re-upload, or lower the chunk size in settings."
                     ),
                 ))
+        # All chunks analyzed — flush the bar to 100% before the caller moves on
+        # to the (brief) dedup/assembly/"Finalizing" step.
+        if on_chunk_progress:
+            on_chunk_progress(total_chunks, total_chunks)
     finally:
         if owns_llm:
             await client.aclose()

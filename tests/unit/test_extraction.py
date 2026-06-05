@@ -124,9 +124,31 @@ class TestChunkPages:
         pages = [(i, f"Page {i} " * 100) for i in range(1, 6)]
         chunks = chunk_pages(pages, max_chars=500)
         assert len(chunks) > 1
-        # Overlap: last page of chunk N should be first page of chunk N+1
+
+    def test_overlap_when_it_fits(self) -> None:
+        # Pages small enough that the 1-page overlap still fits the budget →
+        # the last page of chunk N is repeated as the first page of chunk N+1.
+        pages = [(i, "x" * 100) for i in range(1, 4)]
+        chunks = chunk_pages(pages, max_chars=250)
+        assert len(chunks) > 1
         for i in range(len(chunks) - 1):
             assert chunks[i][-1] == chunks[i + 1][0]
+
+    def test_chunks_never_exceed_budget(self) -> None:
+        # Regression: a near-full page carried as overlap must not combine with
+        # the next page into an over-budget chunk. Previously the overlap page
+        # was re-added unconditionally, producing chunks well over max_chars
+        # (e.g. 16k against a 12k budget) that the LLM could truncate — dropping
+        # every entry on the page ("No documents extracted").
+        max_chars = 1000
+        pages = [
+            (1, "a" * 900),
+            (2, "b" * 900),
+            (3, "c" * 500),
+        ]
+        chunks = chunk_pages(pages, max_chars=max_chars)
+        for chunk in chunks:
+            assert sum(len(text) for _, text in chunk) <= max_chars
 
     def test_no_split_needed(self) -> None:
         pages = [(1, "a"), (2, "b"), (3, "c")]
@@ -259,4 +281,29 @@ class TestSplitOversizedPage:
         text = "x" * 5000
         sub_pages = _split_oversized_page((1, text), max_chars=1000)
         assert len(sub_pages) >= 5
+        assert all(p[0] == 1 for p in sub_pages)
+
+    def test_preamble_before_first_heading_is_kept(self) -> None:
+        # Regression: content above the first detected heading must not be
+        # dropped. A table-rendered alarm row ("| 300406 | … |") starts with
+        # "|", so the heading regex skips it; the first heading it matches is a
+        # later plain-text alarm code. Everything before that — including 300406
+        # and 300410 — used to be silently discarded, leaving the file with
+        # fewer (or zero) extracted documents.
+        preamble = (
+            "Drive and I/O alarms\n"
+            "| 300406 | Problem in the non-cyclic communication |\n"
+            + ("| Definitions: | " + "x " * 200 + "|\n")
+            + "| 300410 | Axis error when storing a file |\n"
+            + ("| Remedy: | " + "y " * 200 + "|\n")
+        )
+        body = "\n\n".join(
+            f"30041{i}\tAxis error number {i}\n" + ("detail " * 200)
+            for i in range(1, 5)
+        )
+        text = preamble + body
+        sub_pages = _split_oversized_page((1, text), max_chars=1500)
+        joined = "\n\n".join(t for _, t in sub_pages)
+        assert "300406" in joined
+        assert "300410" in joined
         assert all(p[0] == 1 for p in sub_pages)

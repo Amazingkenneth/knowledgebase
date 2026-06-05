@@ -217,7 +217,13 @@ rendered from the spec YAMLs above and instruct the model to:
 
 `chunk_pages()` packs pages into `segmentation_chunk_chars`-bounded chunks with
 `_OVERLAP_PAGES = 1` page of overlap so entries spanning a chunk boundary are still
-seen whole.
+seen whole. The overlap is **budget-aware**: the previous page is carried into the
+next chunk only when it still leaves room for the incoming page
+(`len(overlap) + len(page) <= max_chars`); otherwise the next chunk starts fresh.
+This guarantees **every chunk stays within `max_chars`** — re-adding a near-full
+page as overlap used to combine with the next page into an over-budget chunk (e.g.
+16k against a 12k budget), which the LLM could truncate mid-JSON and silently drop
+every entry on the page ("No documents extracted").
 
 Before packing, `_split_oversized_page()` structurally subdivides any single page
 that exceeds `max_chars`. The split tries, in order:
@@ -227,6 +233,11 @@ that exceeds `max_chars`. The split tries, in order:
 2. **Paragraph breaks** (`\n\n`).
 3. **Line breaks** (`\n`).
 4. **Hard character cut** (last resort, for a single line larger than `max_chars`).
+
+When splitting on headings, any **preamble before the first heading** is kept as
+its own segment rather than discarded — otherwise entries that sit above the first
+heading line (e.g. table-rendered alarm rows that precede the first plain-text
+heading) would vanish, which can leave a file with zero extracted documents.
 
 Sub-pages keep the **original page number**, so `source_pages` traceability is
 preserved. This closes the silent hole where a single oversized page (e.g. a

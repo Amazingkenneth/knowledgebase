@@ -36,6 +36,30 @@ class SkippedChunk(BaseModel):
     hint: str
 
 
+class DuplicateDocSummary(BaseModel):
+    """One previously-committed document, summarized for the duplicate card."""
+    knowledge_type: str = ""
+    title: str = ""
+    error_codes: list[str] = Field(default_factory=list)
+
+
+class DuplicateInfo(BaseModel):
+    """What the KB already holds for a file the user re-uploaded.
+
+    Surfaced on a SKIPPED_DUPLICATE FileInfo so the UI can explain *why* the
+    file was skipped — original name, when it was imported, and the items it
+    contributed — instead of a bare "Skipped" badge.
+    """
+    imported_at: str | None = None
+    # The name the file carried when it was first imported. May differ from the
+    # just-uploaded name (same content, renamed file).
+    original_file_name: str | None = None
+    doc_count: int = 0
+    # Capped list of item summaries (see _DUPLICATE_DOC_PREVIEW_CAP); doc_count
+    # carries the true total so the UI can show "+N more".
+    documents: list[DuplicateDocSummary] = Field(default_factory=list)
+
+
 class FileInfo(BaseModel):
     file_name: str
     file_hash: str
@@ -48,6 +72,8 @@ class FileInfo(BaseModel):
     chunks_total: int | None = None
     chunks_done: int | None = None
     skipped_chunks: list[SkippedChunk] = Field(default_factory=list)
+    # Set only when status == SKIPPED_DUPLICATE: what the KB already holds.
+    duplicate_info: DuplicateInfo | None = None
 
 
 class StagedDocument(BaseModel):
