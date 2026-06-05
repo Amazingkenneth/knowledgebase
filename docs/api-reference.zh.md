@@ -343,7 +343,23 @@ source_file?, source_pages[], summary?, sections{} }`。`sections` 逐字保存�
 
 `ImportStatus` 取值：`pending` · `extracting` · `ready_for_review` · `committed` ·
 `failed`。`FileStatus` 取值：`processing` · `skipped_duplicate` · `unsupported` ·
-`failed` · `done`。
+`failed` · `done`。切分期间 `chunks_done` 统计的是**已完成**的块，因此只有当分析全部结束后文件才会读到 `chunks_done == chunks_total`；其后短暂的去重/组装阶段会以 `Finalizing…` 消息上报。
+
+`status: skipped_duplicate` 的文件还会额外带一个 `duplicate_info` 对象，描述 KB 已为该内容保存了什么，便于 UI 解释这次跳过：
+
+```json
+{ "file_name": "alarms.pptx", "file_hash": "f3a…", "file_type": "pptx",
+  "status": "skipped_duplicate", "message": "Already imported on 2024-06-12T…",
+  "duplicate_info": {
+    "imported_at": "2024-06-12T08:31:00+00:00",
+    "original_file_name": "alarms-v1.pptx",
+    "doc_count": 14,
+    "documents": [
+      { "knowledge_type": "alarm", "title": "真空泄漏报警", "error_codes": ["E-1234"] }
+    ] } }
+```
+
+`documents` 最多 50 条（`doc_count` 携带真实总数，便于 UI 渲染"还有 N 条"）；当相同字节曾以不同文件名导入时，`original_file_name` 可能与本次上传的名称不同。
 
 !!! note "会话的 410 与 404"
     **已过期**（被 TTL 清理器回收）的会话 id 返回 **410 Gone** —— 提示用户重新上传；**从未存在**

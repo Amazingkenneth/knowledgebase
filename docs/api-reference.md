@@ -355,7 +355,29 @@ whose hash was already committed). `POST /scan` takes a JSON `ScanRequest`:
 
 `ImportStatus` values: `pending` · `extracting` · `ready_for_review` · `committed` ·
 `failed`. `FileStatus` values: `processing` · `skipped_duplicate` · `unsupported` ·
-`failed` · `done`.
+`failed` · `done`. During segmentation `chunks_done` tracks **completed** chunks, so
+a file reads `chunks_done == chunks_total` only once analysis is finished; the brief
+dedup/assembly tail is reported as a `Finalizing…` message.
+
+A file with `status: skipped_duplicate` additionally carries a `duplicate_info`
+object describing what the KB already holds for that content, so the UI can explain
+the skip:
+
+```json
+{ "file_name": "alarms.pptx", "file_hash": "f3a…", "file_type": "pptx",
+  "status": "skipped_duplicate", "message": "Already imported on 2024-06-12T…",
+  "duplicate_info": {
+    "imported_at": "2024-06-12T08:31:00+00:00",
+    "original_file_name": "alarms-v1.pptx",
+    "doc_count": 14,
+    "documents": [
+      { "knowledge_type": "alarm", "title": "真空泄漏报警", "error_codes": ["E-1234"] }
+    ] } }
+```
+
+`documents` is capped at 50 entries (`doc_count` carries the true total so the UI can
+render "+N more"); `original_file_name` may differ from the just-uploaded name when
+the same bytes were imported under a different filename.
 
 !!! note "410 vs 404 on a session"
     A session id that **expired** (swept by the TTL evictor) returns **410 Gone** — prompt

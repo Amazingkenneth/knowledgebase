@@ -340,6 +340,8 @@ doc_id = f"{doc.knowledge_type.value}:{h}"   # 例如 alarm:9f2c…（共 24 位
 | `error_message` | text | `index: false` |
 | `created_at` / `updated_at` | date | 时间戳 |
 
+`committed` 记录**受写保护**：`record_pending`（原子 upsert）与 `record_failed` 都会运行受 `_PRESERVE_COMMITTED` 守卫的 painless 脚本——对 committed 记录写入为 no-op，因此被放弃或失败的 `force` 重导入无法抹掉 `restore_imports()` 在重 seed 后回放的 `committed_docs` 负载。
+
 ### `kb_search_feedback` — 检索反馈 {#kb-search-feedback}
 
 `src/kb/es/feedback_mappings.py`。轻量 👍/👎 信号，**纯观测**，永不回流影响检索结果。
@@ -450,7 +452,8 @@ doc_id = f"{doc.knowledge_type.value}:{h}"   # 例如 alarm:9f2c…（共 24 位
 ### 其他模型
 
 - `SkippedChunk`：`source_file`、`page_range`、`reason`(`non_content`/`no_entries`/`parse_failed`)、`hint`
-- `FileInfo`：文件级状态 + 分段进度（`chunks_total`/`chunks_done`/`skipped_chunks`）
+- `FileInfo`：文件级状态 + 分段进度（`chunks_total`/`chunks_done`——`chunks_done` 统计**已完成**的块/`skipped_chunks`），以及仅当 `status == skipped_duplicate` 时设置的可选 `duplicate_info`
+- `DuplicateInfo` / `DuplicateDocSummary`：KB 已为某个重复上传文件保存的内容——`imported_at`、`original_file_name`、总 `doc_count`，以及不超过 50 条的 `documents` 预览（`knowledge_type`、`title`、`error_codes`）。由现有 tracker 记录构建，无需额外读 ES
 - `ImportSession`：会话整体（`session_id`、`status`、`files`、`documents`、各 `*_hint`、`created_at`）
 - 请求/响应：`UploadResponse`、`ScanRequest`、`SessionResponse`、`SessionListItem`、
   `DocumentUpdate`、`AcceptReject`、`AcceptAllRequest`、`RetryRequest`、`CommitResponse`、

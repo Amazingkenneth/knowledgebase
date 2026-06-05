@@ -356,6 +356,11 @@ them after reseed clears the main indices.
 | `error_message` | text | `index: false` |
 | `created_at` / `updated_at` | date | timestamps |
 
+A `committed` row is **write-protected**: `record_pending` (an atomic upsert) and
+`record_failed` both run a painless script guarded by `_PRESERVE_COMMITTED` that
+no-ops on a committed row, so an abandoned or failed `force` re-import can't wipe the
+`committed_docs` payload that `restore_imports()` replays after a reseed.
+
 ### `kb_search_feedback` — search feedback {#kb-search-feedback}
 
 `src/kb/es/feedback_mappings.py`. Lightweight 👍/👎 signals, **purely observational** —
@@ -468,7 +473,8 @@ commit. Key fields: `index`, `knowledge_type`, `project`, `equipment`, `title`,
 ### Other models
 
 - `SkippedChunk`: `source_file`, `page_range`, `reason` (`non_content`/`no_entries`/`parse_failed`), `hint`
-- `FileInfo`: per-file status + segmentation progress (`chunks_total`/`chunks_done`/`skipped_chunks`)
+- `FileInfo`: per-file status + segmentation progress (`chunks_total`/`chunks_done` — `chunks_done` counts **completed** chunks/`skipped_chunks`) plus an optional `duplicate_info` set only when `status == skipped_duplicate`
+- `DuplicateInfo` / `DuplicateDocSummary`: what the KB already holds for a re-uploaded file — `imported_at`, `original_file_name`, total `doc_count`, and a ≤50-entry `documents` preview (`knowledge_type`, `title`, `error_codes`). Built from the existing tracker record, no extra ES read
 - `ImportSession`: the whole session (`session_id`, `status`, `files`, `documents`, the `*_hint`s, `created_at`)
 - Request/response: `UploadResponse`, `ScanRequest`, `SessionResponse`, `SessionListItem`,
   `DocumentUpdate`, `AcceptReject`, `AcceptAllRequest`, `RetryRequest`, `CommitResponse`,

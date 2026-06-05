@@ -28,11 +28,12 @@ Client (files or folder path + optional hints)
         ▼
 [0] Hash & dedupe
         │  SHA-256 of bytes → check kb_import_files index
-        │  committed before → SKIPPED_DUPLICATE (unless force=true)
-        │  else → record_pending() in tracker, persist file to upload_dir
+        │  committed before → SKIPPED_DUPLICATE (unless force=true), with a
+        │      DuplicateInfo summary of what the KB already holds for that file
+        │  else → record_pending() in tracker (atomic upsert), persist to upload_dir
         │
         ▼
-[1] Extraction (per filetype)
+[1] Extraction (per filetype) — runs in a worker thread (asyncio.to_thread)
         │  PDF: pymupdf text → OCR fallback (PaddleOCR) when page is image-only
         │  XLSX/XLS: openpyxl, one "page" per sheet
         │  CSV: stdlib csv, one "page" per row block
@@ -65,7 +66,7 @@ Client (files or folder path + optional hints)
         │                   confidence < 0.3 (router false-positive guard)
         │  project/equipment: LLM-extracted verbatim > filename/upload hint > 所有项目
         │  → (StagedDocument[], SkippedChunk[])
-        │  on_chunk_progress reports "AI analysis: i/n" to the session
+        │  on_chunk_progress reports *completed* chunks (n/total → "Finalizing…")
         │
         ▼
 [4] Session moves to READY
@@ -137,6 +138,12 @@ default.
 Optional dependencies are imported via `_try_import` — a missing optional backend
 (e.g. PaddleOCR) does not crash the server, but the affected file fails with a clear
 `ImportError` message. Install the extras with `pip install -e ".[ingest]"`.
+
+**Off the event loop.** `extract_file` is synchronous and CPU-bound (pymupdf /
+python-docx / openpyxl / PaddleOCR), so the pipeline runs it via
+`asyncio.to_thread`. A large or OCR-heavy file therefore can't freeze the single
+async event loop and stall every other in-flight request (uploads, status polls,
+healthchecks) — a stall a fronting proxy would otherwise surface as a 408/504.
 
 ---
 
@@ -364,6 +371,20 @@ After segmentation, each verbatim-required field (`content`, `resolution`,
 legitimately spans a chunk boundary). On failure the field is kept but the staged
 document carries a `fabrication_warning: <field>` entry for the reviewer.
 
+### Raw-text excerpt (per-entry provenance)
+
+Each staged doc carries a `raw_text_excerpt` — the slice of **raw** source text
+that backs *that* entry — shown to the reviewer (the UI renders it in a `<pre>`,
+so the original table/line layout is preserved). A single chunk routinely yields
+many entries (every row of an alarm table, several experiences on a page), and a
+whole DOCX arrives as one chunk, so a chunk-wide head excerpt would show the same
+leading rows on every card. Instead `_build_raw_excerpt()` anchors on the entry's
+most identifying token — `error_code`/`title` for alarms, `station` for setup,
+`problem` for experience — and returns a window starting at the line that contains
+it, falling back to the chunk head when no anchor matches. The fidelity check
+above still runs against the **whitespace-collapsed** text; only the displayed
+excerpt keeps the raw layout.
+
 ### Project & equipment resolution
 
 `project` / `equipment` are resolved through a three-tier priority chain so every
@@ -461,8 +482,26 @@ The tracker has two jobs: **dedupe** and **auto-restore**.
 
 **Dedupe:** keyed by SHA-256 of file bytes. `start_upload` checks
 `tracker.exists(hash)` before persisting; if the prior import is `committed` and the
-user did not pass `force=true`, the file is marked `SKIPPED_DUPLICATE`. Failed files
-can be reprocessed via the retry endpoint (optionally forcing OCR).
+user did not pass `force=true`, the file is marked `SKIPPED_DUPLICATE`. The skipped
+`FileInfo` carries a `duplicate_info` (`DuplicateInfo`) built from the existing
+tracker record — original filename, `imported_at`, total `doc_count`, and a capped
+preview (`_DUPLICATE_DOC_PREVIEW_CAP = 50`) of item summaries — so the UI can
+explain *why* a file was skipped and what it already contributed, instead of a bare
+"Skipped" badge. No extra ES round-trip: the summary is derived from the
+`committed_docs` already returned by `exists()`. Failed files can be reprocessed via
+the retry endpoint (optionally forcing OCR).
+
+**Committed rows are write-protected.** `record_pending` is an **atomic upsert**: a
+brand-new hash inserts a fresh `pending` row, but an existing row runs a painless
+script guarded by `_PRESERVE_COMMITTED` — if the row is already `committed` the
+write is a no-op, otherwise it resets to a fresh `pending` attempt. `record_failed`
+carries the same guard. This protects the durable `committed_docs` payload (which
+`restore_imports()` replays after a reseed): a `force` re-import the user later
+abandons — or one that fails extraction — can no longer wipe the previously-good
+import out of the tracker and drop it on the next reseed. `record_pending` also
+writes with `refresh=False` (the marker only has to be durable, not instantly
+searchable — `exists()` reads it via a real-time GET-by-id), keeping the synchronous
+upload path off the ES refresh cycle.
 
 **Auto-restore:** each committed doc's full ES source is stored under
 `committed_docs[]` on the tracker record. On startup, `seed` clears the main indices

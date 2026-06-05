@@ -23,11 +23,12 @@
         ▼
 [0] 哈希与去重
         │  对文件字节计算 SHA-256 → 查询 kb_import_files 索引
-        │  已经 committed → SKIPPED_DUPLICATE（除非 force=true）
-        │  否则 → tracker 记录 pending，将文件写入 upload_dir
+        │  已经 committed → SKIPPED_DUPLICATE（除非 force=true），并附带
+        │      DuplicateInfo 摘要：说明 KB 已为该文件保存了什么
+        │  否则 → tracker 记录 pending（原子 upsert），将文件写入 upload_dir
         │
         ▼
-[1] 文本抽取（按文件类型）
+[1] 文本抽取（按文件类型）— 在工作线程中运行（asyncio.to_thread）
         │  PDF: pymupdf 直接抽取 → 图片型页面回退 PaddleOCR
         │  XLSX/XLS: openpyxl，每个 sheet 一"页"
         │  CSV: 标准库 csv，按行分块为虚拟页
@@ -58,7 +59,7 @@
         │  条目校验：丢弃必填字段为空或 confidence < 0.3 的条目（路由误判防护）
         │  项目/机台：LLM 原文抽取 > 文件名/上传 hint > 所有项目
         │  → (StagedDocument[]，SkippedChunk[])
-        │  on_chunk_progress 将 "AI analysis: i/n" 写入会话状态
+        │  on_chunk_progress 上报*已完成*的块数（n/total → "Finalizing…"）
         │
         ▼
 [4] 会话进入 READY 状态
@@ -102,6 +103,8 @@
 **OCR 回退**仅在 `ingest.ocr_enabled = true` 且页面直接文本过短（或可打印字符比例偏低）且包含图片时触发。PaddleOCR（`ocr_lang` 默认 `ch`）首次使用时懒加载，存在明显冷启动延迟。OCR 结果**仅在**显著更长（>20%）**且**通过可打印字符健全性检测后，才会替换直接文本——避免 OCR 噪声覆盖原本质量良好的抽取文本。OCR 异常会被捕获并记录日志，默认保留直接文本。
 
 可选依赖通过 `_try_import` 加载——缺失某个后端（如 PaddleOCR）不会导致服务崩溃，但相关文件会失败并给出清晰的 `ImportError`。安装额外依赖：`pip install -e ".[ingest]"`。
+
+**不阻塞事件循环**：`extract_file` 是同步且 CPU 密集的（pymupdf / python-docx / openpyxl / PaddleOCR），因此管道通过 `asyncio.to_thread` 调用它。这样一个大文件或 OCR 繁重的文件就不会冻结单一的异步事件循环、拖垮其它进行中的请求（上传、状态轮询、健康检查）——否则前置代理会把这种卡顿报成 408/504。
 
 ---
 
@@ -227,6 +230,10 @@ key 为空的条目**原样保留**，不会被相互折叠——边界条目交
 
 切分完成后，每个需要原文复制的字段（`content`、`resolution`、`procedure`、`failure_desc`）都会调用 `verify_extraction_fidelity()` 与源文本比对：先严格匹配**当前块文本**，再回退匹配**整篇文件文本**（处理跨块边界的合法内容）。校验失败时字段仍保留，但暂存文档会带上 `fabrication_warning: <field>` 标记供审阅。
 
+### 原文摘录（按条目溯源）
+
+每个暂存文档都带一个 `raw_text_excerpt`——支撑*该条目*的**原始**源文片段，展示给审阅者（UI 用 `<pre>` 渲染，保留原始表格/换行布局）。单个块通常产出多个条目（告警表的每一行、一页里的多条经验），而整篇 DOCX 又作为一个块到达，因此"取块头部"的摘录会让每张卡片都显示相同的开头几行。为此 `_build_raw_excerpt()` 以条目最具辨识度的 token 作为锚点——告警用 `error_code`/`title`，setup 用 `station`，经验用 `problem`——返回从含该 token 的行开始的窗口；无锚点匹配时回退到块头部。上文的保真校验仍针对**空白折叠后**的文本进行；只有展示用的摘录保留原始布局。
+
 ### 项目与机台解析
 
 `project` / `equipment` 通过三级优先链解析，确保每个暂存文档都带上可用、且符合 taxonomy 的项目，同时绝不阻塞审阅者：
@@ -282,7 +289,9 @@ class ImportSession:
 
 Tracker 承担两项职责：**去重**与**自动恢复**。
 
-**去重**：以文件字节的 SHA-256 为 key。`start_upload` 在持久化前调用 `tracker.exists(hash)`，若已有 `committed` 记录且未传 `force=true`，文件被标记为 `SKIPPED_DUPLICATE`。失败文件可通过重试接口重新处理（可选强制 OCR）。
+**去重**：以文件字节的 SHA-256 为 key。`start_upload` 在持久化前调用 `tracker.exists(hash)`，若已有 `committed` 记录且未传 `force=true`，文件被标记为 `SKIPPED_DUPLICATE`。该跳过的 `FileInfo` 会带上由现有 tracker 记录构建的 `duplicate_info`（`DuplicateInfo`）——原始文件名、`imported_at`、总 `doc_count`，以及条目摘要的截断预览（`_DUPLICATE_DOC_PREVIEW_CAP = 50`）——使 UI 能解释*为何*跳过、以及该文件曾贡献了什么，而非仅显示一个"已跳过"徽章。无需额外 ES 往返：摘要直接取自 `exists()` 已返回的 `committed_docs`。失败文件可通过重试接口重新处理（可选强制 OCR）。
+
+**committed 记录受写保护**：`record_pending` 是**原子 upsert**——全新哈希插入一条新的 `pending` 记录，而对已存在的记录会运行受 `_PRESERVE_COMMITTED` 守卫的 painless 脚本：若该记录已是 `committed` 则写入为 no-op，否则重置为一次新的 `pending` 尝试。`record_failed` 带同样的守卫。这保护了持久的 `committed_docs` 负载（`restore_imports()` 会在重 seed 后回放它）：用户随后放弃的 `force` 重导入、或抽取失败的重处理，都不再能把先前正常的导入从 tracker 中抹掉、并在下次重 seed 时丢失。`record_pending` 还以 `refresh=False` 写入（该标记只需持久、无需即时可检索——`exists()` 通过实时 GET-by-id 读取），使同步上传路径不必等待 ES 的 refresh 周期。
 
 **自动恢复**：每个已 commit 文档的完整 ES source 被存入 tracker 记录的 `committed_docs[]`。启动时 `seed` 会先用 CSV 清空并重建主索引；随后 `restore_imports()`（位于 `services/seed.py`）调用 `tracker.get_all_committed()` 并批量重新写回对应别名。这正是导入文档能在"启动即重新 seed"机制下幸存的原因——tracker（而非源文件）是导入数据的事实来源。
 
