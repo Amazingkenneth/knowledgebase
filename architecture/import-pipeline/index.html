@@ -809,6 +809,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#raw-text-excerpt-per-entry-provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Raw-text excerpt (per-entry provenance)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#project-equipment-resolution" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1478,6 +1489,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#raw-text-excerpt-per-entry-provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Raw-text excerpt (per-entry provenance)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#project-equipment-resolution" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1603,60 +1625,61 @@ labels — it must copy source text verbatim. Endpoints live under
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>        ▼
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>[0] Hash &amp; dedupe
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>        │  SHA-256 of bytes → check kb_import_files index
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        │  committed before → SKIPPED_DUPLICATE (unless force=true)
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        │  else → record_pending() in tracker, persist file to upload_dir
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>        │
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        ▼
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>[1] Extraction (per filetype)
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>        │  PDF: pymupdf text → OCR fallback (PaddleOCR) when page is image-only
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        │  XLSX/XLS: openpyxl, one &quot;page&quot; per sheet
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>        │  CSV: stdlib csv, one &quot;page&quot; per row block
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        │  PPTX: python-pptx, one &quot;page&quot; per slide
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>        │  DOCX: python-docx, paragraphs grouped into pages
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>        │  → list[(page_number, text)]
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>        │
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>        ▼
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>[2] Per-chunk routing (skipped when knowledge_type_hint locks the file)
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>        │  pages chunked by ingest.segmentation_chunk_chars (default 12000)
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>        │  for each chunk → LLM router returns the type list (one dominant by default):
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>        │      {&quot;types&quot;: [&quot;alarm&quot;]}                 ← single dominant type (default)
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>        │      {&quot;types&quot;: [&quot;alarm&quot;, &quot;setup&quot;]}        ← only when both types stand
-<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>        │                                              alone with distinct structure
-<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>        │      {&quot;types&quot;: [&quot;skip&quot;]}                  ← non-content (cover/TOC/preface)
-<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>        │  skip → drop the chunk with a friendly SkippedChunk (reason, hint)
-<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>        │
-<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>        ▼
-<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>[3] LLM segmentation (one call per detected type per chunk)
-<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>        │  prompts rendered from config/knowledge_types/&lt;type&gt;.yaml — single
-<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>        │    source of truth for the LLM contract AND the pydantic model
-<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>        │  each per-type call carries an &quot;ignore other-type content&quot; rule and a
-<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>        │    &quot;return [] — never emit empty skeletons&quot; rule so mixed chunks and
-<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>        │    router false-positives don&#39;t pollute the output
-<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>        │  oversized single pages structurally subdivided (heading/paragraph/line)
-<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>        │  1-page overlap; duplicates collapsed per knowledge type
-<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>        │  on JSON failure: salvage longest valid prefix → object sweep →
-<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>        │                   repair retry → binary-split chunk and recurse (floor: 1 page)
-<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>        │  entry validation: drop entries with empty required fields or
-<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>        │                   confidence &lt; 0.3 (router false-positive guard)
-<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>        │  project/equipment: LLM-extracted verbatim &gt; filename/upload hint &gt; 所有项目
-<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>        │  → (StagedDocument[], SkippedChunk[])
-<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>        │  on_chunk_progress reports &quot;AI analysis: i/n&quot; to the session
-<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>        │
-<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>        ▼
-<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>[4] Session moves to READY
-<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>        │  ImportSession.documents populated; status = ready_for_review
-<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>        │
-<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>        ▼ (client reviews / edits / accept-rejects)
-<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>        │
-<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>[5] POST /commit
-<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>        │  for each accepted StagedDocument:
-<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>        │    → _staged_to_knowledge_doc(): cast to Alarm/Setup/ExperienceDoc
-<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>        │    → validate_against_taxonomy()
-<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>        │    → embed [title_text, body_text] via DashScope (best-effort)
-<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>        │    → ES index into kb_&lt;type&gt;_v1 alias with refresh=&quot;wait_for&quot;
-<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>        │    → group by file_hash for tracker update
-<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>        │  record_committed(file_hash, [es_actions])
-<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>        │  → CommitResponse {committed, skipped, errors}
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        │  committed before → SKIPPED_DUPLICATE (unless force=true), with a
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        │      DuplicateInfo summary of what the KB already holds for that file
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>        │  else → record_pending() in tracker (atomic upsert), persist to upload_dir
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        │
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        ▼
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>[1] Extraction (per filetype) — runs in a worker thread (asyncio.to_thread)
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        │  PDF: pymupdf text → OCR fallback (PaddleOCR) when page is image-only
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>        │  XLSX/XLS: openpyxl, one &quot;page&quot; per sheet
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        │  CSV: stdlib csv, one &quot;page&quot; per row block
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>        │  PPTX: python-pptx, one &quot;page&quot; per slide
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>        │  DOCX: python-docx, paragraphs grouped into pages
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>        │  → list[(page_number, text)]
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>        │
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>        ▼
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>[2] Per-chunk routing (skipped when knowledge_type_hint locks the file)
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>        │  pages chunked by ingest.segmentation_chunk_chars (default 12000)
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>        │  for each chunk → LLM router returns the type list (one dominant by default):
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>        │      {&quot;types&quot;: [&quot;alarm&quot;]}                 ← single dominant type (default)
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>        │      {&quot;types&quot;: [&quot;alarm&quot;, &quot;setup&quot;]}        ← only when both types stand
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>        │                                              alone with distinct structure
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>        │      {&quot;types&quot;: [&quot;skip&quot;]}                  ← non-content (cover/TOC/preface)
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>        │  skip → drop the chunk with a friendly SkippedChunk (reason, hint)
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>        │
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>        ▼
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>[3] LLM segmentation (one call per detected type per chunk)
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>        │  prompts rendered from config/knowledge_types/&lt;type&gt;.yaml — single
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>        │    source of truth for the LLM contract AND the pydantic model
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>        │  each per-type call carries an &quot;ignore other-type content&quot; rule and a
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>        │    &quot;return [] — never emit empty skeletons&quot; rule so mixed chunks and
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>        │    router false-positives don&#39;t pollute the output
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>        │  oversized single pages structurally subdivided (heading/paragraph/line)
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>        │  1-page overlap; duplicates collapsed per knowledge type
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>        │  on JSON failure: salvage longest valid prefix → object sweep →
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>        │                   repair retry → binary-split chunk and recurse (floor: 1 page)
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>        │  entry validation: drop entries with empty required fields or
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>        │                   confidence &lt; 0.3 (router false-positive guard)
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>        │  project/equipment: LLM-extracted verbatim &gt; filename/upload hint &gt; 所有项目
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>        │  → (StagedDocument[], SkippedChunk[])
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>        │  on_chunk_progress reports *completed* chunks (n/total → &quot;Finalizing…&quot;)
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>        │
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>        ▼
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>[4] Session moves to READY
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>        │  ImportSession.documents populated; status = ready_for_review
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>        │
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>        ▼ (client reviews / edits / accept-rejects)
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>        │
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>[5] POST /commit
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>        │  for each accepted StagedDocument:
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>        │    → _staged_to_knowledge_doc(): cast to Alarm/Setup/ExperienceDoc
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>        │    → validate_against_taxonomy()
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>        │    → embed [title_text, body_text] via DashScope (best-effort)
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>        │    → ES index into kb_&lt;type&gt;_v1 alias with refresh=&quot;wait_for&quot;
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>        │    → group by file_hash for tracker update
+<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>        │  record_committed(file_hash, [es_actions])
+<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>        │  → CommitResponse {committed, skipped, errors}
 </code></pre></div>
 <p>Steps 1–4 run in a background <code>asyncio.create_task</code>; the upload/scan endpoints
 return <code>202 Accepted</code> immediately with the <code>session_id</code>. Clients poll
@@ -1731,6 +1754,11 @@ default.</p>
 <p>Optional dependencies are imported via <code>_try_import</code> — a missing optional backend
 (e.g. PaddleOCR) does not crash the server, but the affected file fails with a clear
 <code>ImportError</code> message. Install the extras with <code>pip install -e ".[ingest]"</code>.</p>
+<p><strong>Off the event loop.</strong> <code>extract_file</code> is synchronous and CPU-bound (pymupdf /
+python-docx / openpyxl / PaddleOCR), so the pipeline runs it via
+<code>asyncio.to_thread</code>. A large or OCR-heavy file therefore can't freeze the single
+async event loop and stall every other in-flight request (uploads, status polls,
+healthchecks) — a stall a fronting proxy would otherwise surface as a 408/504.</p>
 <hr />
 <h2 id="knowledge-type-specs-configknowledge_typesyaml">Knowledge-type specs (<code>config/knowledge_types/*.yaml</code>)<a class="headerlink" href="#knowledge-type-specs-configknowledge_typesyaml" title="Permanent link">&para;</a></h2>
 <p>Every knowledge type has a single spec file that drives both the LLM prompt and the
@@ -1976,6 +2004,18 @@ non-content page(s) skipped (covers/TOC/preface)."</em></p>
 (strict), then falls back to the <strong>full-file text</strong> (catches content that
 legitimately spans a chunk boundary). On failure the field is kept but the staged
 document carries a <code>fabrication_warning: &lt;field&gt;</code> entry for the reviewer.</p>
+<h3 id="raw-text-excerpt-per-entry-provenance">Raw-text excerpt (per-entry provenance)<a class="headerlink" href="#raw-text-excerpt-per-entry-provenance" title="Permanent link">&para;</a></h3>
+<p>Each staged doc carries a <code>raw_text_excerpt</code> — the slice of <strong>raw</strong> source text
+that backs <em>that</em> entry — shown to the reviewer (the UI renders it in a <code>&lt;pre&gt;</code>,
+so the original table/line layout is preserved). A single chunk routinely yields
+many entries (every row of an alarm table, several experiences on a page), and a
+whole DOCX arrives as one chunk, so a chunk-wide head excerpt would show the same
+leading rows on every card. Instead <code>_build_raw_excerpt()</code> anchors on the entry's
+most identifying token — <code>error_code</code>/<code>title</code> for alarms, <code>station</code> for setup,
+<code>problem</code> for experience — and returns a window starting at the line that contains
+it, falling back to the chunk head when no anchor matches. The fidelity check
+above still runs against the <strong>whitespace-collapsed</strong> text; only the displayed
+excerpt keeps the raw layout.</p>
 <h3 id="project-equipment-resolution">Project &amp; equipment resolution<a class="headerlink" href="#project-equipment-resolution" title="Permanent link">&para;</a></h3>
 <p><code>project</code> / <code>equipment</code> are resolved through a three-tier priority chain so every
 staged doc lands with a usable, taxonomy-valid project without ever blocking the
@@ -2055,8 +2095,25 @@ about it).</p>
 <p>The tracker has two jobs: <strong>dedupe</strong> and <strong>auto-restore</strong>.</p>
 <p><strong>Dedupe:</strong> keyed by SHA-256 of file bytes. <code>start_upload</code> checks
 <code>tracker.exists(hash)</code> before persisting; if the prior import is <code>committed</code> and the
-user did not pass <code>force=true</code>, the file is marked <code>SKIPPED_DUPLICATE</code>. Failed files
-can be reprocessed via the retry endpoint (optionally forcing OCR).</p>
+user did not pass <code>force=true</code>, the file is marked <code>SKIPPED_DUPLICATE</code>. The skipped
+<code>FileInfo</code> carries a <code>duplicate_info</code> (<code>DuplicateInfo</code>) built from the existing
+tracker record — original filename, <code>imported_at</code>, total <code>doc_count</code>, and a capped
+preview (<code>_DUPLICATE_DOC_PREVIEW_CAP = 50</code>) of item summaries — so the UI can
+explain <em>why</em> a file was skipped and what it already contributed, instead of a bare
+"Skipped" badge. No extra ES round-trip: the summary is derived from the
+<code>committed_docs</code> already returned by <code>exists()</code>. Failed files can be reprocessed via
+the retry endpoint (optionally forcing OCR).</p>
+<p><strong>Committed rows are write-protected.</strong> <code>record_pending</code> is an <strong>atomic upsert</strong>: a
+brand-new hash inserts a fresh <code>pending</code> row, but an existing row runs a painless
+script guarded by <code>_PRESERVE_COMMITTED</code> — if the row is already <code>committed</code> the
+write is a no-op, otherwise it resets to a fresh <code>pending</code> attempt. <code>record_failed</code>
+carries the same guard. This protects the durable <code>committed_docs</code> payload (which
+<code>restore_imports()</code> replays after a reseed): a <code>force</code> re-import the user later
+abandons — or one that fails extraction — can no longer wipe the previously-good
+import out of the tracker and drop it on the next reseed. <code>record_pending</code> also
+writes with <code>refresh=False</code> (the marker only has to be durable, not instantly
+searchable — <code>exists()</code> reads it via a real-time GET-by-id), keeping the synchronous
+upload path off the ES refresh cycle.</p>
 <p><strong>Auto-restore:</strong> each committed doc's full ES source is stored under
 <code>committed_docs[]</code> on the tracker record. On startup, <code>seed</code> clears the main indices
 from CSV; then <code>restore_imports()</code> (in <code>services/seed.py</code>) calls

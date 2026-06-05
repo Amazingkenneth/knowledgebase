@@ -2585,6 +2585,10 @@ them after reseed clears the main indices.</p>
 </tr>
 </tbody>
 </table>
+<p>A <code>committed</code> row is <strong>write-protected</strong>: <code>record_pending</code> (an atomic upsert) and
+<code>record_failed</code> both run a painless script guarded by <code>_PRESERVE_COMMITTED</code> that
+no-ops on a committed row, so an abandoned or failed <code>force</code> re-import can't wipe the
+<code>committed_docs</code> payload that <code>restore_imports()</code> replays after a reseed.</p>
 <h3 id="kb-search-feedback"><code>kb_search_feedback</code> — search feedback<a class="headerlink" href="#kb-search-feedback" title="Permanent link">&para;</a></h3>
 <p><code>src/kb/es/feedback_mappings.py</code>. Lightweight 👍/👎 signals, <strong>purely observational</strong> —
 never fed back into search.</p>
@@ -2879,7 +2883,8 @@ commit. Key fields: <code>index</code>, <code>knowledge_type</code>, <code>proje
 <h3 id="other-models">Other models<a class="headerlink" href="#other-models" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>SkippedChunk</code>: <code>source_file</code>, <code>page_range</code>, <code>reason</code> (<code>non_content</code>/<code>no_entries</code>/<code>parse_failed</code>), <code>hint</code></li>
-<li><code>FileInfo</code>: per-file status + segmentation progress (<code>chunks_total</code>/<code>chunks_done</code>/<code>skipped_chunks</code>)</li>
+<li><code>FileInfo</code>: per-file status + segmentation progress (<code>chunks_total</code>/<code>chunks_done</code> — <code>chunks_done</code> counts <strong>completed</strong> chunks/<code>skipped_chunks</code>) plus an optional <code>duplicate_info</code> set only when <code>status == skipped_duplicate</code></li>
+<li><code>DuplicateInfo</code> / <code>DuplicateDocSummary</code>: what the KB already holds for a re-uploaded file — <code>imported_at</code>, <code>original_file_name</code>, total <code>doc_count</code>, and a ≤50-entry <code>documents</code> preview (<code>knowledge_type</code>, <code>title</code>, <code>error_codes</code>). Built from the existing tracker record, no extra ES read</li>
 <li><code>ImportSession</code>: the whole session (<code>session_id</code>, <code>status</code>, <code>files</code>, <code>documents</code>, the <code>*_hint</code>s, <code>created_at</code>)</li>
 <li>Request/response: <code>UploadResponse</code>, <code>ScanRequest</code>, <code>SessionResponse</code>, <code>SessionListItem</code>,
   <code>DocumentUpdate</code>, <code>AcceptReject</code>, <code>AcceptAllRequest</code>, <code>RetryRequest</code>, <code>CommitResponse</code>,

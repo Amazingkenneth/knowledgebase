@@ -2573,6 +2573,7 @@ Elasticsearch 映射、<code>body</code> 文本拼装格式、文档 ID 生成�
 </tr>
 </tbody>
 </table>
+<p><code>committed</code> 记录<strong>受写保护</strong>：<code>record_pending</code>（原子 upsert）与 <code>record_failed</code> 都会运行受 <code>_PRESERVE_COMMITTED</code> 守卫的 painless 脚本——对 committed 记录写入为 no-op，因此被放弃或失败的 <code>force</code> 重导入无法抹掉 <code>restore_imports()</code> 在重 seed 后回放的 <code>committed_docs</code> 负载。</p>
 <h3 id="kb-search-feedback"><code>kb_search_feedback</code> — 检索反馈<a class="headerlink" href="#kb-search-feedback" title="Permanent link">&para;</a></h3>
 <p><code>src/kb/es/feedback_mappings.py</code>。轻量 👍/👎 信号，<strong>纯观测</strong>，永不回流影响检索结果。</p>
 <p><code>settings</code>: <code>number_of_shards: 1</code>、<code>number_of_replicas: 0</code>；<code>mappings.dynamic: "strict"</code>。</p>
@@ -2865,7 +2866,8 @@ Elasticsearch 映射、<code>body</code> 文本拼装格式、文档 ID 生成�
 <h3 id="_2">其他模型<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>SkippedChunk</code>：<code>source_file</code>、<code>page_range</code>、<code>reason</code>(<code>non_content</code>/<code>no_entries</code>/<code>parse_failed</code>)、<code>hint</code></li>
-<li><code>FileInfo</code>：文件级状态 + 分段进度（<code>chunks_total</code>/<code>chunks_done</code>/<code>skipped_chunks</code>）</li>
+<li><code>FileInfo</code>：文件级状态 + 分段进度（<code>chunks_total</code>/<code>chunks_done</code>——<code>chunks_done</code> 统计<strong>已完成</strong>的块/<code>skipped_chunks</code>），以及仅当 <code>status == skipped_duplicate</code> 时设置的可选 <code>duplicate_info</code></li>
+<li><code>DuplicateInfo</code> / <code>DuplicateDocSummary</code>：KB 已为某个重复上传文件保存的内容——<code>imported_at</code>、<code>original_file_name</code>、总 <code>doc_count</code>，以及不超过 50 条的 <code>documents</code> 预览（<code>knowledge_type</code>、<code>title</code>、<code>error_codes</code>）。由现有 tracker 记录构建，无需额外读 ES</li>
 <li><code>ImportSession</code>：会话整体（<code>session_id</code>、<code>status</code>、<code>files</code>、<code>documents</code>、各 <code>*_hint</code>、<code>created_at</code>）</li>
 <li>请求/响应：<code>UploadResponse</code>、<code>ScanRequest</code>、<code>SessionResponse</code>、<code>SessionListItem</code>、
   <code>DocumentUpdate</code>、<code>AcceptReject</code>、<code>AcceptAllRequest</code>、<code>RetryRequest</code>、<code>CommitResponse</code>、

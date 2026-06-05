@@ -812,7 +812,7 @@
   <a href="#_9" class="md-nav__link">
     <span class="md-ellipsis">
       
-        项目与机台解析
+        原文摘录（按条目溯源）
       
     </span>
   </a>
@@ -821,6 +821,17 @@
         
           <li class="md-nav__item">
   <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        项目与机台解析
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
     <span class="md-ellipsis">
       
         超时
@@ -836,7 +847,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_11" class="md-nav__link">
+  <a href="#_12" class="md-nav__link">
     <span class="md-ellipsis">
       
         会话状态与审核
@@ -869,7 +880,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_12" class="md-nav__link">
+  <a href="#_13" class="md-nav__link">
     <span class="md-ellipsis">
       
         配置项
@@ -880,7 +891,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_13" class="md-nav__link">
+  <a href="#_14" class="md-nav__link">
     <span class="md-ellipsis">
       
         关键设计约束
@@ -1481,7 +1492,7 @@
   <a href="#_9" class="md-nav__link">
     <span class="md-ellipsis">
       
-        项目与机台解析
+        原文摘录（按条目溯源）
       
     </span>
   </a>
@@ -1490,6 +1501,17 @@
         
           <li class="md-nav__item">
   <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        项目与机台解析
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
     <span class="md-ellipsis">
       
         超时
@@ -1505,7 +1527,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_11" class="md-nav__link">
+  <a href="#_12" class="md-nav__link">
     <span class="md-ellipsis">
       
         会话状态与审核
@@ -1538,7 +1560,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_12" class="md-nav__link">
+  <a href="#_13" class="md-nav__link">
     <span class="md-ellipsis">
       
         配置项
@@ -1549,7 +1571,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_13" class="md-nav__link">
+  <a href="#_14" class="md-nav__link">
     <span class="md-ellipsis">
       
         关键设计约束
@@ -1598,58 +1620,59 @@
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>        ▼
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>[0] 哈希与去重
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>        │  对文件字节计算 SHA-256 → 查询 kb_import_files 索引
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        │  已经 committed → SKIPPED_DUPLICATE（除非 force=true）
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        │  否则 → tracker 记录 pending，将文件写入 upload_dir
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>        │
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        ▼
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>[1] 文本抽取（按文件类型）
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>        │  PDF: pymupdf 直接抽取 → 图片型页面回退 PaddleOCR
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        │  XLSX/XLS: openpyxl，每个 sheet 一&quot;页&quot;
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>        │  CSV: 标准库 csv，按行分块为虚拟页
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        │  PPTX: python-pptx，每张幻灯片一页
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>        │  DOCX: python-docx，段落聚合为页
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>        │  → list[(页码, 文本)]
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>        │
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>        ▼
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>[2] 按块路由（提供 knowledge_type_hint 时锁定单一类型，跳过路由）
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>        │  按 ingest.segmentation_chunk_chars（默认 12000）切块
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>        │  每块由 LLM 路由器返回类型列表（默认仅返回单一主导类型）：
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>        │      {&quot;types&quot;: [&quot;alarm&quot;]}                 ← 单一主导类型（默认）
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>        │      {&quot;types&quot;: [&quot;alarm&quot;, &quot;setup&quot;]}        ← 仅当两种类型各自独立成块、
-<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>        │                                              结构清晰时才返回多个
-<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>        │      {&quot;types&quot;: [&quot;skip&quot;]}                  ← 非正文（封面 / 目录 / 前言）
-<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>        │  skip → 丢弃该块并生成友好的 SkippedChunk（reason、hint）
-<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>        │
-<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>        ▼
-<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>[3] LLM 切分（同一块对每个检测到的类型各调用一次）
-<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>        │  提示词由 config/knowledge_types/&lt;type&gt;.yaml 渲染——是 LLM 契约
-<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>        │    与 pydantic 模型的唯一来源
-<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>        │  每次按类型的调用都带&quot;忽略其他类型内容&quot;以及&quot;无条目则返回 []、
-<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>        │    禁止输出空字段占位条目&quot;的规则
-<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>        │  超长单页按结构（标题/段落/换行）继续细分
-<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>        │  相邻块保留 1 页重叠；按知识类型在切分后做去重
-<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>        │  JSON 解析失败时：抢救最长合法前缀 → 对象扫描 →
-<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>        │                   触发修复重试 → 按页二分递归（递归下限：1 页）
-<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>        │  条目校验：丢弃必填字段为空或 confidence &lt; 0.3 的条目（路由误判防护）
-<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>        │  项目/机台：LLM 原文抽取 &gt; 文件名/上传 hint &gt; 所有项目
-<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>        │  → (StagedDocument[]，SkippedChunk[])
-<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>        │  on_chunk_progress 将 &quot;AI analysis: i/n&quot; 写入会话状态
-<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>        │
-<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>        ▼
-<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>[4] 会话进入 READY 状态
-<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>        │  ImportSession.documents 已填充；status = ready_for_review
-<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>        │
-<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>        ▼ （客户端审阅 / 编辑 / 接受拒绝）
-<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>        │
-<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>[5] POST /commit
-<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>        │  对每个 accepted=True 的 StagedDocument：
-<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>        │    → _staged_to_knowledge_doc(): 转为 Alarm/Setup/ExperienceDoc
-<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>        │    → validate_against_taxonomy()
-<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>        │    → 通过 DashScope embed [title_text, body_text]（尽力而为）
-<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>        │    → 以 refresh=&quot;wait_for&quot; 写入 kb_&lt;type&gt;_v1 别名
-<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>        │    → 按 file_hash 聚合，供 tracker 更新
-<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>        │  record_committed(file_hash, [es_actions])
-<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>        │  → CommitResponse {committed, skipped, errors}
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        │  已经 committed → SKIPPED_DUPLICATE（除非 force=true），并附带
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        │      DuplicateInfo 摘要：说明 KB 已为该文件保存了什么
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>        │  否则 → tracker 记录 pending（原子 upsert），将文件写入 upload_dir
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        │
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        ▼
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>[1] 文本抽取（按文件类型）— 在工作线程中运行（asyncio.to_thread）
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        │  PDF: pymupdf 直接抽取 → 图片型页面回退 PaddleOCR
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>        │  XLSX/XLS: openpyxl，每个 sheet 一&quot;页&quot;
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        │  CSV: 标准库 csv，按行分块为虚拟页
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>        │  PPTX: python-pptx，每张幻灯片一页
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>        │  DOCX: python-docx，段落聚合为页
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>        │  → list[(页码, 文本)]
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>        │
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>        ▼
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>[2] 按块路由（提供 knowledge_type_hint 时锁定单一类型，跳过路由）
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>        │  按 ingest.segmentation_chunk_chars（默认 12000）切块
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>        │  每块由 LLM 路由器返回类型列表（默认仅返回单一主导类型）：
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>        │      {&quot;types&quot;: [&quot;alarm&quot;]}                 ← 单一主导类型（默认）
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>        │      {&quot;types&quot;: [&quot;alarm&quot;, &quot;setup&quot;]}        ← 仅当两种类型各自独立成块、
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>        │                                              结构清晰时才返回多个
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>        │      {&quot;types&quot;: [&quot;skip&quot;]}                  ← 非正文（封面 / 目录 / 前言）
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>        │  skip → 丢弃该块并生成友好的 SkippedChunk（reason、hint）
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>        │
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>        ▼
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>[3] LLM 切分（同一块对每个检测到的类型各调用一次）
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>        │  提示词由 config/knowledge_types/&lt;type&gt;.yaml 渲染——是 LLM 契约
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>        │    与 pydantic 模型的唯一来源
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>        │  每次按类型的调用都带&quot;忽略其他类型内容&quot;以及&quot;无条目则返回 []、
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>        │    禁止输出空字段占位条目&quot;的规则
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>        │  超长单页按结构（标题/段落/换行）继续细分
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>        │  相邻块保留 1 页重叠；按知识类型在切分后做去重
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>        │  JSON 解析失败时：抢救最长合法前缀 → 对象扫描 →
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>        │                   触发修复重试 → 按页二分递归（递归下限：1 页）
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>        │  条目校验：丢弃必填字段为空或 confidence &lt; 0.3 的条目（路由误判防护）
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>        │  项目/机台：LLM 原文抽取 &gt; 文件名/上传 hint &gt; 所有项目
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>        │  → (StagedDocument[]，SkippedChunk[])
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>        │  on_chunk_progress 上报*已完成*的块数（n/total → &quot;Finalizing…&quot;）
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>        │
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>        ▼
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>[4] 会话进入 READY 状态
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>        │  ImportSession.documents 已填充；status = ready_for_review
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>        │
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>        ▼ （客户端审阅 / 编辑 / 接受拒绝）
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>        │
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>[5] POST /commit
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>        │  对每个 accepted=True 的 StagedDocument：
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>        │    → _staged_to_knowledge_doc(): 转为 Alarm/Setup/ExperienceDoc
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>        │    → validate_against_taxonomy()
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>        │    → 通过 DashScope embed [title_text, body_text]（尽力而为）
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>        │    → 以 refresh=&quot;wait_for&quot; 写入 kb_&lt;type&gt;_v1 别名
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>        │    → 按 file_hash 聚合，供 tracker 更新
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>        │  record_committed(file_hash, [es_actions])
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>        │  → CommitResponse {committed, skipped, errors}
 </code></pre></div>
 <p>步骤 1–4 在后台 <code>asyncio.create_task</code> 中执行；upload/scan 接口立即返回 <code>202 Accepted</code> 与 <code>session_id</code>。客户端轮询 <code>GET /sessions/{id}</code>（携带 <code>files_processed</code>、单文件 <code>status</code>/<code>message</code> 及会话级 <code>message</code>）直到 <code>status == ready_for_review</code>。</p>
 <hr />
@@ -1696,6 +1719,7 @@
 <p><strong>PDF 文本清洗</strong>：<code>_clean_extracted_text</code> 会剥离 NUL、软连字符（<code>\xad</code>）、BOM、换页符及其它常见的 C0 控制字符；统一 Windows/Mac 换行符，将 3 行以上的空行折叠为 2 行。这样下游切分与 ES 索引无需再防御这些可能破坏检索或 JSON 解析的"隐形字符"。</p>
 <p><strong>OCR 回退</strong>仅在 <code>ingest.ocr_enabled = true</code> 且页面直接文本过短（或可打印字符比例偏低）且包含图片时触发。PaddleOCR（<code>ocr_lang</code> 默认 <code>ch</code>）首次使用时懒加载，存在明显冷启动延迟。OCR 结果<strong>仅在</strong>显著更长（&gt;20%）<strong>且</strong>通过可打印字符健全性检测后，才会替换直接文本——避免 OCR 噪声覆盖原本质量良好的抽取文本。OCR 异常会被捕获并记录日志，默认保留直接文本。</p>
 <p>可选依赖通过 <code>_try_import</code> 加载——缺失某个后端（如 PaddleOCR）不会导致服务崩溃，但相关文件会失败并给出清晰的 <code>ImportError</code>。安装额外依赖：<code>pip install -e ".[ingest]"</code>。</p>
+<p><strong>不阻塞事件循环</strong>：<code>extract_file</code> 是同步且 CPU 密集的（pymupdf / python-docx / openpyxl / PaddleOCR），因此管道通过 <code>asyncio.to_thread</code> 调用它。这样一个大文件或 OCR 繁重的文件就不会冻结单一的异步事件循环、拖垮其它进行中的请求（上传、状态轮询、健康检查）——否则前置代理会把这种卡顿报成 408/504。</p>
 <hr />
 <h2 id="configknowledge_typesyaml">知识类型规范（<code>config/knowledge_types/*.yaml</code>）<a class="headerlink" href="#configknowledge_typesyaml" title="Permanent link">&para;</a></h2>
 <p>每种知识类型都有一个 YAML 规范文件，<strong>同时驱动 LLM 提示词和存储契约</strong>。修改 YAML 会同步改变 LLM 被告知要提取的内容<strong>以及</strong>与 pydantic 模型的对齐校验——两者不会再出现漂移。</p>
@@ -1839,7 +1863,9 @@
 <p>整块 <code>no_entries</code> 提示仅在<strong>所有</strong>被路由类型都返回空时才生成。文件卡片的 <code>message</code> 也会做汇总，例如：<em>"Extracted 14 documents. 2 non-content page(s) skipped (covers/TOC/preface)."</em></p>
 <h3 id="_8">保真校验（反捏造）<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h3>
 <p>切分完成后，每个需要原文复制的字段（<code>content</code>、<code>resolution</code>、<code>procedure</code>、<code>failure_desc</code>）都会调用 <code>verify_extraction_fidelity()</code> 与源文本比对：先严格匹配<strong>当前块文本</strong>，再回退匹配<strong>整篇文件文本</strong>（处理跨块边界的合法内容）。校验失败时字段仍保留，但暂存文档会带上 <code>fabrication_warning: &lt;field&gt;</code> 标记供审阅。</p>
-<h3 id="_9">项目与机台解析<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h3>
+<h3 id="_9">原文摘录（按条目溯源）<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h3>
+<p>每个暂存文档都带一个 <code>raw_text_excerpt</code>——支撑<em>该条目</em>的<strong>原始</strong>源文片段，展示给审阅者（UI 用 <code>&lt;pre&gt;</code> 渲染，保留原始表格/换行布局）。单个块通常产出多个条目（告警表的每一行、一页里的多条经验），而整篇 DOCX 又作为一个块到达，因此"取块头部"的摘录会让每张卡片都显示相同的开头几行。为此 <code>_build_raw_excerpt()</code> 以条目最具辨识度的 token 作为锚点——告警用 <code>error_code</code>/<code>title</code>，setup 用 <code>station</code>，经验用 <code>problem</code>——返回从含该 token 的行开始的窗口；无锚点匹配时回退到块头部。上文的保真校验仍针对<strong>空白折叠后</strong>的文本进行；只有展示用的摘录保留原始布局。</p>
+<h3 id="_10">项目与机台解析<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h3>
 <p><code>project</code> / <code>equipment</code> 通过三级优先链解析，确保每个暂存文档都带上可用、且符合 taxonomy 的项目，同时绝不阻塞审阅者：</p>
 <ol>
 <li><strong>LLM 原文抽取</strong>——各规范声明 <code>project</code> / <code>equipment</code> 字段。切分器仅在源文显式提及时填写，否则填 <code>""</code>。<code>_parsed_to_staged()</code> 读取并优先于上传 hint。</li>
@@ -1847,10 +1873,10 @@
 <li><strong>Taxonomy 解析</strong>——切分后，<code>_resolve_taxonomy_fields()</code> 对照 <code>taxonomy.yaml</code> 校验（不区分大小写，以规范大小写存储）。未知值被<strong>清空</strong>并追加审阅者可见的警告（<code>unknown_project:</code> / <code>unknown_equipment:</code>）。随后项目回退到跨项目桶 <code>所有项目</code>；机台未知时留空（可选）。</li>
 </ol>
 <p>审阅者仍可在预览 UI 中逐条覆盖以上任一值。"必填字段缺失"警告仅标记<strong>项目</strong>为空的文档。</p>
-<h3 id="_10">超时<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h3>
+<h3 id="_11">超时<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h3>
 <p><code>_estimate_timeout()</code> 根据实际 payload 大小估算 HTTP 读超时，使用 CJK 感知的 token 估算（中文 ≈ 1.5 tok/字符，拉丁 ≈ 0.25 tok/字符）。超长块不会触发超时——它们会先撞上 <code>max_tokens</code> 上限，再走二分恢复路径。</p>
 <hr />
-<h2 id="_11">会话状态与审核<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
+<h2 id="_12">会话状态与审核<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ImportSession</span><span class="p">:</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>          <span class="c1"># uuid4</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">status</span><span class="p">:</span> <span class="n">ImportStatus</span>     <span class="c1"># extracting | ready_for_review | committed | failed</span>
@@ -1876,7 +1902,8 @@
 <hr />
 <h2 id="file-tracker-kb_import_files">文件追踪器（<code>kb_import_files</code> 索引）<a class="headerlink" href="#file-tracker-kb_import_files" title="Permanent link">&para;</a></h2>
 <p>Tracker 承担两项职责：<strong>去重</strong>与<strong>自动恢复</strong>。</p>
-<p><strong>去重</strong>：以文件字节的 SHA-256 为 key。<code>start_upload</code> 在持久化前调用 <code>tracker.exists(hash)</code>，若已有 <code>committed</code> 记录且未传 <code>force=true</code>，文件被标记为 <code>SKIPPED_DUPLICATE</code>。失败文件可通过重试接口重新处理（可选强制 OCR）。</p>
+<p><strong>去重</strong>：以文件字节的 SHA-256 为 key。<code>start_upload</code> 在持久化前调用 <code>tracker.exists(hash)</code>，若已有 <code>committed</code> 记录且未传 <code>force=true</code>，文件被标记为 <code>SKIPPED_DUPLICATE</code>。该跳过的 <code>FileInfo</code> 会带上由现有 tracker 记录构建的 <code>duplicate_info</code>（<code>DuplicateInfo</code>）——原始文件名、<code>imported_at</code>、总 <code>doc_count</code>，以及条目摘要的截断预览（<code>_DUPLICATE_DOC_PREVIEW_CAP = 50</code>）——使 UI 能解释<em>为何</em>跳过、以及该文件曾贡献了什么，而非仅显示一个"已跳过"徽章。无需额外 ES 往返：摘要直接取自 <code>exists()</code> 已返回的 <code>committed_docs</code>。失败文件可通过重试接口重新处理（可选强制 OCR）。</p>
+<p><strong>committed 记录受写保护</strong>：<code>record_pending</code> 是<strong>原子 upsert</strong>——全新哈希插入一条新的 <code>pending</code> 记录，而对已存在的记录会运行受 <code>_PRESERVE_COMMITTED</code> 守卫的 painless 脚本：若该记录已是 <code>committed</code> 则写入为 no-op，否则重置为一次新的 <code>pending</code> 尝试。<code>record_failed</code> 带同样的守卫。这保护了持久的 <code>committed_docs</code> 负载（<code>restore_imports()</code> 会在重 seed 后回放它）：用户随后放弃的 <code>force</code> 重导入、或抽取失败的重处理，都不再能把先前正常的导入从 tracker 中抹掉、并在下次重 seed 时丢失。<code>record_pending</code> 还以 <code>refresh=False</code> 写入（该标记只需持久、无需即时可检索——<code>exists()</code> 通过实时 GET-by-id 读取），使同步上传路径不必等待 ES 的 refresh 周期。</p>
 <p><strong>自动恢复</strong>：每个已 commit 文档的完整 ES source 被存入 tracker 记录的 <code>committed_docs[]</code>。启动时 <code>seed</code> 会先用 CSV 清空并重建主索引；随后 <code>restore_imports()</code>（位于 <code>services/seed.py</code>）调用 <code>tracker.get_all_committed()</code> 并批量重新写回对应别名。这正是导入文档能在"启动即重新 seed"机制下幸存的原因——tracker（而非源文件）是导入数据的事实来源。</p>
 <p>Tracker 记录的生命周期状态：</p>
 <table>
@@ -1906,10 +1933,10 @@
 </tbody>
 </table>
 <hr />
-<h2 id="_12">配置项<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
+<h2 id="_13">配置项<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h2>
 <p>全部位于 <code>config/settings.yaml</code> 的 <code>ingest:</code> 段，或对应 <code>KB_INGEST__*</code> 环境变量——见<a href="../../configuration/#ingest">配置 → Ingest</a>。</p>
 <hr />
-<h2 id="_13">关键设计约束<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h2>
+<h2 id="_14">关键设计约束<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>强制人工审核</strong>：未经显式 commit，文档绝不进入检索索引。即便是"快速通道"（扫描整个文件夹）也止步于 <code>ready_for_review</code>。</li>
 <li><strong>规范驱动</strong>：每种知识类型在 <code>config/knowledge_types/&lt;type&gt;.yaml</code> 中只定义一次。LLM 提示词、范例、跳过规则与对齐校验都从该文件读取。</li>
