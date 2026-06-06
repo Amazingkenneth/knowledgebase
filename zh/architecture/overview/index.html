@@ -1453,7 +1453,9 @@
 <li><strong>禁止幻觉</strong> —— 绝不向搜索响应添加 LLM 生成的文本。结果要么是原文文档，要么什么都没有。</li>
 <li><strong>Taxonomy 约束</strong> —— <code>project</code>/<code>equipment</code> 在入库时对照 <code>taxonomy.yaml</code> 校验。新值需要更新 taxonomy + 重新 seed。</li>
 <li><strong>Banner 为强制契约</strong> —— <code>loose_hit</code>/<code>vector_only</code> 携带必须展示的 banner，提示置信度降低。</li>
-<li><strong>导入强制人工审核</strong> —— 任何上传文件在人工接受暂存结果前都不会进入可检索索引。</li>
+<li><strong>导入强制人工审核</strong> —— 任何上传文件在人工接受暂存结果前都不会进入可检索索引。会覆盖已有
+  KB 文档的暂存文档在审阅者解决冲突（保留 / 覆盖 / 合并）前<strong>被阻断提交</strong> —— 见
+  <a href="../import-pipeline/#conflict-detection">文件导入管道 → 冲突检测</a>。</li>
 </ul>
 
 

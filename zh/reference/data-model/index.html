@@ -2863,15 +2863,29 @@ Elasticsearch 映射、<code>body</code> 文本拼装格式、文档 ID 生成�
 （<code>content</code>/<code>resolution</code>、<code>procedure</code>/<code>prerequisites</code>、<code>body_text</code>）、<code>notes</code>、
 <code>source_file</code>、<code>source_pages</code>、<code>raw_text_excerpt</code>、<code>confidence</code>(0–1)、<code>warnings</code>、
 <code>accepted</code>(默认 True)。</p>
+<p>分段后新增的富化字段（见
+<a href="../../architecture/import-pipeline/#conflict-detection">文件导入管道 → 冲突检测</a>）：</p>
+<ul>
+<li><code>collision</code>：<code>ExistingDocSnapshot | None</code>——当提交该文档会覆盖 <code>doc_id</code> 相同的已有 KB
+  文档时设置。<code>collision_action</code>（<code>None</code>/<code>keep</code>/<code>overwrite</code>/<code>merge</code>）是审阅者的决定；当
+  <code>collision</code> 已设置且动作为 <code>None</code> 时，该文档<strong>被阻断提交</strong>。</li>
+<li><code>related</code>：<code>list[RelatedDoc]</code>——指向相关已提交文档的交叉引用。</li>
+<li><code>dup_group_id</code> / <code>dup_primary</code>：批内近重复分组（变体共享一组；仅主条目默认 <code>accepted</code>）。</li>
+</ul>
 <h3 id="_2">其他模型<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
 <ul>
+<li><code>ExistingDocSnapshot</code>：冲突的已提交文档身份——<code>doc_id</code>、<code>knowledge_type</code>、<code>project</code>、
+  <code>equipment</code>、<code>title</code>、<code>error_codes</code>、<code>fields</code>（存储的 <code>sections</code> 映射，用于字段级 diff）、
+  <code>source_file</code>、<code>source_pages</code>、<code>updated_at</code></li>
+<li><code>RelatedDoc</code>：<code>doc_id</code>、<code>knowledge_type</code>、<code>title</code>、<code>equipment</code>、<code>error_codes</code>、
+  <code>source_file</code>、<code>match_reason</code>（<code>error_code</code>/<code>equipment</code>/<code>similar</code>）、<code>score</code>、<code>snippet</code></li>
 <li><code>SkippedChunk</code>：<code>source_file</code>、<code>page_range</code>、<code>reason</code>(<code>non_content</code>/<code>no_entries</code>/<code>parse_failed</code>)、<code>hint</code></li>
 <li><code>FileInfo</code>：文件级状态 + 分段进度（<code>chunks_total</code>/<code>chunks_done</code>——<code>chunks_done</code> 统计<strong>已完成</strong>的块/<code>skipped_chunks</code>），以及仅当 <code>status == skipped_duplicate</code> 时设置的可选 <code>duplicate_info</code></li>
 <li><code>DuplicateInfo</code> / <code>DuplicateDocSummary</code>：KB 已为某个重复上传文件保存的内容——<code>imported_at</code>、<code>original_file_name</code>、总 <code>doc_count</code>，以及不超过 50 条的 <code>documents</code> 预览（<code>knowledge_type</code>、<code>title</code>、<code>error_codes</code>）。由现有 tracker 记录构建，无需额外读 ES</li>
 <li><code>ImportSession</code>：会话整体（<code>session_id</code>、<code>status</code>、<code>files</code>、<code>documents</code>、各 <code>*_hint</code>、<code>created_at</code>）</li>
 <li>请求/响应：<code>UploadResponse</code>、<code>ScanRequest</code>、<code>SessionResponse</code>、<code>SessionListItem</code>、
-  <code>DocumentUpdate</code>、<code>AcceptReject</code>、<code>AcceptAllRequest</code>、<code>RetryRequest</code>、<code>CommitResponse</code>、
-  <code>RecommitTrackingResponse</code>（字段细节见 <a href="../../api-reference/">API 参考</a>）。</li>
+  <code>DocumentUpdate</code>、<code>AcceptReject</code>、<code>ResolveCollision</code>、<code>AcceptAllRequest</code>、<code>RetryRequest</code>、
+  <code>CommitResponse</code>、<code>CommitSummary</code>、<code>RecommitTrackingResponse</code>（字段细节见 <a href="../../api-reference/">API 参考</a>）。</li>
 </ul>
 <hr />
 <h2 id="taxonomy-model">分类法模型<a class="headerlink" href="#taxonomy-model" title="Permanent link">&para;</a></h2>

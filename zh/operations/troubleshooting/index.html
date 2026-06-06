@@ -1432,6 +1432,11 @@
 <td>刻意的去重；若确实要重导，上传/扫描时带 <code>force=true</code></td>
 </tr>
 <tr>
+<td>某暂存文档显示 <strong>冲突</strong> 徽章且提交被禁用 / 提交错误提示 <em>"Unresolved conflict"</em></td>
+<td>该文档的身份（<code>doc_id</code> = 类型+项目+机台+标题+报警代码）在知识库中已存在，提交会覆盖它</td>
+<td>打开 <strong>比较并解决</strong>，选择保留 / 覆盖 / 合并（<code>PATCH …/documents/{idx}/resolve</code>）。如需恢复旧的静默覆盖行为，设 <code>KB_INGEST__COLLISION_DETECTION_ENABLED=false</code></td>
+</tr>
+<tr>
 <td>文件 <code>status: unsupported</code></td>
 <td>扩展名不在 <code>allowed_extensions</code> 中</td>
 <td>加入 <code>KB_INGEST__ALLOWED_EXTENSIONS</code>（默认 pdf/xlsx/xls/csv/pptx/docx）</td>

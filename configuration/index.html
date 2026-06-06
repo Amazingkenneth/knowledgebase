@@ -1721,6 +1721,26 @@ file's defaults.</p>
 <td><code>15</code></td>
 <td>Background sweeper cadence</td>
 </tr>
+<tr>
+<td><code>collision_detection_enabled</code></td>
+<td><code>true</code></td>
+<td>Block staged docs that would overwrite a committed KB doc until resolved</td>
+</tr>
+<tr>
+<td><code>cross_reference_enabled</code></td>
+<td><code>true</code></td>
+<td>Attach related committed docs to each staged doc</td>
+</tr>
+<tr>
+<td><code>cross_reference_max</code></td>
+<td><code>5</code></td>
+<td>Max related docs per staged doc</td>
+</tr>
+<tr>
+<td><code>cross_reference_semantic</code></td>
+<td><code>true</code></td>
+<td>Add embedding similarity to related lookup (BM25 fallback)</td>
+</tr>
 </tbody>
 </table>
 <h3 id="observability">Observability (<code>observability</code>)<a class="headerlink" href="#observability" title="Permanent link">&para;</a></h3>

@@ -765,10 +765,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#deduplication-across-overlapping-chunks" class="md-nav__link">
+  <a href="#near-duplicate-grouping-across-overlapping-chunks" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Deduplication across overlapping chunks
+        Near-duplicate grouping across overlapping chunks
       
     </span>
   </a>
@@ -835,6 +835,56 @@
     <span class="md-ellipsis">
       
         Timeouts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conflict-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conflict detection &amp; cross-referencing (services/cross_reference.py)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Conflict detection &amp; cross-referencing (services/cross_reference.py)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#detect_collisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        detect_collisions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#find_related" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_related
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pre-commit-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pre-commit summary
       
     </span>
   </a>
@@ -1445,10 +1495,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#deduplication-across-overlapping-chunks" class="md-nav__link">
+  <a href="#near-duplicate-grouping-across-overlapping-chunks" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Deduplication across overlapping chunks
+        Near-duplicate grouping across overlapping chunks
       
     </span>
   </a>
@@ -1515,6 +1565,56 @@
     <span class="md-ellipsis">
       
         Timeouts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conflict-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conflict detection &amp; cross-referencing (services/cross_reference.py)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Conflict detection &amp; cross-referencing (services/cross_reference.py)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#detect_collisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        detect_collisions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#find_related" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_related
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pre-commit-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pre-commit summary
       
     </span>
   </a>
@@ -1615,6 +1715,8 @@ labels — it must copy source text verbatim. Endpoints live under
 <li><code>GET  /api/v1/ingest/sessions[/{id}]</code> — list / inspect</li>
 <li><code>PUT  /api/v1/ingest/sessions/{id}/documents/{idx}</code> — edit staged doc</li>
 <li><code>PATCH /api/v1/ingest/sessions/{id}/documents/{idx}</code> — accept / reject</li>
+<li><code>PATCH /api/v1/ingest/sessions/{id}/documents/{idx}/resolve</code> — resolve a collision (keep / overwrite / merge)</li>
+<li><code>GET  /api/v1/ingest/sessions/{id}/summary</code> — pre-commit consequence counts</li>
 <li><code>POST /api/v1/ingest/sessions/{id}/commit</code> — write accepted docs to ES</li>
 </ul>
 <p>Orchestration lives in <code>src/kb/services/import_pipeline.py</code>.</p>
@@ -1656,7 +1758,7 @@ labels — it must copy source text verbatim. Endpoints live under
 <a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>        │    &quot;return [] — never emit empty skeletons&quot; rule so mixed chunks and
 <a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>        │    router false-positives don&#39;t pollute the output
 <a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>        │  oversized single pages structurally subdivided (heading/paragraph/line)
-<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>        │  1-page overlap; duplicates collapsed per knowledge type
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>        │  1-page overlap; near-duplicates grouped (not dropped) per knowledge type
 <a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>        │  on JSON failure: salvage longest valid prefix → object sweep →
 <a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>        │                   repair retry → binary-split chunk and recurse (floor: 1 page)
 <a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>        │  entry validation: drop entries with empty required fields or
@@ -1666,20 +1768,32 @@ labels — it must copy source text verbatim. Endpoints live under
 <a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>        │  on_chunk_progress reports *completed* chunks (n/total → &quot;Finalizing…&quot;)
 <a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>        │
 <a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>        ▼
-<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>[4] Session moves to READY
-<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>        │  ImportSession.documents populated; status = ready_for_review
-<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>        │
-<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>        ▼ (client reviews / edits / accept-rejects)
-<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>        │
-<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>[5] POST /commit
-<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>        │  for each accepted StagedDocument:
-<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>        │    → _staged_to_knowledge_doc(): cast to Alarm/Setup/ExperienceDoc
-<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>        │    → validate_against_taxonomy()
-<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>        │    → embed [title_text, body_text] via DashScope (best-effort)
-<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>        │    → ES index into kb_&lt;type&gt;_v1 alias with refresh=&quot;wait_for&quot;
-<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>        │    → group by file_hash for tracker update
-<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>        │  record_committed(file_hash, [es_actions])
-<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>        │  → CommitResponse {committed, skipped, errors}
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>[3.5] Enrichment (services/cross_reference.py, best-effort)
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>        │  detect_collisions(): each staged doc&#39;s prospective doc_id is mget&#39;d
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>        │      against the live kb_&lt;type&gt; index. A hit ⇒ commit would OVERWRITE a
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>        │      committed doc → attach ExistingDocSnapshot, leave collision_action
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>        │      = None (blocks commit). Staged docs with identical identity to one
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>        │      another are folded into one exact-dup group instead.
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>        │  find_related(): attach related committed docs (same error_code /
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>        │      equipment / vector-or-BM25 similarity) as StagedDocument.related[]
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>        │
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>        ▼
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>[4] Session moves to READY
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>        │  ImportSession.documents populated; status = ready_for_review
+<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>        │
+<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>        ▼ (client reviews / edits / accept-rejects / resolves conflicts)
+<a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a>        │
+<a id="__codelineno-0-62" name="__codelineno-0-62" href="#__codelineno-0-62"></a>[5] POST /commit
+<a id="__codelineno-0-63" name="__codelineno-0-63" href="#__codelineno-0-63"></a>        │  for each accepted StagedDocument:
+<a id="__codelineno-0-64" name="__codelineno-0-64" href="#__codelineno-0-64"></a>        │    → collision guard: unresolved collision → reported, not indexed;
+<a id="__codelineno-0-65" name="__codelineno-0-65" href="#__codelineno-0-65"></a>        │         &quot;keep&quot; → skipped (existing doc preserved); overwrite/merge → index
+<a id="__codelineno-0-66" name="__codelineno-0-66" href="#__codelineno-0-66"></a>        │    → _staged_to_knowledge_doc(): cast to Alarm/Setup/ExperienceDoc
+<a id="__codelineno-0-67" name="__codelineno-0-67" href="#__codelineno-0-67"></a>        │    → validate_against_taxonomy()
+<a id="__codelineno-0-68" name="__codelineno-0-68" href="#__codelineno-0-68"></a>        │    → embed [title_text, body_text] via DashScope (best-effort)
+<a id="__codelineno-0-69" name="__codelineno-0-69" href="#__codelineno-0-69"></a>        │    → ES index into kb_&lt;type&gt;_v1 alias with refresh=&quot;wait_for&quot;
+<a id="__codelineno-0-70" name="__codelineno-0-70" href="#__codelineno-0-70"></a>        │    → group by file_hash for tracker update
+<a id="__codelineno-0-71" name="__codelineno-0-71" href="#__codelineno-0-71"></a>        │  record_committed(file_hash, [es_actions])
+<a id="__codelineno-0-72" name="__codelineno-0-72" href="#__codelineno-0-72"></a>        │  → CommitResponse {committed, skipped, errors}
 </code></pre></div>
 <p>Steps 1–4 run in a background <code>asyncio.create_task</code>; the upload/scan endpoints
 return <code>202 Accepted</code> immediately with the <code>session_id</code>. Clients poll
@@ -1935,37 +2049,41 @@ skeleton dicts with blank fields and <code>confidence: 0.0</code> instead of an 
 Dropping them upstream means a routed type that returns nothing is treated as a
 genuine no-entry, not surfaced as a low-confidence document for the reviewer to wade
 through.</p>
-<h3 id="deduplication-across-overlapping-chunks">Deduplication across overlapping chunks<a class="headerlink" href="#deduplication-across-overlapping-chunks" title="Permanent link">&para;</a></h3>
-<p><code>_deduplicate_entries()</code> collapses duplicates produced by the 1-page chunk overlap,
+<h3 id="near-duplicate-grouping-across-overlapping-chunks">Near-duplicate grouping across overlapping chunks<a class="headerlink" href="#near-duplicate-grouping-across-overlapping-chunks" title="Permanent link">&para;</a></h3>
+<p><code>_group_duplicates()</code> handles the duplicates produced by the 1-page chunk overlap,
 with type-specific keys:</p>
 <table>
 <thead>
 <tr>
 <th>Type</th>
-<th>Dedup key</th>
-<th>Tie-break</th>
+<th>Group key</th>
+<th>Primary (stays checked)</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>ALARM</td>
 <td>normalized <code>error_code</code></td>
-<td>higher <code>confidence</code> wins</td>
+<td>highest <code>confidence</code></td>
 </tr>
 <tr>
 <td>SETUP</td>
 <td>normalized <code>station</code> + first 80 chars of <code>procedure</code></td>
-<td>higher <code>confidence</code> wins</td>
+<td>highest <code>confidence</code></td>
 </tr>
 <tr>
 <td>EXPERIENCE</td>
 <td>normalized <code>problem</code> + first 80 chars of <code>failure_desc</code></td>
-<td>higher <code>confidence</code> wins</td>
+<td>highest <code>confidence</code></td>
 </tr>
 </tbody>
 </table>
-<p>Entries with an empty key are <strong>kept as-is</strong> rather than collapsed together —
-borderline data is surfaced to the human reviewer instead of silently merged.</p>
+<p>Unlike a hard dedup, <strong>every variant is kept</strong> so the reviewer can compare versions
+and pick or edit the best one. Members of a multi-variant group share a
+<code>dup_group_id</code>; the highest-confidence member is <code>dup_primary</code> (and stays
+<code>accepted</code>), while the rest start unchecked. Entries with an empty key stand alone
+(<code>dup_group_id = None</code>). This replaced the old <code>_deduplicate_entries()</code>, which
+silently discarded all but the highest-confidence copy.</p>
 <h3 id="per-chunk-multi-type-routing">Per-chunk multi-type routing<a class="headerlink" href="#per-chunk-multi-type-routing" title="Permanent link">&para;</a></h3>
 <p><code>classify_chunk_types()</code> classifies each chunk independently and returns the
 <strong>list</strong> of knowledge types present:</p>
@@ -2046,6 +2164,71 @@ using a CJK-aware token estimator (CJK ≈ 1.5 tok/char, Latin ≈ 0.25 tok/char
 chunks won't time out — they'll hit the <code>max_tokens</code> ceiling first and recover via
 the binary-split path.</p>
 <hr />
+<h2 id="conflict-detection">Conflict detection &amp; cross-referencing (<code>services/cross_reference.py</code>)<a class="headerlink" href="#conflict-detection" title="Permanent link">&para;</a></h2>
+<p>File-byte dedup (below) only catches an <em>identical file</em> re-uploaded. The riskier
+case is a <strong>document-level collision</strong>: a staged doc whose content-addressed
+<code>doc_id</code> — <code>hash(knowledge_type | project | equipment | title | error_codes)</code>, the
+same id <code>commit</code> assigns — already exists in the KB. A plain commit would silently
+<strong>overwrite</strong> it. After segmentation (step [3.5], before the session goes READY)
+two best-effort enrichments run over <code>session.documents</code>:</p>
+<h3 id="detect_collisions"><code>detect_collisions</code><a class="headerlink" href="#detect_collisions" title="Permanent link">&para;</a></h3>
+<p><code>compute_staged_doc_id()</code> reuses the exact commit-time conversion
+(<code>_staged_to_knowledge_doc</code> → <code>doc_id</code>) so the "would overwrite" verdict matches the
+overwrite that would actually happen. Prospective ids are grouped by <code>kb_&lt;type&gt;</code>
+alias and looked up with one <code>mget</code> per type. On a hit, the staged doc gets a
+<code>collision: ExistingDocSnapshot</code> (the existing doc's identity + its stored
+<code>sections</code> as <code>fields</code>, for a field-level diff) and <code>collision_action</code> stays <code>None</code>
+— <strong>commit is blocked</strong> for that doc until resolved. Staged docs that share an
+identity with <em>each other</em> in the same batch collide with a sibling, not the KB, so
+they are folded into an exact-dup group (highest confidence primary, rest unchecked)
+rather than flagged as KB collisions.</p>
+<p>Resolution is recorded via <code>PATCH .../documents/{idx}/resolve</code>
+(<code>pipeline.resolve_collision</code>) with one of:</p>
+<table>
+<thead>
+<tr>
+<th><code>action</code></th>
+<th>Commit behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>keep</code></td>
+<td>Skip the staged doc — the existing KB doc is preserved (counted in <code>skipped</code>).</td>
+</tr>
+<tr>
+<td><code>overwrite</code></td>
+<td>Index the staged doc as-is, replacing the existing one.</td>
+</tr>
+<tr>
+<td><code>merge</code></td>
+<td>Apply <code>merged_fields</code> (a <code>DocumentUpdate</code> — content fields only; identity fields are excluded so the <code>doc_id</code> stays stable), then index.</td>
+</tr>
+</tbody>
+</table>
+<p>The commit guard in <code>commit_session</code> reports any still-unresolved collision as an
+error (<code>"Unresolved conflict …"</code>) instead of indexing it, so a silent overwrite can
+never happen.</p>
+<h3 id="find_related"><code>find_related</code><a class="headerlink" href="#find_related" title="Permanent link">&para;</a></h3>
+<p>For each staged doc, <code>find_related</code> attaches up to <code>cross_reference_max</code> related
+committed docs as <code>StagedDocument.related[]</code>, matched by shared <code>error_codes</code>,
+shared <code>equipment</code>, and — when <code>cross_reference_semantic</code> is on and an embedding key
+is configured — vector similarity on title+body (one batched embed for the whole
+session; BM25-only fallback otherwise). The staged doc's own prospective id and docs
+from the same source file are excluded. Each <code>RelatedDoc</code> carries a <code>match_reason</code>
+(<code>error_code</code> | <code>equipment</code> | <code>similar</code>) and a short <code>snippet</code> so the reviewer sees
+existing coverage before importing yet another copy.</p>
+<h3 id="pre-commit-summary">Pre-commit summary<a class="headerlink" href="#pre-commit-summary" title="Permanent link">&para;</a></h3>
+<p><code>GET .../sessions/{id}/summary</code> (<code>pipeline.session_summary</code>) returns a <code>CommitSummary</code>
+of consequence counts — <code>new</code>, <code>overwrite</code>, <code>keep</code>, <code>unresolved_conflicts</code>,
+<code>dup_groups</code>, <code>missing_required</code>, <code>skipped_duplicate_files</code>, <code>rejected</code> — which the
+review UI renders as a banner and uses to gate the Commit button (disabled while any
+accepted doc has an unresolved conflict). All counts are computed from the live
+session; no ES writes.</p>
+<p>All of the above is best-effort: any ES/embedding failure is swallowed and the
+reviewer simply sees no badges. Toggle with <code>ingest.collision_detection_enabled</code> and
+<code>ingest.cross_reference_enabled</code> / <code>cross_reference_max</code> / <code>cross_reference_semantic</code>.</p>
+<hr />
 <h2 id="session-state-and-review">Session state and review<a class="headerlink" href="#session-state-and-review" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ImportSession</span><span class="p">:</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>          <span class="c1"># uuid4</span>
@@ -2070,6 +2253,10 @@ under-review ones, bounding memory against abandoned previews.</p>
 <h2 id="commit-path-commit_session">Commit path (<code>commit_session</code>)<a class="headerlink" href="#commit-path-commit_session" title="Permanent link">&para;</a></h2>
 <p>For each <code>StagedDocument</code> with <code>accepted=True</code>:</p>
 <ol>
+<li><strong>Collision guard</strong> (see <a href="#conflict-detection">Conflict detection</a>):
+   a doc with an unresolved <code>collision</code> is reported and <strong>not</strong> indexed; a <code>keep</code>
+   resolution is skipped (existing doc preserved); <code>overwrite</code>/<code>merge</code> fall through
+   to the steps below.</li>
 <li><code>_staged_to_knowledge_doc</code> builds the correct subclass (<code>AlarmDoc</code> / <code>SetupDoc</code> /
    <code>ExperienceDoc</code>) from the staged fields. Missing required strings default to
    <code>"—"</code>; a missing setup title falls back to <code>f"{equipment} 调试"</code>.</li>
@@ -2170,6 +2357,12 @@ vars — see <a href="../../configuration/#ingest">Configuration → Ingest</a>.
 <li><strong>Friendly feedback</strong> — skipped chunks and commit errors carry an actionable
   <code>hint</code> rather than a raw stack trace.</li>
 <li><strong>Best-effort embedding</strong> — embedding errors during commit never abort indexing.</li>
+<li><strong>No silent overwrites</strong> — a staged doc whose <code>doc_id</code> already exists in the KB is
+  blocked from commit until the reviewer resolves it (keep / overwrite / merge).</li>
+<li><strong>Variants are kept, not dropped</strong> — near-duplicate segments are grouped for
+  side-by-side comparison instead of collapsed to the highest-confidence one.</li>
+<li><strong>Cross-referenced</strong> — each staged doc surfaces related committed docs (same code /
+  equipment / similar) so the reviewer sees existing coverage before importing.</li>
 <li><strong>Dedupe by content hash</strong> — the same bytes uploaded twice short-circuit unless
   <code>force=true</code>.</li>
 <li><strong>Imports survive CSV re-seed</strong> — the tracker's <code>committed_docs</code> cache is replayed

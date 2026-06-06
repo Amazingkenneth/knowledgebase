@@ -1433,6 +1433,11 @@ subsystem. For the metrics and health probes referenced here, see
 <td>Intended dedup; re-import with <code>force=true</code> on upload/scan if you really mean to</td>
 </tr>
 <tr>
+<td>A staged doc shows a <strong>Conflict</strong> badge and Commit is disabled / commit error says <em>"Unresolved conflict"</em></td>
+<td>The doc's identity (<code>doc_id</code> = type+project+equipment+title+error_codes) already exists in the KB, so committing would overwrite it</td>
+<td>Open <strong>Compare &amp; resolve</strong> and pick keep / overwrite / merge (<code>PATCH …/documents/{idx}/resolve</code>). To revert to the old silent-overwrite behaviour set <code>KB_INGEST__COLLISION_DETECTION_ENABLED=false</code></td>
+</tr>
+<tr>
 <td>File <code>status: unsupported</code></td>
 <td>Extension not in <code>allowed_extensions</code></td>
 <td>Add it to <code>KB_INGEST__ALLOWED_EXTENSIONS</code> (pdf/xlsx/xls/csv/pptx/docx by default)</td>

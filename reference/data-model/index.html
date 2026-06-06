@@ -2880,15 +2880,33 @@ commit. Key fields: <code>index</code>, <code>knowledge_type</code>, <code>proje
 <code>error_codes</code>, the per-type content fields (<code>content</code>/<code>resolution</code>,
 <code>procedure</code>/<code>prerequisites</code>, <code>body_text</code>), <code>notes</code>, <code>source_file</code>, <code>source_pages</code>,
 <code>raw_text_excerpt</code>, <code>confidence</code> (0–1), <code>warnings</code>, <code>accepted</code> (default True).</p>
+<p>Enrichment fields added after segmentation (see
+<a href="../../architecture/import-pipeline/#conflict-detection">Import Pipeline → Conflict detection</a>):</p>
+<ul>
+<li><code>collision</code>: <code>ExistingDocSnapshot | None</code> — set when committing this doc would
+  overwrite an existing KB doc with the same <code>doc_id</code>. <code>collision_action</code>
+  (<code>None</code>/<code>keep</code>/<code>overwrite</code>/<code>merge</code>) is the reviewer's decision; while <code>collision</code> is
+  set and the action is <code>None</code>, the doc is <strong>blocked from commit</strong>.</li>
+<li><code>related</code>: <code>list[RelatedDoc]</code> — cross-references to related committed docs.</li>
+<li><code>dup_group_id</code> / <code>dup_primary</code>: near-duplicate grouping within the batch (variants
+  share a group; only the primary defaults to <code>accepted</code>).</li>
+</ul>
 <h3 id="other-models">Other models<a class="headerlink" href="#other-models" title="Permanent link">&para;</a></h3>
 <ul>
+<li><code>ExistingDocSnapshot</code>: identity of the colliding committed doc — <code>doc_id</code>,
+  <code>knowledge_type</code>, <code>project</code>, <code>equipment</code>, <code>title</code>, <code>error_codes</code>, <code>fields</code> (the
+  stored <code>sections</code> map, for a field-level diff), <code>source_file</code>, <code>source_pages</code>,
+  <code>updated_at</code></li>
+<li><code>RelatedDoc</code>: <code>doc_id</code>, <code>knowledge_type</code>, <code>title</code>, <code>equipment</code>, <code>error_codes</code>,
+  <code>source_file</code>, <code>match_reason</code> (<code>error_code</code>/<code>equipment</code>/<code>similar</code>), <code>score</code>, <code>snippet</code></li>
 <li><code>SkippedChunk</code>: <code>source_file</code>, <code>page_range</code>, <code>reason</code> (<code>non_content</code>/<code>no_entries</code>/<code>parse_failed</code>), <code>hint</code></li>
 <li><code>FileInfo</code>: per-file status + segmentation progress (<code>chunks_total</code>/<code>chunks_done</code> — <code>chunks_done</code> counts <strong>completed</strong> chunks/<code>skipped_chunks</code>) plus an optional <code>duplicate_info</code> set only when <code>status == skipped_duplicate</code></li>
 <li><code>DuplicateInfo</code> / <code>DuplicateDocSummary</code>: what the KB already holds for a re-uploaded file — <code>imported_at</code>, <code>original_file_name</code>, total <code>doc_count</code>, and a ≤50-entry <code>documents</code> preview (<code>knowledge_type</code>, <code>title</code>, <code>error_codes</code>). Built from the existing tracker record, no extra ES read</li>
 <li><code>ImportSession</code>: the whole session (<code>session_id</code>, <code>status</code>, <code>files</code>, <code>documents</code>, the <code>*_hint</code>s, <code>created_at</code>)</li>
 <li>Request/response: <code>UploadResponse</code>, <code>ScanRequest</code>, <code>SessionResponse</code>, <code>SessionListItem</code>,
-  <code>DocumentUpdate</code>, <code>AcceptReject</code>, <code>AcceptAllRequest</code>, <code>RetryRequest</code>, <code>CommitResponse</code>,
-  <code>RecommitTrackingResponse</code> (field details in the <a href="../../api-reference/">API Reference</a>).</li>
+  <code>DocumentUpdate</code>, <code>AcceptReject</code>, <code>ResolveCollision</code>, <code>AcceptAllRequest</code>, <code>RetryRequest</code>,
+  <code>CommitResponse</code>, <code>CommitSummary</code>, <code>RecommitTrackingResponse</code> (field details in the
+  <a href="../../api-reference/">API Reference</a>).</li>
 </ul>
 <hr />
 <h2 id="taxonomy-model">Taxonomy model<a class="headerlink" href="#taxonomy-model" title="Permanent link">&para;</a></h2>

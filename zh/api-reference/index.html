@@ -917,6 +917,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#ingest-conflicts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        冲突与交叉引用
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1497,6 +1508,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#ingest-conflicts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        冲突与交叉引用
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2017,6 +2039,11 @@ source_file?, source_pages[], summary?, sections{} }</code>。<code>sections</co
 <td><code>200</code> <code>SessionResponse</code></td>
 </tr>
 <tr>
+<td><code>GET /api/v1/ingest/sessions/{id}/summary</code></td>
+<td>提交前的后果计数</td>
+<td><code>200</code> <code>CommitSummary</code></td>
+</tr>
+<tr>
 <td><code>PUT /api/v1/ingest/sessions/{id}/documents/{idx}</code></td>
 <td>编辑暂存文档（部分）</td>
 <td><code>200 {status:"updated"}</code></td>
@@ -2025,6 +2052,11 @@ source_file?, source_pages[], summary?, sections{} }</code>。<code>sections</co
 <td><code>PATCH /api/v1/ingest/sessions/{id}/documents/{idx}</code></td>
 <td>接受/拒绝单条暂存文档</td>
 <td><code>200 {status:"updated"}</code></td>
+</tr>
+<tr>
+<td><code>PATCH /api/v1/ingest/sessions/{id}/documents/{idx}/resolve</code></td>
+<td>解决冲突（保留 / 覆盖 / 合并）</td>
+<td><code>200 {status:"resolved"}</code></td>
 </tr>
 <tr>
 <td><code>POST /api/v1/ingest/sessions/{id}/documents/accept-all</code></td>
@@ -2099,10 +2131,24 @@ source_file?, source_pages[], summary?, sections{} }</code>。<code>sections</co
 <a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;真空泄漏报警&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;error_codes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;E-1234&quot;</span><span class="p">],</span>
 <a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="w">      </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;……&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;resolution&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;……&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;notes&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
 <a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="w">      </span><span class="nt">&quot;source_file&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;alarms.pptx&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;source_pages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;12&quot;</span><span class="p">],</span>
-<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a><span class="w">      </span><span class="nt">&quot;raw_text_excerpt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;……&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;confidence&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.82</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;warnings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="nt">&quot;accepted&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}</span>
-<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span class="w">  </span><span class="p">]</span>
-<a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a><span class="p">}</span>
+<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a><span class="w">      </span><span class="nt">&quot;raw_text_excerpt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;……&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;confidence&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.82</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;warnings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="nt">&quot;accepted&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span class="w">      </span><span class="nt">&quot;collision&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;collision_action&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;related&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a><span class="w">      </span><span class="nt">&quot;dup_group_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;dup_primary&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a><span class="w">  </span><span class="p">]</span>
+<a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a><span class="p">}</span>
 </code></pre></div>
+<p>每条暂存文档还可能携带分段后新增的富化字段（见下文<a href="#ingest-conflicts">冲突与交叉引用</a>）：</p>
+<ul>
+<li><code>collision</code> —— 当提交该文档<strong>会覆盖</strong>身份相同的已有 KB 文档时，设为一个
+  <code>ExistingDocSnapshot</code>，否则为 <code>null</code>。<code>collision_action</code>（<code>null</code> | <code>keep</code> | <code>overwrite</code>
+  | <code>merge</code>）是审阅者的决定 —— 当 <code>collision</code> 已设置且 <code>collision_action</code> 为 <code>null</code> 时，该文档
+  <strong>被阻断提交</strong>。</li>
+<li><code>related[]</code> —— 相关已提交文档（<code>RelatedDoc</code>：<code>doc_id</code>、<code>knowledge_type</code>、<code>title</code>、
+  <code>equipment</code>、<code>error_codes</code>、<code>match_reason</code> ∈ {<code>error_code</code>、<code>equipment</code>、<code>similar</code>}、
+  <code>snippet</code>）。</li>
+<li><code>dup_group_id</code> / <code>dup_primary</code> —— 批内近重复分组；变体共享 <code>dup_group_id</code>，仅
+  <code>dup_primary</code> 的那条默认 <code>accepted</code>。</li>
+</ul>
 <p><code>ImportStatus</code> 取值：<code>pending</code> · <code>extracting</code> · <code>ready_for_review</code> · <code>committed</code> ·
 <code>failed</code>。<code>FileStatus</code> 取值：<code>processing</code> · <code>skipped_duplicate</code> · <code>unsupported</code> ·
 <code>failed</code> · <code>done</code>。切分期间 <code>chunks_done</code> 统计的是<strong>已完成</strong>的块，因此只有当分析全部结束后文件才会读到 <code>chunks_done == chunks_total</code>；其后短暂的去重/组装阶段会以 <code>Finalizing…</code> 消息上报。</p>
@@ -2129,24 +2175,61 @@ source_file?, source_pages[], summary?, sections{} }</code>。<code>sections</co
 <li><code>PUT …/documents/{idx}</code> —— 部分编辑。只发送你修改的字段（<code>project</code>、<code>equipment</code>、<code>title</code>、
   <code>error_codes</code>、各类型专有字段、<code>notes</code>、<code>accepted</code> 中任意几个）。<code>idx</code> 越界返回 <code>400</code>。</li>
 <li><code>PATCH …/documents/{idx}</code> —— <code>{ "accepted": true|false }</code>。</li>
+<li><code>PATCH …/documents/{idx}/resolve</code> —— 解决冲突（见下文）。</li>
 <li><code>POST …/documents/accept-all</code> —— 可选请求体 <code>{ "knowledge_type": "alarm" }</code> 以仅接受某类型；
   返回 <code>{ "accepted": N }</code>。</li>
 <li><code>POST …/commit</code> —— 索引每条已接受文档并在追踪索引中记录文件。</li>
 </ul>
+<h3 id="ingest-conflicts">冲突与交叉引用<a class="headerlink" href="#ingest-conflicts" title="Permanent link">&para;</a></h3>
+<p>分段之后，每条暂存文档都会与线上 KB 比对。若某文档的内容寻址 <code>doc_id</code> 已存在，提交时会
+<strong>覆盖</strong>那条已提交文档，因此它会被标记（设置 <code>collision</code>）并<strong>阻断提交</strong>直到解决 —— 普通提交
+绝不会静默覆盖。用以下方式解决：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1">// PATCH …/documents/{idx}/resolve</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;merge&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span><span class="nt">&quot;merged_fields&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;…合并…&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;resolution&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;…&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th><code>action</code></th>
+<th>对提交的影响</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>keep</code></td>
+<td>跳过该文档 —— 保留现有 KB 文档（计入 <code>skipped</code>）。</td>
+</tr>
+<tr>
+<td><code>overwrite</code></td>
+<td>原样索引该文档，替换现有文档。</td>
+</tr>
+<tr>
+<td><code>merge</code></td>
+<td>应用 <code>merged_fields</code>（部分编辑 —— 仅内容字段；身份字段被排除，使 <code>doc_id</code> 保持稳定），再索引。</td>
+</tr>
+</tbody>
+</table>
+<p><code>GET …/sessions/{id}/summary</code> 返回 <code>CommitSummary</code>，描述提交将做什么 —— 用它驱动审阅横幅并
+控制提交按钮：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;new&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;overwrite&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;keep&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;unresolved_conflicts&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span><span class="nt">&quot;dup_groups&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;missing_required&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;skipped_duplicate_files&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;rejected&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<p>存在未解决冲突的已接受文档（<code>unresolved_conflicts &gt; 0</code>）会作为提交错误被报告且<strong>不</strong>索引。</p>
 <p><code>CommitResponse</code>：</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="p">{</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="nt">&quot;committed&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span><span class="nt">&quot;skipped&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span><span class="nt">&quot;errors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">  </span><span class="nt">&quot;vectors_skipped&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">  </span><span class="nt">&quot;tracking_failed&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="p">{</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span><span class="nt">&quot;committed&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span><span class="nt">&quot;skipped&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">  </span><span class="nt">&quot;errors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">  </span><span class="nt">&quot;vectors_skipped&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">  </span><span class="nt">&quot;tracking_failed&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="p">}</span>
 </code></pre></div>
 <p><code>vectors_skipped</code> 统计因嵌入服务故障而未带向量索引的文档（仍可 BM25 检索）。<code>tracking_failed &gt; 0</code>
 表示文档已入 ES 但追踪行未更新 —— 它们会在下次启动重新播种时丢失，故应调用 <code>recommit-tracking</code>
 恢复：</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1">// POST …/recommit-tracking → RecommitTrackingResponse</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;recovered&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;still_failed&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;errors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1">// POST …/recommit-tracking → RecommitTrackingResponse</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;recovered&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;still_failed&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;errors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
 <h3 id="_5">重试<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
 <p><code>POST …/files/{file_hash}/retry</code> 与 <code>POST …/retry-failed</code> 对失败文件重跑抽取+切分。请求体可选
@@ -2154,26 +2237,26 @@ source_file?, source_pages[], summary?, sections{} }</code>。<code>sections</co
 配置的情况下恢复扫描件/纯图片 PDF。二者均返回 <code>202</code> 及更新后的 <code>UploadResponse</code>；错误的会话/文件
 id 返回 <code>404</code>。</p>
 <h3 id="ingest-walkthrough">端到端完整示例<a class="headerlink" href="#ingest-walkthrough" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># 1. 上传 PDF 并附提示</span>
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="nv">SID</span><span class="o">=</span><span class="k">$(</span>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>localhost:8000/api/v1/ingest/upload<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span>-F<span class="w"> </span><span class="s1">&#39;files=@alarms.pdf&#39;</span><span class="w"> </span>-F<span class="w"> </span><span class="s1">&#39;knowledge_type_hint=alarm&#39;</span><span class="w"> </span>-F<span class="w"> </span><span class="s1">&#39;project_hint=PDX&#39;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span>.session_id<span class="k">)</span>
-<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>
-<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="c1"># 2. 轮询直到 ready_for_review</span>
-<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="k">until</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>curl<span class="w"> </span>-s<span class="w"> </span>localhost:8000/api/v1/ingest/sessions/<span class="nv">$SID</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span>.status<span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;ready_for_review&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">do</span><span class="w"> </span>sleep<span class="w"> </span><span class="m">1</span><span class="p">;</span><span class="w"> </span><span class="k">done</span>
-<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>
-<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="c1"># 3.（可选）修正 0 号文档被误抽的字段</span>
-<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span>localhost:8000/api/v1/ingest/sessions/<span class="nv">$SID</span>/documents/0<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;content-type: application/json&#39;</span><span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;equipment&quot;:&quot;Aligner&quot;}&#39;</span>
-<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>
-<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="c1"># 4. 全部接受并提交</span>
-<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>localhost:8000/api/v1/ingest/sessions/<span class="nv">$SID</span>/documents/accept-all
-<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>localhost:8000/api/v1/ingest/sessions/<span class="nv">$SID</span>/commit<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq
-<a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a>
-<a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a><span class="c1"># 5. 已提交文档即可检索</span>
-<a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a>curl<span class="w"> </span>-s<span class="w"> </span>localhost:8000/api/v1/search<span class="w"> </span>-H<span class="w"> </span><span class="s1">&#39;content-type: application/json&#39;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;knowledge_type&quot;:&quot;alarm&quot;,&quot;project&quot;:&quot;PDX&quot;,&quot;keywords&quot;:[&quot;真空&quot;],&quot;mode&quot;:&quot;auto&quot;}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>jq
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># 1. 上传 PDF 并附提示</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="nv">SID</span><span class="o">=</span><span class="k">$(</span>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>localhost:8000/api/v1/ingest/upload<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">  </span>-F<span class="w"> </span><span class="s1">&#39;files=@alarms.pdf&#39;</span><span class="w"> </span>-F<span class="w"> </span><span class="s1">&#39;knowledge_type_hint=alarm&#39;</span><span class="w"> </span>-F<span class="w"> </span><span class="s1">&#39;project_hint=PDX&#39;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span>.session_id<span class="k">)</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="c1"># 2. 轮询直到 ready_for_review</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="k">until</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>curl<span class="w"> </span>-s<span class="w"> </span>localhost:8000/api/v1/ingest/sessions/<span class="nv">$SID</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span>.status<span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;ready_for_review&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">do</span><span class="w"> </span>sleep<span class="w"> </span><span class="m">1</span><span class="p">;</span><span class="w"> </span><span class="k">done</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="c1"># 3.（可选）修正 0 号文档被误抽的字段</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span>localhost:8000/api/v1/ingest/sessions/<span class="nv">$SID</span>/documents/0<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;content-type: application/json&#39;</span><span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;equipment&quot;:&quot;Aligner&quot;}&#39;</span>
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="c1"># 4. 全部接受并提交</span>
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>localhost:8000/api/v1/ingest/sessions/<span class="nv">$SID</span>/documents/accept-all
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>localhost:8000/api/v1/ingest/sessions/<span class="nv">$SID</span>/commit<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq
+<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a>
+<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a><span class="c1"># 5. 已提交文档即可检索</span>
+<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a>curl<span class="w"> </span>-s<span class="w"> </span>localhost:8000/api/v1/search<span class="w"> </span>-H<span class="w"> </span><span class="s1">&#39;content-type: application/json&#39;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;knowledge_type&quot;:&quot;alarm&quot;,&quot;project&quot;:&quot;PDX&quot;,&quot;keywords&quot;:[&quot;真空&quot;],&quot;mode&quot;:&quot;auto&quot;}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>jq
 </code></pre></div>
 <hr />
 <h2 id="taxonomy">Taxonomy 与管理<a class="headerlink" href="#taxonomy" title="Permanent link">&para;</a></h2>
@@ -2204,12 +2287,12 @@ id 返回 <code>404</code>。</p>
 </tbody>
 </table>
 <p><code>GET /api/v1/facets</code> →</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="p">{</span>
-<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-05-19-r1&quot;</span><span class="p">,</span>
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">  </span><span class="nt">&quot;knowledge_types&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;alarm&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;setup&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;experience&quot;</span><span class="p">],</span>
-<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">  </span><span class="nt">&quot;projects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Kinneret&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;MEM&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;MHK&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;PDX&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Boston&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Sonora&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Yucatan&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;所有项目&quot;</span><span class="p">],</span>
-<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">  </span><span class="nt">&quot;equipment&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Aligner&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Conveyor&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;FTU&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Heater&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Loader&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Pump&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;SensorModule&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Stage&quot;</span><span class="p">]</span>
-<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="p">{</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-05-19-r1&quot;</span><span class="p">,</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">  </span><span class="nt">&quot;knowledge_types&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;alarm&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;setup&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;experience&quot;</span><span class="p">],</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">  </span><span class="nt">&quot;projects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Kinneret&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;MEM&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;MHK&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;PDX&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Boston&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Sonora&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Yucatan&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;所有项目&quot;</span><span class="p">],</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">  </span><span class="nt">&quot;equipment&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Aligner&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Conveyor&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;FTU&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Heater&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Loader&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Pump&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;SensorModule&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Stage&quot;</span><span class="p">]</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="p">}</span>
 </code></pre></div>
 <p>taxonomy 同时支撑索引时的过滤校验与 LLM 抽取引导 —— 见
 <a href="../reference/data-model/#taxonomy-model">数据模型 → Taxonomy</a>。</p>
@@ -2232,15 +2315,15 @@ id 返回 <code>404</code>。</p>
 </tbody>
 </table>
 <p>仅作观测 —— 绝不改变结果。请求体（<code>FeedbackRequest</code>）：</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="p">{</span>
-<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span><span class="nt">&quot;doc_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kb_alarm_v1:9f2c…&quot;</span><span class="p">,</span>
-<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">  </span><span class="nt">&quot;helpful&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">  </span><span class="nt">&quot;query_text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;E-1234 aligner fault&quot;</span><span class="p">,</span>
-<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">  </span><span class="nt">&quot;knowledge_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;alarm&quot;</span><span class="p">,</span>
-<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">  </span><span class="nt">&quot;project&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PDX&quot;</span><span class="p">,</span>
-<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">  </span><span class="nt">&quot;equipment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Aligner&quot;</span><span class="p">,</span>
-<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">  </span><span class="nt">&quot;search_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;loose_hit&quot;</span>
-<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="p">{</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">  </span><span class="nt">&quot;doc_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kb_alarm_v1:9f2c…&quot;</span><span class="p">,</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">  </span><span class="nt">&quot;helpful&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">  </span><span class="nt">&quot;query_text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;E-1234 aligner fault&quot;</span><span class="p">,</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">  </span><span class="nt">&quot;knowledge_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;alarm&quot;</span><span class="p">,</span>
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">  </span><span class="nt">&quot;project&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PDX&quot;</span><span class="p">,</span>
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="w">  </span><span class="nt">&quot;equipment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Aligner&quot;</span><span class="p">,</span>
+<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="w">  </span><span class="nt">&quot;search_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;loose_hit&quot;</span>
+<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="p">}</span>
 </code></pre></div>
 <p>记录尽力而为：存储故障返回 <strong>503</strong> 而非中断用户流程。存储 schema 与管理聚合见
 <a href="../observability/#search-feedback">可观测性 → 搜索反馈</a>。</p>
@@ -2281,7 +2364,7 @@ id 返回 <code>404</code>。</p>
 </tbody>
 </table>
 <p><code>GET /readyz?deep=true</code> 响应体：</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ok&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;es&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ok&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;embedding&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ok&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;llm&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;configured&quot;</span><span class="w"> </span><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ok&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;es&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ok&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;embedding&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ok&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;llm&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;configured&quot;</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
 <p>如何将这些接口接入编排器，见<a href="../observability/#health">可观测性 → 健康检查接口</a>。</p>
 

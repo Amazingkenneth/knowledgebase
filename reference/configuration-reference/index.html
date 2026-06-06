@@ -1920,6 +1920,38 @@ settings — use <code>--port</code>.</p>
 <td>1–1440</td>
 <td>background sweeper interval</td>
 </tr>
+<tr>
+<td><code>collision_detection_enabled</code></td>
+<td><code>KB_INGEST__COLLISION_DETECTION_ENABLED</code></td>
+<td>bool</td>
+<td><code>True</code></td>
+<td>—</td>
+<td>flag (and block) staged docs that would overwrite a committed KB doc</td>
+</tr>
+<tr>
+<td><code>cross_reference_enabled</code></td>
+<td><code>KB_INGEST__CROSS_REFERENCE_ENABLED</code></td>
+<td>bool</td>
+<td><code>True</code></td>
+<td>—</td>
+<td>attach related committed docs to each staged doc</td>
+</tr>
+<tr>
+<td><code>cross_reference_max</code></td>
+<td><code>KB_INGEST__CROSS_REFERENCE_MAX</code></td>
+<td>int</td>
+<td><code>5</code></td>
+<td>1–50</td>
+<td>max related docs surfaced per staged doc</td>
+</tr>
+<tr>
+<td><code>cross_reference_semantic</code></td>
+<td><code>KB_INGEST__CROSS_REFERENCE_SEMANTIC</code></td>
+<td>bool</td>
+<td><code>True</code></td>
+<td>—</td>
+<td>add embedding-based similarity to related lookup (needs <code>KB_EMBEDDING__API_KEY</code>; BM25-only fallback)</td>
+</tr>
 </tbody>
 </table>
 <div class="admonition warning">

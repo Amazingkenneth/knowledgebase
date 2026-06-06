@@ -1481,7 +1481,9 @@ the pydantic-settings <code>Settings</code> class in <code>src/kb/config.py</cod
 <li><strong>Banners are a hard contract</strong> — <code>loose_hit</code>/<code>vector_only</code> carry mandatory
   display banners signalling reduced confidence.</li>
 <li><strong>Review-gated imports</strong> — no uploaded file reaches the searchable indices until
-  a human accepts the staged result.</li>
+  a human accepts the staged result. A staged doc that would overwrite an existing KB
+  doc is <strong>blocked from commit</strong> until the reviewer resolves the conflict (keep /
+  overwrite / merge) — see <a href="../import-pipeline/#conflict-detection">Import Pipeline → Conflict detection</a>.</li>
 </ul>
 
 

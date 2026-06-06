@@ -917,6 +917,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#ingest-conflicts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conflicts &amp; cross-references
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#retry" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1497,6 +1508,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#ingest-conflicts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conflicts &amp; cross-references
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#retry" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2028,6 +2050,11 @@ status is <code>ready_for_review</code>.</p>
 <td><code>200</code> <code>SessionResponse</code></td>
 </tr>
 <tr>
+<td><code>GET /api/v1/ingest/sessions/{id}/summary</code></td>
+<td>Pre-commit consequence counts</td>
+<td><code>200</code> <code>CommitSummary</code></td>
+</tr>
+<tr>
 <td><code>PUT /api/v1/ingest/sessions/{id}/documents/{idx}</code></td>
 <td>Edit a staged document (partial)</td>
 <td><code>200 {status:"updated"}</code></td>
@@ -2036,6 +2063,11 @@ status is <code>ready_for_review</code>.</p>
 <td><code>PATCH /api/v1/ingest/sessions/{id}/documents/{idx}</code></td>
 <td>Accept / reject one staged doc</td>
 <td><code>200 {status:"updated"}</code></td>
+</tr>
+<tr>
+<td><code>PATCH /api/v1/ingest/sessions/{id}/documents/{idx}/resolve</code></td>
+<td>Resolve a collision (keep / overwrite / merge)</td>
+<td><code>200 {status:"resolved"}</code></td>
 </tr>
 <tr>
 <td><code>POST /api/v1/ingest/sessions/{id}/documents/accept-all</code></td>
@@ -2111,10 +2143,26 @@ whose hash was already committed). <code>POST /scan</code> takes a JSON <code>Sc
 <a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;真空泄漏报警&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;error_codes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;E-1234&quot;</span><span class="p">],</span>
 <a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="w">      </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;……&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;resolution&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;……&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;notes&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
 <a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="w">      </span><span class="nt">&quot;source_file&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;alarms.pptx&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;source_pages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;12&quot;</span><span class="p">],</span>
-<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a><span class="w">      </span><span class="nt">&quot;raw_text_excerpt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;……&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;confidence&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.82</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;warnings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="nt">&quot;accepted&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}</span>
-<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span class="w">  </span><span class="p">]</span>
-<a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a><span class="p">}</span>
+<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a><span class="w">      </span><span class="nt">&quot;raw_text_excerpt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;……&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;confidence&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.82</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;warnings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="nt">&quot;accepted&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span class="w">      </span><span class="nt">&quot;collision&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;collision_action&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;related&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a><span class="w">      </span><span class="nt">&quot;dup_group_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;dup_primary&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a><span class="w">  </span><span class="p">]</span>
+<a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a><span class="p">}</span>
 </code></pre></div>
+<p>Each staged document may also carry enrichment fields added after segmentation
+(see <a href="#ingest-conflicts">Conflicts &amp; cross-references</a> below):</p>
+<ul>
+<li><code>collision</code> — set to an <code>ExistingDocSnapshot</code> when committing this doc <strong>would
+  overwrite</strong> an existing KB doc with the same identity; otherwise <code>null</code>.
+  <code>collision_action</code> (<code>null</code> | <code>keep</code> | <code>overwrite</code> | <code>merge</code>) is the reviewer's
+  decision — while <code>collision</code> is set and <code>collision_action</code> is <code>null</code>, the doc is
+  <strong>blocked from commit</strong>.</li>
+<li><code>related[]</code> — related committed docs (<code>RelatedDoc</code>: <code>doc_id</code>, <code>knowledge_type</code>,
+  <code>title</code>, <code>equipment</code>, <code>error_codes</code>, <code>match_reason</code> ∈ {<code>error_code</code>, <code>equipment</code>,
+  <code>similar</code>}, <code>snippet</code>).</li>
+<li><code>dup_group_id</code> / <code>dup_primary</code> — near-duplicate grouping within the batch; variants
+  share a <code>dup_group_id</code> and only the <code>dup_primary</code> one defaults to <code>accepted</code>.</li>
+</ul>
 <p><code>ImportStatus</code> values: <code>pending</code> · <code>extracting</code> · <code>ready_for_review</code> · <code>committed</code> ·
 <code>failed</code>. <code>FileStatus</code> values: <code>processing</code> · <code>skipped_duplicate</code> · <code>unsupported</code> ·
 <code>failed</code> · <code>done</code>. During segmentation <code>chunks_done</code> tracks <strong>completed</strong> chunks, so
@@ -2149,25 +2197,64 @@ the user to re-upload. An id that <strong>never existed</strong> returns <strong
   <code>project</code>, <code>equipment</code>, <code>title</code>, <code>error_codes</code>, the type-specific fields, <code>notes</code>,
   <code>accepted</code>). <code>400</code> if <code>idx</code> is out of range.</li>
 <li><code>PATCH …/documents/{idx}</code> — <code>{ "accepted": true|false }</code>.</li>
+<li><code>PATCH …/documents/{idx}/resolve</code> — resolve a collision (see below).</li>
 <li><code>POST …/documents/accept-all</code> — body optional <code>{ "knowledge_type": "alarm" }</code> to accept
   only one type; returns <code>{ "accepted": N }</code>.</li>
 <li><code>POST …/commit</code> — indexes every accepted doc and records the file in the tracker.</li>
 </ul>
+<h3 id="ingest-conflicts">Conflicts &amp; cross-references<a class="headerlink" href="#ingest-conflicts" title="Permanent link">&para;</a></h3>
+<p>After segmentation, each staged doc is checked against the live KB. A doc whose
+content-addressed <code>doc_id</code> already exists would <strong>overwrite</strong> that committed doc on
+commit, so it is flagged (<code>collision</code> set) and <strong>blocked from commit</strong> until resolved
+— a plain commit can never silently overwrite. Resolve with:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1">// PATCH …/documents/{idx}/resolve</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;merge&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span><span class="nt">&quot;merged_fields&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;…merged…&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;resolution&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;…&quot;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th><code>action</code></th>
+<th>Effect on commit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>keep</code></td>
+<td>Skip this doc — the existing KB doc is preserved (counts as <code>skipped</code>).</td>
+</tr>
+<tr>
+<td><code>overwrite</code></td>
+<td>Index this doc as-is, replacing the existing one.</td>
+</tr>
+<tr>
+<td><code>merge</code></td>
+<td>Apply <code>merged_fields</code> (a partial edit — content fields only; identity fields are excluded so the <code>doc_id</code> stays stable), then index.</td>
+</tr>
+</tbody>
+</table>
+<p><code>GET …/sessions/{id}/summary</code> returns a <code>CommitSummary</code> of what commit will do — use
+it to drive a review banner and gate the Commit button:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;new&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;overwrite&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;keep&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;unresolved_conflicts&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span><span class="nt">&quot;dup_groups&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;missing_required&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;skipped_duplicate_files&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;rejected&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<p>An accepted doc with an unresolved collision (<code>unresolved_conflicts &gt; 0</code>) is reported
+as a commit error and <strong>not</strong> indexed.</p>
 <p><code>CommitResponse</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="p">{</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="nt">&quot;committed&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span><span class="nt">&quot;skipped&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span><span class="nt">&quot;errors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">  </span><span class="nt">&quot;vectors_skipped&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">  </span><span class="nt">&quot;tracking_failed&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="p">{</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span><span class="nt">&quot;committed&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span><span class="nt">&quot;skipped&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">  </span><span class="nt">&quot;errors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">  </span><span class="nt">&quot;vectors_skipped&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">  </span><span class="nt">&quot;tracking_failed&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="p">}</span>
 </code></pre></div>
 <p><code>vectors_skipped</code> counts docs indexed without vectors because the embedding service was
 down (still BM25-searchable). <code>tracking_failed &gt; 0</code> means docs are in ES but their tracker
 rows did not update — they would be lost on the next startup reseed, so call
 <code>recommit-tracking</code> to recover:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1">// POST …/recommit-tracking → RecommitTrackingResponse</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;recovered&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;still_failed&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;errors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1">// POST …/recommit-tracking → RecommitTrackingResponse</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;recovered&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;still_failed&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;errors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
 <h3 id="retry">Retry<a class="headerlink" href="#retry" title="Permanent link">&para;</a></h3>
 <p><code>POST …/files/{file_hash}/retry</code> and <code>POST …/retry-failed</code> re-run extraction+segmentation
@@ -2176,26 +2263,26 @@ retry even when <code>ingest.ocr_enabled</code> is off — useful to recover a s
 without a server config change. Both return <code>202</code> + the updated <code>UploadResponse</code>; a bad
 session/file id returns <code>404</code>.</p>
 <h3 id="ingest-walkthrough">Worked end-to-end example<a class="headerlink" href="#ingest-walkthrough" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># 1. Upload a PDF with hints</span>
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="nv">SID</span><span class="o">=</span><span class="k">$(</span>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>localhost:8000/api/v1/ingest/upload<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span>-F<span class="w"> </span><span class="s1">&#39;files=@alarms.pdf&#39;</span><span class="w"> </span>-F<span class="w"> </span><span class="s1">&#39;knowledge_type_hint=alarm&#39;</span><span class="w"> </span>-F<span class="w"> </span><span class="s1">&#39;project_hint=PDX&#39;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span>.session_id<span class="k">)</span>
-<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>
-<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="c1"># 2. Poll until ready_for_review</span>
-<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="k">until</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>curl<span class="w"> </span>-s<span class="w"> </span>localhost:8000/api/v1/ingest/sessions/<span class="nv">$SID</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span>.status<span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;ready_for_review&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">do</span><span class="w"> </span>sleep<span class="w"> </span><span class="m">1</span><span class="p">;</span><span class="w"> </span><span class="k">done</span>
-<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>
-<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="c1"># 3. (optional) Fix a misextracted field on doc #0</span>
-<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span>localhost:8000/api/v1/ingest/sessions/<span class="nv">$SID</span>/documents/0<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;content-type: application/json&#39;</span><span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;equipment&quot;:&quot;Aligner&quot;}&#39;</span>
-<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>
-<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="c1"># 4. Accept everything and commit</span>
-<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>localhost:8000/api/v1/ingest/sessions/<span class="nv">$SID</span>/documents/accept-all
-<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>localhost:8000/api/v1/ingest/sessions/<span class="nv">$SID</span>/commit<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq
-<a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a>
-<a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a><span class="c1"># 5. The committed docs are now searchable</span>
-<a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a>curl<span class="w"> </span>-s<span class="w"> </span>localhost:8000/api/v1/search<span class="w"> </span>-H<span class="w"> </span><span class="s1">&#39;content-type: application/json&#39;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;knowledge_type&quot;:&quot;alarm&quot;,&quot;project&quot;:&quot;PDX&quot;,&quot;keywords&quot;:[&quot;真空&quot;],&quot;mode&quot;:&quot;auto&quot;}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>jq
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># 1. Upload a PDF with hints</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="nv">SID</span><span class="o">=</span><span class="k">$(</span>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>localhost:8000/api/v1/ingest/upload<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">  </span>-F<span class="w"> </span><span class="s1">&#39;files=@alarms.pdf&#39;</span><span class="w"> </span>-F<span class="w"> </span><span class="s1">&#39;knowledge_type_hint=alarm&#39;</span><span class="w"> </span>-F<span class="w"> </span><span class="s1">&#39;project_hint=PDX&#39;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span>.session_id<span class="k">)</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="c1"># 2. Poll until ready_for_review</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="k">until</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>curl<span class="w"> </span>-s<span class="w"> </span>localhost:8000/api/v1/ingest/sessions/<span class="nv">$SID</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span>.status<span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;ready_for_review&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">do</span><span class="w"> </span>sleep<span class="w"> </span><span class="m">1</span><span class="p">;</span><span class="w"> </span><span class="k">done</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="c1"># 3. (optional) Fix a misextracted field on doc #0</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span>localhost:8000/api/v1/ingest/sessions/<span class="nv">$SID</span>/documents/0<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;content-type: application/json&#39;</span><span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;equipment&quot;:&quot;Aligner&quot;}&#39;</span>
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="c1"># 4. Accept everything and commit</span>
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>localhost:8000/api/v1/ingest/sessions/<span class="nv">$SID</span>/documents/accept-all
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>localhost:8000/api/v1/ingest/sessions/<span class="nv">$SID</span>/commit<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq
+<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a>
+<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a><span class="c1"># 5. The committed docs are now searchable</span>
+<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a>curl<span class="w"> </span>-s<span class="w"> </span>localhost:8000/api/v1/search<span class="w"> </span>-H<span class="w"> </span><span class="s1">&#39;content-type: application/json&#39;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;knowledge_type&quot;:&quot;alarm&quot;,&quot;project&quot;:&quot;PDX&quot;,&quot;keywords&quot;:[&quot;真空&quot;],&quot;mode&quot;:&quot;auto&quot;}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>jq
 </code></pre></div>
 <hr />
 <h2 id="taxonomy">Taxonomy &amp; admin<a class="headerlink" href="#taxonomy" title="Permanent link">&para;</a></h2>
@@ -2226,12 +2313,12 @@ session/file id returns <code>404</code>.</p>
 </tbody>
 </table>
 <p><code>GET /api/v1/facets</code> →</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="p">{</span>
-<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-05-19-r1&quot;</span><span class="p">,</span>
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">  </span><span class="nt">&quot;knowledge_types&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;alarm&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;setup&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;experience&quot;</span><span class="p">],</span>
-<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">  </span><span class="nt">&quot;projects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Kinneret&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;MEM&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;MHK&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;PDX&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Boston&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Sonora&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Yucatan&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;所有项目&quot;</span><span class="p">],</span>
-<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">  </span><span class="nt">&quot;equipment&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Aligner&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Conveyor&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;FTU&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Heater&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Loader&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Pump&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;SensorModule&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Stage&quot;</span><span class="p">]</span>
-<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="p">{</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-05-19-r1&quot;</span><span class="p">,</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">  </span><span class="nt">&quot;knowledge_types&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;alarm&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;setup&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;experience&quot;</span><span class="p">],</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">  </span><span class="nt">&quot;projects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Kinneret&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;MEM&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;MHK&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;PDX&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Boston&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Sonora&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Yucatan&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;所有项目&quot;</span><span class="p">],</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">  </span><span class="nt">&quot;equipment&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Aligner&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Conveyor&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;FTU&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Heater&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Loader&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Pump&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;SensorModule&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Stage&quot;</span><span class="p">]</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="p">}</span>
 </code></pre></div>
 <p>The taxonomy backs both filter validation at index time and LLM extraction priming — see
 <a href="../reference/data-model/#taxonomy-model">Data Model → Taxonomy</a>.</p>
@@ -2254,15 +2341,15 @@ session/file id returns <code>404</code>.</p>
 </tbody>
 </table>
 <p>Observational only — it never alters results. Body (<code>FeedbackRequest</code>):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="p">{</span>
-<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span><span class="nt">&quot;doc_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kb_alarm_v1:9f2c…&quot;</span><span class="p">,</span>
-<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">  </span><span class="nt">&quot;helpful&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">  </span><span class="nt">&quot;query_text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;E-1234 aligner fault&quot;</span><span class="p">,</span>
-<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">  </span><span class="nt">&quot;knowledge_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;alarm&quot;</span><span class="p">,</span>
-<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">  </span><span class="nt">&quot;project&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PDX&quot;</span><span class="p">,</span>
-<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">  </span><span class="nt">&quot;equipment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Aligner&quot;</span><span class="p">,</span>
-<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">  </span><span class="nt">&quot;search_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;loose_hit&quot;</span>
-<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="p">{</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">  </span><span class="nt">&quot;doc_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kb_alarm_v1:9f2c…&quot;</span><span class="p">,</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">  </span><span class="nt">&quot;helpful&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">  </span><span class="nt">&quot;query_text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;E-1234 aligner fault&quot;</span><span class="p">,</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">  </span><span class="nt">&quot;knowledge_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;alarm&quot;</span><span class="p">,</span>
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">  </span><span class="nt">&quot;project&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PDX&quot;</span><span class="p">,</span>
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="w">  </span><span class="nt">&quot;equipment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Aligner&quot;</span><span class="p">,</span>
+<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="w">  </span><span class="nt">&quot;search_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;loose_hit&quot;</span>
+<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="p">}</span>
 </code></pre></div>
 <p>Recording is best-effort: a storage hiccup returns <strong>503</strong> rather than breaking the user's
 flow. See <a href="../observability/#search-feedback">Observability → Search feedback</a> for the
@@ -2304,7 +2391,7 @@ stored schema and the admin aggregate.</p>
 </tbody>
 </table>
 <p><code>GET /readyz?deep=true</code> body:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ok&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;es&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ok&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;embedding&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ok&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;llm&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;configured&quot;</span><span class="w"> </span><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ok&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;es&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ok&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;embedding&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ok&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;llm&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;configured&quot;</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
 <p>See <a href="../observability/#health">Observability → Health endpoints</a> for how to wire these into
 an orchestrator.</p>

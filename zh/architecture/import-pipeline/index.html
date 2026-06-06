@@ -768,7 +768,7 @@
   <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        跨块去重
+        跨块近重复分组
       
     </span>
   </a>
@@ -847,7 +847,57 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#conflict-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        冲突检测与交叉引用（services/cross_reference.py）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="冲突检测与交叉引用（services/cross_reference.py）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#detect_collisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        detect_collisions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#find_related" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_related
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        提交前汇总
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
     <span class="md-ellipsis">
       
         会话状态与审核
@@ -880,7 +930,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_13" class="md-nav__link">
+  <a href="#_14" class="md-nav__link">
     <span class="md-ellipsis">
       
         配置项
@@ -891,7 +941,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_14" class="md-nav__link">
+  <a href="#_15" class="md-nav__link">
     <span class="md-ellipsis">
       
         关键设计约束
@@ -1448,7 +1498,7 @@
   <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        跨块去重
+        跨块近重复分组
       
     </span>
   </a>
@@ -1527,7 +1577,57 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#conflict-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        冲突检测与交叉引用（services/cross_reference.py）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="冲突检测与交叉引用（services/cross_reference.py）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#detect_collisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        detect_collisions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#find_related" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_related
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        提交前汇总
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
     <span class="md-ellipsis">
       
         会话状态与审核
@@ -1560,7 +1660,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_13" class="md-nav__link">
+  <a href="#_14" class="md-nav__link">
     <span class="md-ellipsis">
       
         配置项
@@ -1571,7 +1671,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_14" class="md-nav__link">
+  <a href="#_15" class="md-nav__link">
     <span class="md-ellipsis">
       
         关键设计约束
@@ -1610,6 +1710,8 @@
 <li><code>GET  /api/v1/ingest/sessions[/{id}]</code> — 列出 / 查询会话</li>
 <li><code>PUT  /api/v1/ingest/sessions/{id}/documents/{idx}</code> — 编辑暂存文档</li>
 <li><code>PATCH /api/v1/ingest/sessions/{id}/documents/{idx}</code> — 接受 / 拒绝</li>
+<li><code>PATCH /api/v1/ingest/sessions/{id}/documents/{idx}/resolve</code> — 解决冲突（保留 / 覆盖 / 合并）</li>
+<li><code>GET  /api/v1/ingest/sessions/{id}/summary</code> — 提交前的后果计数</li>
 <li><code>POST /api/v1/ingest/sessions/{id}/commit</code> — 将已接受文档写入 ES</li>
 </ul>
 <p>编排逻辑位于 <code>src/kb/services/import_pipeline.py</code>。</p>
@@ -1650,7 +1752,7 @@
 <a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>        │  每次按类型的调用都带&quot;忽略其他类型内容&quot;以及&quot;无条目则返回 []、
 <a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>        │    禁止输出空字段占位条目&quot;的规则
 <a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>        │  超长单页按结构（标题/段落/换行）继续细分
-<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>        │  相邻块保留 1 页重叠；按知识类型在切分后做去重
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>        │  相邻块保留 1 页重叠；按知识类型对近重复条目分组（保留而非丢弃）
 <a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>        │  JSON 解析失败时：抢救最长合法前缀 → 对象扫描 →
 <a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>        │                   触发修复重试 → 按页二分递归（递归下限：1 页）
 <a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>        │  条目校验：丢弃必填字段为空或 confidence &lt; 0.3 的条目（路由误判防护）
@@ -1659,20 +1761,31 @@
 <a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>        │  on_chunk_progress 上报*已完成*的块数（n/total → &quot;Finalizing…&quot;）
 <a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>        │
 <a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>        ▼
-<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>[4] 会话进入 READY 状态
-<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>        │  ImportSession.documents 已填充；status = ready_for_review
-<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>        │
-<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>        ▼ （客户端审阅 / 编辑 / 接受拒绝）
-<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>        │
-<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>[5] POST /commit
-<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>        │  对每个 accepted=True 的 StagedDocument：
-<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>        │    → _staged_to_knowledge_doc(): 转为 Alarm/Setup/ExperienceDoc
-<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>        │    → validate_against_taxonomy()
-<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>        │    → 通过 DashScope embed [title_text, body_text]（尽力而为）
-<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>        │    → 以 refresh=&quot;wait_for&quot; 写入 kb_&lt;type&gt;_v1 别名
-<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>        │    → 按 file_hash 聚合，供 tracker 更新
-<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>        │  record_committed(file_hash, [es_actions])
-<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>        │  → CommitResponse {committed, skipped, errors}
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>[3.5] 富化（services/cross_reference.py，尽力而为）
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>        │  detect_collisions(): 用每条暂存文档的预期 doc_id 对线上 kb_&lt;type&gt;
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>        │      索引做 mget。命中 ⇒ 提交将覆盖一条已提交文档 → 附加
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>        │      ExistingDocSnapshot，并令 collision_action = None（阻断提交）。
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>        │      同批内身份相同的暂存文档改为折叠成一个精确重复组。
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>        │  find_related(): 附加相关已提交文档（同 error_code / 机台 /
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>        │      向量或 BM25 相似度）到 StagedDocument.related[]
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>        │
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>        ▼
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>[4] 会话进入 READY 状态
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>        │  ImportSession.documents 已填充；status = ready_for_review
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>        │
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>        ▼ （客户端审阅 / 编辑 / 接受拒绝 / 解决冲突）
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>        │
+<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>[5] POST /commit
+<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>        │  对每个 accepted=True 的 StagedDocument：
+<a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a>        │    → 冲突拦截：未解决冲突 → 报告但不写入；&quot;keep&quot; → 跳过（保留现有）；
+<a id="__codelineno-0-62" name="__codelineno-0-62" href="#__codelineno-0-62"></a>        │         overwrite/merge → 正常写入
+<a id="__codelineno-0-63" name="__codelineno-0-63" href="#__codelineno-0-63"></a>        │    → _staged_to_knowledge_doc(): 转为 Alarm/Setup/ExperienceDoc
+<a id="__codelineno-0-64" name="__codelineno-0-64" href="#__codelineno-0-64"></a>        │    → validate_against_taxonomy()
+<a id="__codelineno-0-65" name="__codelineno-0-65" href="#__codelineno-0-65"></a>        │    → 通过 DashScope embed [title_text, body_text]（尽力而为）
+<a id="__codelineno-0-66" name="__codelineno-0-66" href="#__codelineno-0-66"></a>        │    → 以 refresh=&quot;wait_for&quot; 写入 kb_&lt;type&gt;_v1 别名
+<a id="__codelineno-0-67" name="__codelineno-0-67" href="#__codelineno-0-67"></a>        │    → 按 file_hash 聚合，供 tracker 更新
+<a id="__codelineno-0-68" name="__codelineno-0-68" href="#__codelineno-0-68"></a>        │  record_committed(file_hash, [es_actions])
+<a id="__codelineno-0-69" name="__codelineno-0-69" href="#__codelineno-0-69"></a>        │  → CommitResponse {committed, skipped, errors}
 </code></pre></div>
 <p>步骤 1–4 在后台 <code>asyncio.create_task</code> 中执行；upload/scan 接口立即返回 <code>202 Accepted</code> 与 <code>session_id</code>。客户端轮询 <code>GET /sessions/{id}</code>（携带 <code>files_processed</code>、单文件 <code>status</code>/<code>message</code> 及会话级 <code>message</code>）直到 <code>status == ready_for_review</code>。</p>
 <hr />
@@ -1816,35 +1929,38 @@
 <li>规范中任一 <code>required: true</code> 字段为空（值落在 <code>{"", "—", "-", "n/a", "na", "none", "null"}</code>，或为空列表/字典）。</li>
 </ul>
 <p>这是对<strong>路由误判</strong>失败形态的首要防护：当分类器把某块错误展开到它实际不含的类型时，按类型抽取器被要求抽取并不存在的条目，LLM 往往会输出字段全空、<code>confidence: 0.0</code> 的占位 dict。在上游丢弃它们，意味着某个被路由的类型若无产出，会被视作真正的无条目，而不会作为低置信度文档堆给审阅者。</p>
-<h3 id="_5">跨块去重<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
-<p><code>_deduplicate_entries()</code> 折叠由 1 页重叠产生的重复条目，按知识类型使用不同 key：</p>
+<h3 id="_5">跨块近重复分组<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<p><code>_group_duplicates()</code> 处理由 1 页重叠产生的重复条目，按知识类型使用不同 key：</p>
 <table>
 <thead>
 <tr>
 <th>类型</th>
-<th>去重 key</th>
-<th>冲突保留规则</th>
+<th>分组 key</th>
+<th>主条目（保持勾选）</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>ALARM</td>
 <td>归一化的 <code>error_code</code></td>
-<td><code>confidence</code> 较高者胜</td>
+<td><code>confidence</code> 最高者</td>
 </tr>
 <tr>
 <td>SETUP</td>
 <td>归一化的 <code>station</code> + <code>procedure</code> 前 80 字符</td>
-<td><code>confidence</code> 较高者胜</td>
+<td><code>confidence</code> 最高者</td>
 </tr>
 <tr>
 <td>EXPERIENCE</td>
 <td>归一化的 <code>problem</code> + <code>failure_desc</code> 前 80 字符</td>
-<td><code>confidence</code> 较高者胜</td>
+<td><code>confidence</code> 最高者</td>
 </tr>
 </tbody>
 </table>
-<p>key 为空的条目<strong>原样保留</strong>，不会被相互折叠——边界条目交给人工复核，胜过被静默合并。</p>
+<p>与硬去重不同，<strong>所有变体都保留</strong>，以便审阅者比较各版本并选出或编辑最佳者。多变体组的
+成员共享 <code>dup_group_id</code>，置信度最高者为 <code>dup_primary</code>（保持 <code>accepted</code>），其余默认不勾选。
+key 为空的条目独立存在（<code>dup_group_id = None</code>）。这取代了旧的 <code>_deduplicate_entries()</code>——
+后者会静默丢弃除最高置信度副本以外的全部条目。</p>
 <h3 id="_6">按块多类型路由<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
 <p><code>classify_chunk_types()</code> 对每一块独立分类，返回<strong>所含类型的列表</strong>：</p>
 <ul>
@@ -1876,7 +1992,60 @@
 <h3 id="_11">超时<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h3>
 <p><code>_estimate_timeout()</code> 根据实际 payload 大小估算 HTTP 读超时，使用 CJK 感知的 token 估算（中文 ≈ 1.5 tok/字符，拉丁 ≈ 0.25 tok/字符）。超长块不会触发超时——它们会先撞上 <code>max_tokens</code> 上限，再走二分恢复路径。</p>
 <hr />
-<h2 id="_12">会话状态与审核<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
+<h2 id="conflict-detection">冲突检测与交叉引用（<code>services/cross_reference.py</code>）<a class="headerlink" href="#conflict-detection" title="Permanent link">&para;</a></h2>
+<p>文件字节去重（见下文）只能拦截<em>同一文件</em>被重复上传。更危险的是<strong>文档级冲突</strong>：某条暂存
+文档的内容寻址 <code>doc_id</code>——<code>hash(knowledge_type | project | equipment | title | error_codes)</code>，
+与 <code>commit</code> 所用的 id 完全一致——在知识库中已存在。直接提交会<strong>静默覆盖</strong>它。分段之后
+（步骤 [3.5]，会话进入 READY 之前）对 <code>session.documents</code> 运行两项尽力而为的富化。</p>
+<h3 id="detect_collisions"><code>detect_collisions</code><a class="headerlink" href="#detect_collisions" title="Permanent link">&para;</a></h3>
+<p><code>compute_staged_doc_id()</code> 复用提交时的同一转换（<code>_staged_to_knowledge_doc</code> → <code>doc_id</code>），
+因此"将覆盖"的判定与真正会发生的覆盖一致。预期 id 按 <code>kb_&lt;type&gt;</code> 别名分组，每类一次
+<code>mget</code>。命中时，暂存文档获得 <code>collision: ExistingDocSnapshot</code>（现有文档的身份及其存储的
+<code>sections</code> 作为 <code>fields</code>，供字段级 diff），<code>collision_action</code> 保持 <code>None</code>——该文档的提交被
+<strong>阻断</strong>直到解决。同批内彼此身份相同的暂存文档是与同伴而非知识库冲突，因此被折叠成一个
+精确重复组（最高置信度为主，其余不勾选），而不标记为知识库冲突。</p>
+<p>通过 <code>PATCH .../documents/{idx}/resolve</code>（<code>pipeline.resolve_collision</code>）记录决定：</p>
+<table>
+<thead>
+<tr>
+<th><code>action</code></th>
+<th>提交行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>keep</code></td>
+<td>跳过该暂存文档——保留现有知识库文档（计入 <code>skipped</code>）。</td>
+</tr>
+<tr>
+<td><code>overwrite</code></td>
+<td>原样写入暂存文档，替换现有文档。</td>
+</tr>
+<tr>
+<td><code>merge</code></td>
+<td>应用 <code>merged_fields</code>（一个 <code>DocumentUpdate</code>——仅内容字段；身份字段被排除，使 <code>doc_id</code> 保持稳定），再写入。</td>
+</tr>
+</tbody>
+</table>
+<p><code>commit_session</code> 中的冲突拦截会把仍未解决的冲突作为错误（<code>"Unresolved conflict …"</code>）报告
+而非写入，从而杜绝静默覆盖。</p>
+<h3 id="find_related"><code>find_related</code><a class="headerlink" href="#find_related" title="Permanent link">&para;</a></h3>
+<p>对每条暂存文档，<code>find_related</code> 附加至多 <code>cross_reference_max</code> 条相关已提交文档到
+<code>StagedDocument.related[]</code>，按共享 <code>error_codes</code>、共享 <code>equipment</code>，以及——当
+<code>cross_reference_semantic</code> 开启且配置了嵌入 key 时——title+body 的向量相似度匹配（整个会话
+一次批量嵌入；否则回退 BM25）。会排除暂存文档自身的预期 id 及来自同一源文件的文档。每条
+<code>RelatedDoc</code> 带 <code>match_reason</code>（<code>error_code</code> | <code>equipment</code> | <code>similar</code>）与简短 <code>snippet</code>，让
+审阅者在再导入一份副本前看到已有覆盖。</p>
+<h3 id="_12">提交前汇总<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h3>
+<p><code>GET .../sessions/{id}/summary</code>（<code>pipeline.session_summary</code>）返回 <code>CommitSummary</code> 后果计数
+——<code>new</code>、<code>overwrite</code>、<code>keep</code>、<code>unresolved_conflicts</code>、<code>dup_groups</code>、<code>missing_required</code>、
+<code>skipped_duplicate_files</code>、<code>rejected</code>——审阅 UI 据此渲染横幅并控制提交按钮（当任一已接受文档
+存在未解决冲突时禁用）。全部由线上会话计算，不写 ES。</p>
+<p>以上均为尽力而为：任何 ES/嵌入失败都会被吞掉，审阅者只是看不到徽章。可通过
+<code>ingest.collision_detection_enabled</code> 与 <code>ingest.cross_reference_enabled</code> /
+<code>cross_reference_max</code> / <code>cross_reference_semantic</code> 开关。</p>
+<hr />
+<h2 id="_13">会话状态与审核<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ImportSession</span><span class="p">:</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>          <span class="c1"># uuid4</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">status</span><span class="p">:</span> <span class="n">ImportStatus</span>     <span class="c1"># extracting | ready_for_review | committed | failed</span>
@@ -1891,6 +2060,7 @@
 <h2 id="commit-commit_session">Commit 流程（<code>commit_session</code>）<a class="headerlink" href="#commit-commit_session" title="Permanent link">&para;</a></h2>
 <p>对每个 <code>accepted=True</code> 的 <code>StagedDocument</code>：</p>
 <ol>
+<li><strong>冲突拦截</strong>（见<a href="#conflict-detection">冲突检测</a>）：存在未解决 <code>collision</code> 的文档会被报告且<strong>不</strong>写入；<code>keep</code> 决定被跳过（保留现有文档）；<code>overwrite</code>/<code>merge</code> 继续走下面的步骤。</li>
 <li><code>_staged_to_knowledge_doc</code> 根据类型构建子类（<code>AlarmDoc</code> / <code>SetupDoc</code> / <code>ExperienceDoc</code>）。缺失的必填字符串回退为 <code>"—"</code>；setup 缺少标题时回退为 <code>f"{equipment} 调试"</code>。</li>
 <li><code>validate_against_taxonomy</code> 拒绝未知的 <code>project</code> / <code>equipment</code>——这些会被聚合到 <code>errors</code> 列表。</li>
 <li><code>EmbeddingClient.embed([title_text, body_text])</code> 采用<strong>尽力而为</strong>策略：任何失败都仅记 warning，文档以 <code>null</code> 向量入库（BM25 仍可用，向量重排会静默忽略）。</li>
@@ -1933,10 +2103,10 @@
 </tbody>
 </table>
 <hr />
-<h2 id="_13">配置项<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h2>
+<h2 id="_14">配置项<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h2>
 <p>全部位于 <code>config/settings.yaml</code> 的 <code>ingest:</code> 段，或对应 <code>KB_INGEST__*</code> 环境变量——见<a href="../../configuration/#ingest">配置 → Ingest</a>。</p>
 <hr />
-<h2 id="_14">关键设计约束<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h2>
+<h2 id="_15">关键设计约束<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>强制人工审核</strong>：未经显式 commit，文档绝不进入检索索引。即便是"快速通道"（扫描整个文件夹）也止步于 <code>ready_for_review</code>。</li>
 <li><strong>规范驱动</strong>：每种知识类型在 <code>config/knowledge_types/&lt;type&gt;.yaml</code> 中只定义一次。LLM 提示词、范例、跳过规则与对齐校验都从该文件读取。</li>
@@ -1945,6 +2115,9 @@
 <li><strong>项目/机台绝不阻塞提交</strong>：值在源文提及时原文取用，否则从文件名推断，再否则默认为 <code>所有项目</code>。机台为可选。</li>
 <li><strong>友好反馈</strong>：被跳过的块与提交错误均附带可操作的 <code>hint</code>。</li>
 <li><strong>Embedding 尽力而为</strong>：commit 时 embedding 失败不会中断写入。</li>
+<li><strong>绝不静默覆盖</strong>：<code>doc_id</code> 已存在于知识库的暂存文档，在审阅者解决（保留 / 覆盖 / 合并）前被阻断提交。</li>
+<li><strong>保留变体而非丢弃</strong>：近重复片段被分组以供并排比较，而不是塌缩为最高置信度的一条。</li>
+<li><strong>交叉引用</strong>：每条暂存文档会呈现相关已提交文档（同代码 / 机台 / 相似），让审阅者在导入前看到已有覆盖。</li>
 <li><strong>按内容哈希去重</strong>：相同字节二次上传直接短路，除非显式 <code>force=true</code>。</li>
 <li><strong>导入数据可在 CSV 重 seed 后存活</strong>：tracker 的 <code>committed_docs</code> 缓存在启动重 seed 后被回放。</li>
 <li><strong>会话仅在内存</strong>：服务重启会丢失尚未 commit 的会话。</li>
