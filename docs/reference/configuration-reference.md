@@ -182,6 +182,10 @@ from the message-payload size, overriding `timeout_s`.
 | `session_ttl_minutes` | `KB_INGEST__SESSION_TTL_MINUTES` | int | `120` | 10–1440 | soft TTL: evict committed/failed sessions |
 | `session_hard_ttl_minutes` | `KB_INGEST__SESSION_HARD_TTL_MINUTES` | int | `480` | 10–10080 | hard TTL: evict any session (incl. under review), bounds memory |
 | `session_evict_interval_minutes` | `KB_INGEST__SESSION_EVICT_INTERVAL_MINUTES` | int | `15` | 1–1440 | background sweeper interval |
+| `collision_detection_enabled` | `KB_INGEST__COLLISION_DETECTION_ENABLED` | bool | `True` | — | flag (and block) staged docs that would overwrite a committed KB doc |
+| `cross_reference_enabled` | `KB_INGEST__CROSS_REFERENCE_ENABLED` | bool | `True` | — | attach related committed docs to each staged doc |
+| `cross_reference_max` | `KB_INGEST__CROSS_REFERENCE_MAX` | int | `5` | 1–50 | max related docs surfaced per staged doc |
+| `cross_reference_semantic` | `KB_INGEST__CROSS_REFERENCE_SEMANTIC` | bool | `True` | — | add embedding-based similarity to related lookup (needs `KB_EMBEDDING__API_KEY`; BM25-only fallback) |
 
 !!! warning "OCR dependencies are separate"
     `ocr_enabled=true` is only the switch; you still need PaddleOCR installed at runtime

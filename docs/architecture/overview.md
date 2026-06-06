@@ -135,4 +135,6 @@ The two external AI services are **optional**:
 - **Banners are a hard contract** — `loose_hit`/`vector_only` carry mandatory
   display banners signalling reduced confidence.
 - **Review-gated imports** — no uploaded file reaches the searchable indices until
-  a human accepts the staged result.
+  a human accepts the staged result. A staged doc that would overwrite an existing KB
+  doc is **blocked from commit** until the reviewer resolves the conflict (keep /
+  overwrite / merge) — see [Import Pipeline → Conflict detection](import-pipeline.md#conflict-detection).

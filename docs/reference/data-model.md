@@ -470,15 +470,33 @@ commit. Key fields: `index`, `knowledge_type`, `project`, `equipment`, `title`,
 `procedure`/`prerequisites`, `body_text`), `notes`, `source_file`, `source_pages`,
 `raw_text_excerpt`, `confidence` (0–1), `warnings`, `accepted` (default True).
 
+Enrichment fields added after segmentation (see
+[Import Pipeline → Conflict detection](../architecture/import-pipeline.md#conflict-detection)):
+
+- `collision`: `ExistingDocSnapshot | None` — set when committing this doc would
+  overwrite an existing KB doc with the same `doc_id`. `collision_action`
+  (`None`/`keep`/`overwrite`/`merge`) is the reviewer's decision; while `collision` is
+  set and the action is `None`, the doc is **blocked from commit**.
+- `related`: `list[RelatedDoc]` — cross-references to related committed docs.
+- `dup_group_id` / `dup_primary`: near-duplicate grouping within the batch (variants
+  share a group; only the primary defaults to `accepted`).
+
 ### Other models
 
+- `ExistingDocSnapshot`: identity of the colliding committed doc — `doc_id`,
+  `knowledge_type`, `project`, `equipment`, `title`, `error_codes`, `fields` (the
+  stored `sections` map, for a field-level diff), `source_file`, `source_pages`,
+  `updated_at`
+- `RelatedDoc`: `doc_id`, `knowledge_type`, `title`, `equipment`, `error_codes`,
+  `source_file`, `match_reason` (`error_code`/`equipment`/`similar`), `score`, `snippet`
 - `SkippedChunk`: `source_file`, `page_range`, `reason` (`non_content`/`no_entries`/`parse_failed`), `hint`
 - `FileInfo`: per-file status + segmentation progress (`chunks_total`/`chunks_done` — `chunks_done` counts **completed** chunks/`skipped_chunks`) plus an optional `duplicate_info` set only when `status == skipped_duplicate`
 - `DuplicateInfo` / `DuplicateDocSummary`: what the KB already holds for a re-uploaded file — `imported_at`, `original_file_name`, total `doc_count`, and a ≤50-entry `documents` preview (`knowledge_type`, `title`, `error_codes`). Built from the existing tracker record, no extra ES read
 - `ImportSession`: the whole session (`session_id`, `status`, `files`, `documents`, the `*_hint`s, `created_at`)
 - Request/response: `UploadResponse`, `ScanRequest`, `SessionResponse`, `SessionListItem`,
-  `DocumentUpdate`, `AcceptReject`, `AcceptAllRequest`, `RetryRequest`, `CommitResponse`,
-  `RecommitTrackingResponse` (field details in the [API Reference](../api-reference.md)).
+  `DocumentUpdate`, `AcceptReject`, `ResolveCollision`, `AcceptAllRequest`, `RetryRequest`,
+  `CommitResponse`, `CommitSummary`, `RecommitTrackingResponse` (field details in the
+  [API Reference](../api-reference.md)).
 
 ---
 

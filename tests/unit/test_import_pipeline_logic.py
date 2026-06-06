@@ -21,7 +21,15 @@ import pytest
 from fastapi import HTTPException
 
 from kb.config import Settings
-from kb.models.ingest import FileInfo, FileStatus, ImportSession, ImportStatus, StagedDocument
+from kb.models.ingest import (
+    DocumentUpdate,
+    ExistingDocSnapshot,
+    FileInfo,
+    FileStatus,
+    ImportSession,
+    ImportStatus,
+    StagedDocument,
+)
 from kb.models.taxonomy import KnowledgeType
 from kb.services import import_pipeline as ip
 from kb.services.indexing import IndexingError
@@ -535,6 +543,125 @@ async def test_process_one_force_ocr_overrides_disabled_setting(monkeypatch, tmp
     assert captured["ocr_enabled"] is True
     assert docs == []
     assert info.status == FileStatus.FAILED
+
+
+# ── Collision guard: a staged doc that would overwrite a committed KB doc ──────
+
+def _collide(d: StagedDocument, action: str | None = None) -> StagedDocument:
+    d.collision = ExistingDocSnapshot(doc_id=f"id-{d.index}", title="existing")
+    d.collision_action = action
+    return d
+
+
+async def test_commit_blocks_unresolved_collision(stub_pipeline: ip.ImportPipeline):
+    """An accepted doc whose commit would overwrite an existing KB doc must not
+    be indexed until the reviewer resolves the conflict."""
+    session = ImportSession(
+        session_id="cc1",
+        documents=[_collide(_staged(0, "dup"))],  # collision, no action
+        created_at=datetime.now(UTC),
+    )
+    stub_pipeline._sessions["cc1"] = session
+
+    result = await stub_pipeline.commit_session("cc1")
+
+    assert result["committed"] == 0
+    assert any("Unresolved conflict" in e.get("error", "") for e in result["errors"])
+    assert stub_pipeline._bulk_mock.await_count == 0  # type: ignore[attr-defined]
+    assert session.status == ImportStatus.FAILED
+
+
+async def test_commit_keep_skips_without_overwriting(stub_pipeline: ip.ImportPipeline):
+    """'keep' preserves the existing KB doc — the staged doc is skipped, not indexed."""
+    session = ImportSession(
+        session_id="cc2",
+        documents=[_collide(_staged(0, "dup"), "keep"), _staged(1, "fresh")],
+        created_at=datetime.now(UTC),
+    )
+    stub_pipeline._sessions["cc2"] = session
+
+    result = await stub_pipeline.commit_session("cc2")
+
+    assert result["committed"] == 1  # only the fresh doc
+    assert result["skipped"] == 1    # the kept collision
+    only_call = stub_pipeline._bulk_mock.await_args  # type: ignore[attr-defined]
+    assert len(only_call.args[1]) == 1
+
+
+async def test_commit_overwrite_indexes_the_doc(stub_pipeline: ip.ImportPipeline):
+    session = ImportSession(
+        session_id="cc3",
+        documents=[_collide(_staged(0, "dup"), "overwrite")],
+        created_at=datetime.now(UTC),
+    )
+    stub_pipeline._sessions["cc3"] = session
+
+    result = await stub_pipeline.commit_session("cc3")
+
+    assert result["committed"] == 1
+    assert result["errors"] == []
+
+
+# ── resolve_collision ─────────────────────────────────────────────────────────
+
+def test_resolve_collision_records_action(stub_pipeline: ip.ImportPipeline):
+    d = _collide(_staged(0, "x"))
+    stub_pipeline._sessions["s"] = ImportSession(session_id="s", documents=[d])
+    stub_pipeline.resolve_collision("s", 0, "overwrite", None)
+    assert d.collision_action == "overwrite"
+
+
+def test_resolve_collision_merge_applies_fields(stub_pipeline: ip.ImportPipeline):
+    d = _collide(_staged(0, "x"))
+    stub_pipeline._sessions["s"] = ImportSession(session_id="s", documents=[d])
+    stub_pipeline.resolve_collision("s", 0, "merge", DocumentUpdate(content="merged body"))
+    assert d.collision_action == "merge"
+    assert d.content == "merged body"
+
+
+def test_resolve_collision_rejects_unknown_action(stub_pipeline: ip.ImportPipeline):
+    d = _collide(_staged(0, "x"))
+    stub_pipeline._sessions["s"] = ImportSession(session_id="s", documents=[d])
+    with pytest.raises(ValueError, match="Invalid resolution action"):
+        stub_pipeline.resolve_collision("s", 0, "bogus", None)
+
+
+def test_resolve_collision_out_of_range_raises(stub_pipeline: ip.ImportPipeline):
+    stub_pipeline._sessions["s"] = ImportSession(session_id="s", documents=[])
+    with pytest.raises(IndexError):
+        stub_pipeline.resolve_collision("s", 3, "keep", None)
+
+
+# ── session_summary ───────────────────────────────────────────────────────────
+
+def test_session_summary_counts_every_outcome(stub_pipeline: ip.ImportPipeline):
+    new = _staged(0, "new")
+    overwrite = _collide(_staged(1, "ow"), "overwrite")
+    keep = _collide(_staged(2, "kp"), "keep")
+    unresolved = _collide(_staged(3, "ur"))
+    rejected = _staged(4, "rej")
+    rejected.accepted = False
+    variant_a = _staged(5, "v")
+    variant_b = _staged(6, "v")
+    variant_a.dup_group_id = variant_b.dup_group_id = "g1"
+    stub_pipeline._sessions["s"] = ImportSession(
+        session_id="s",
+        documents=[new, overwrite, keep, unresolved, rejected, variant_a, variant_b],
+        files=[FileInfo(
+            file_name="dupe.pdf", file_hash="h", file_type="pdf",
+            status=FileStatus.SKIPPED_DUPLICATE,
+        )],
+    )
+
+    s = stub_pipeline.session_summary("s")
+
+    assert s["new"] == 3  # new + the two ungrouped-by-collision variants
+    assert s["overwrite"] == 1
+    assert s["keep"] == 1
+    assert s["unresolved_conflicts"] == 1
+    assert s["rejected"] == 1
+    assert s["dup_groups"] == 1
+    assert s["skipped_duplicate_files"] == 1
 
 
 def test_build_duplicate_info_summarizes_committed_docs() -> None:

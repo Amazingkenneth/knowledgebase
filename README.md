@@ -683,17 +683,18 @@ pip install paddlepaddle paddleocr
 ### How it works
 
 ```
-Upload/Scan → Hash & Dedup → Extract Text (+OCR) → LLM Segment → Preview/Edit → Commit to ES
+Upload/Scan → Hash & Dedup → Extract Text (+OCR) → LLM Segment → Conflict check + Cross-ref → Preview/Resolve/Edit → Commit to ES
 ```
 
 1. **Upload files** via the web UI (drag & drop) or scan a server-side folder via API
-2. **Duplicate detection**: SHA-256 file hashes are checked against `kb_import_files` — previously imported files are skipped
+2. **Duplicate detection**: SHA-256 file hashes are checked against `kb_import_files` — previously imported (identical) files are skipped
 3. **Text extraction**: each file type has a dedicated extractor preserving page boundaries; scanned PDFs fall back to PaddleOCR
-4. **LLM segmentation**: the configured LLM identifies document boundaries (e.g., which pages belong to which alarm code) and maps extracted text to structured fields (content, resolution, procedure, etc.)
+4. **LLM segmentation**: the configured LLM identifies document boundaries (e.g., which pages belong to which alarm code) and maps extracted text to structured fields (content, resolution, procedure, etc.). Near-duplicate segments are **grouped** (not dropped) so you can compare variants
 5. **Anti-fabrication check**: extracted fields are verified against raw source text — discrepancies are flagged in the preview
-6. **Preview & edit**: the web UI shows all extracted documents with confidence scores, editable fields, and accept/reject checkboxes
-7. **Commit**: accepted documents are validated against taxonomy, embedded (if available), and indexed into Elasticsearch
-8. **Persistence**: uploaded files are saved to disk (`data/uploads/`); committed document payloads are stored in `kb_import_files` for auto-restore
+6. **Conflict detection & cross-referencing**: each staged doc whose identity (`doc_id`) already exists in the KB is flagged as a **collision** (committing would overwrite it) and blocked until resolved; related existing docs (same error code / equipment / similar) are attached for reference
+7. **Preview, resolve & edit**: the web UI shows all extracted documents with confidence scores, editable fields, accept/reject checkboxes, a **Compare & resolve** panel for collisions (keep / overwrite / field-level merge), and a pre-commit summary banner
+8. **Commit**: accepted documents are validated against taxonomy, embedded (if available), and indexed into Elasticsearch — a `keep` collision is skipped, `overwrite`/`merge` replace the existing doc, and an unresolved collision is reported rather than silently overwritten
+9. **Persistence**: uploaded files are saved to disk (`data/uploads/`); committed document payloads are stored in `kb_import_files` for auto-restore
 
 ### Auto-restore after restart
 
@@ -707,8 +708,10 @@ CSV seeding still clears all indices on every restart (existing behaviour). Afte
 | `POST` | `/api/v1/ingest/scan` | Scan a server-side folder |
 | `GET` | `/api/v1/ingest/sessions` | List recent import sessions |
 | `GET` | `/api/v1/ingest/sessions/{id}` | Get session status and extracted documents |
+| `GET` | `/api/v1/ingest/sessions/{id}/summary` | Pre-commit consequence counts (new/overwrite/keep/unresolved) |
 | `PUT` | `/api/v1/ingest/sessions/{id}/documents/{idx}` | Edit a staged document |
 | `PATCH` | `/api/v1/ingest/sessions/{id}/documents/{idx}` | Accept or reject a document |
+| `PATCH` | `/api/v1/ingest/sessions/{id}/documents/{idx}/resolve` | Resolve a collision (keep / overwrite / merge) |
 | `POST` | `/api/v1/ingest/sessions/{id}/commit` | Commit accepted documents to ES |
 
 ### Upload example

@@ -14,6 +14,8 @@ labels — it must copy source text verbatim. Endpoints live under
 - `GET  /api/v1/ingest/sessions[/{id}]` — list / inspect
 - `PUT  /api/v1/ingest/sessions/{id}/documents/{idx}` — edit staged doc
 - `PATCH /api/v1/ingest/sessions/{id}/documents/{idx}` — accept / reject
+- `PATCH /api/v1/ingest/sessions/{id}/documents/{idx}/resolve` — resolve a collision (keep / overwrite / merge)
+- `GET  /api/v1/ingest/sessions/{id}/summary` — pre-commit consequence counts
 - `POST /api/v1/ingest/sessions/{id}/commit` — write accepted docs to ES
 
 Orchestration lives in `src/kb/services/import_pipeline.py`.
@@ -59,7 +61,7 @@ Client (files or folder path + optional hints)
         │    "return [] — never emit empty skeletons" rule so mixed chunks and
         │    router false-positives don't pollute the output
         │  oversized single pages structurally subdivided (heading/paragraph/line)
-        │  1-page overlap; duplicates collapsed per knowledge type
+        │  1-page overlap; near-duplicates grouped (not dropped) per knowledge type
         │  on JSON failure: salvage longest valid prefix → object sweep →
         │                   repair retry → binary-split chunk and recurse (floor: 1 page)
         │  entry validation: drop entries with empty required fields or
@@ -69,13 +71,25 @@ Client (files or folder path + optional hints)
         │  on_chunk_progress reports *completed* chunks (n/total → "Finalizing…")
         │
         ▼
+[3.5] Enrichment (services/cross_reference.py, best-effort)
+        │  detect_collisions(): each staged doc's prospective doc_id is mget'd
+        │      against the live kb_<type> index. A hit ⇒ commit would OVERWRITE a
+        │      committed doc → attach ExistingDocSnapshot, leave collision_action
+        │      = None (blocks commit). Staged docs with identical identity to one
+        │      another are folded into one exact-dup group instead.
+        │  find_related(): attach related committed docs (same error_code /
+        │      equipment / vector-or-BM25 similarity) as StagedDocument.related[]
+        │
+        ▼
 [4] Session moves to READY
         │  ImportSession.documents populated; status = ready_for_review
         │
-        ▼ (client reviews / edits / accept-rejects)
+        ▼ (client reviews / edits / accept-rejects / resolves conflicts)
         │
 [5] POST /commit
         │  for each accepted StagedDocument:
+        │    → collision guard: unresolved collision → reported, not indexed;
+        │         "keep" → skipped (existing doc preserved); overwrite/merge → index
         │    → _staged_to_knowledge_doc(): cast to Alarm/Setup/ExperienceDoc
         │    → validate_against_taxonomy()
         │    → embed [title_text, body_text] via DashScope (best-effort)
@@ -313,19 +327,23 @@ Dropping them upstream means a routed type that returns nothing is treated as a
 genuine no-entry, not surfaced as a low-confidence document for the reviewer to wade
 through.
 
-### Deduplication across overlapping chunks
+### Near-duplicate grouping across overlapping chunks
 
-`_deduplicate_entries()` collapses duplicates produced by the 1-page chunk overlap,
+`_group_duplicates()` handles the duplicates produced by the 1-page chunk overlap,
 with type-specific keys:
 
-| Type | Dedup key | Tie-break |
+| Type | Group key | Primary (stays checked) |
 |---|---|---|
-| ALARM | normalized `error_code` | higher `confidence` wins |
-| SETUP | normalized `station` + first 80 chars of `procedure` | higher `confidence` wins |
-| EXPERIENCE | normalized `problem` + first 80 chars of `failure_desc` | higher `confidence` wins |
+| ALARM | normalized `error_code` | highest `confidence` |
+| SETUP | normalized `station` + first 80 chars of `procedure` | highest `confidence` |
+| EXPERIENCE | normalized `problem` + first 80 chars of `failure_desc` | highest `confidence` |
 
-Entries with an empty key are **kept as-is** rather than collapsed together —
-borderline data is surfaced to the human reviewer instead of silently merged.
+Unlike a hard dedup, **every variant is kept** so the reviewer can compare versions
+and pick or edit the best one. Members of a multi-variant group share a
+`dup_group_id`; the highest-confidence member is `dup_primary` (and stays
+`accepted`), while the rest start unchecked. Entries with an empty key stand alone
+(`dup_group_id = None`). This replaced the old `_deduplicate_entries()`, which
+silently discarded all but the highest-confidence copy.
 
 ### Per-chunk multi-type routing
 
@@ -420,6 +438,67 @@ the binary-split path.
 
 ---
 
+## Conflict detection & cross-referencing (`services/cross_reference.py`) {#conflict-detection}
+
+File-byte dedup (below) only catches an *identical file* re-uploaded. The riskier
+case is a **document-level collision**: a staged doc whose content-addressed
+`doc_id` — `hash(knowledge_type | project | equipment | title | error_codes)`, the
+same id `commit` assigns — already exists in the KB. A plain commit would silently
+**overwrite** it. After segmentation (step [3.5], before the session goes READY)
+two best-effort enrichments run over `session.documents`:
+
+### `detect_collisions`
+
+`compute_staged_doc_id()` reuses the exact commit-time conversion
+(`_staged_to_knowledge_doc` → `doc_id`) so the "would overwrite" verdict matches the
+overwrite that would actually happen. Prospective ids are grouped by `kb_<type>`
+alias and looked up with one `mget` per type. On a hit, the staged doc gets a
+`collision: ExistingDocSnapshot` (the existing doc's identity + its stored
+`sections` as `fields`, for a field-level diff) and `collision_action` stays `None`
+— **commit is blocked** for that doc until resolved. Staged docs that share an
+identity with *each other* in the same batch collide with a sibling, not the KB, so
+they are folded into an exact-dup group (highest confidence primary, rest unchecked)
+rather than flagged as KB collisions.
+
+Resolution is recorded via `PATCH .../documents/{idx}/resolve`
+(`pipeline.resolve_collision`) with one of:
+
+| `action` | Commit behaviour |
+|---|---|
+| `keep` | Skip the staged doc — the existing KB doc is preserved (counted in `skipped`). |
+| `overwrite` | Index the staged doc as-is, replacing the existing one. |
+| `merge` | Apply `merged_fields` (a `DocumentUpdate` — content fields only; identity fields are excluded so the `doc_id` stays stable), then index. |
+
+The commit guard in `commit_session` reports any still-unresolved collision as an
+error (`"Unresolved conflict …"`) instead of indexing it, so a silent overwrite can
+never happen.
+
+### `find_related`
+
+For each staged doc, `find_related` attaches up to `cross_reference_max` related
+committed docs as `StagedDocument.related[]`, matched by shared `error_codes`,
+shared `equipment`, and — when `cross_reference_semantic` is on and an embedding key
+is configured — vector similarity on title+body (one batched embed for the whole
+session; BM25-only fallback otherwise). The staged doc's own prospective id and docs
+from the same source file are excluded. Each `RelatedDoc` carries a `match_reason`
+(`error_code` | `equipment` | `similar`) and a short `snippet` so the reviewer sees
+existing coverage before importing yet another copy.
+
+### Pre-commit summary
+
+`GET .../sessions/{id}/summary` (`pipeline.session_summary`) returns a `CommitSummary`
+of consequence counts — `new`, `overwrite`, `keep`, `unresolved_conflicts`,
+`dup_groups`, `missing_required`, `skipped_duplicate_files`, `rejected` — which the
+review UI renders as a banner and uses to gate the Commit button (disabled while any
+accepted doc has an unresolved conflict). All counts are computed from the live
+session; no ES writes.
+
+All of the above is best-effort: any ES/embedding failure is swallowed and the
+reviewer simply sees no badges. Toggle with `ingest.collision_detection_enabled` and
+`ingest.cross_reference_enabled` / `cross_reference_max` / `cross_reference_semantic`.
+
+---
+
 ## Session state and review
 
 ```python
@@ -452,6 +531,10 @@ under-review ones, bounding memory against abandoned previews.
 
 For each `StagedDocument` with `accepted=True`:
 
+0. **Collision guard** (see [Conflict detection](#conflict-detection)):
+   a doc with an unresolved `collision` is reported and **not** indexed; a `keep`
+   resolution is skipped (existing doc preserved); `overwrite`/`merge` fall through
+   to the steps below.
 1. `_staged_to_knowledge_doc` builds the correct subclass (`AlarmDoc` / `SetupDoc` /
    `ExperienceDoc`) from the staged fields. Missing required strings default to
    `"—"`; a missing setup title falls back to `f"{equipment} 调试"`.
@@ -545,6 +628,12 @@ vars — see [Configuration → Ingest](../configuration.md#ingest).
 - **Friendly feedback** — skipped chunks and commit errors carry an actionable
   `hint` rather than a raw stack trace.
 - **Best-effort embedding** — embedding errors during commit never abort indexing.
+- **No silent overwrites** — a staged doc whose `doc_id` already exists in the KB is
+  blocked from commit until the reviewer resolves it (keep / overwrite / merge).
+- **Variants are kept, not dropped** — near-duplicate segments are grouped for
+  side-by-side comparison instead of collapsed to the highest-confidence one.
+- **Cross-referenced** — each staged doc surfaces related committed docs (same code /
+  equipment / similar) so the reviewer sees existing coverage before importing.
 - **Dedupe by content hash** — the same bytes uploaded twice short-circuit unless
   `force=true`.
 - **Imports survive CSV re-seed** — the tracker's `committed_docs` cache is replayed

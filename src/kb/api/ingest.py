@@ -19,10 +19,12 @@ from kb.models.ingest import (
     AcceptAllRequest,
     AcceptReject,
     CommitResponse,
+    CommitSummary,
     DocumentUpdate,
     ImportSession,
     ImportStatus,
     RecommitTrackingResponse,
+    ResolveCollision,
     RetryRequest,
     ScanRequest,
     SessionListItem,
@@ -136,6 +138,19 @@ async def get_session(request: Request, session_id: str) -> SessionResponse:
     )
 
 
+@router.get("/sessions/{session_id}/summary", response_model=CommitSummary)
+async def session_summary(request: Request, session_id: str) -> CommitSummary:
+    """Pre-commit consequence preview: how many docs are new vs overwrite vs
+    kept, plus unresolved conflicts and missing fields. Drives the review banner
+    and the commit gate."""
+    pipeline = _pipeline(request)
+    _require_session(pipeline, session_id)
+    try:
+        return CommitSummary(**pipeline.session_summary(session_id))
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
 # ── Document editing ─────────────────────────────────────────────────────────
 
 @router.put("/sessions/{session_id}/documents/{doc_index}")
@@ -152,6 +167,29 @@ async def update_document(
         setattr(doc, field, value)
 
     return {"status": "updated"}
+
+
+@router.patch("/sessions/{session_id}/documents/{doc_index}/resolve")
+async def resolve_collision(
+    request: Request, session_id: str, doc_index: int, body: ResolveCollision,
+) -> dict[str, str]:
+    """Resolve a staged doc that collides with a committed KB doc.
+
+    ``keep`` preserves the existing doc (this one is skipped on commit),
+    ``overwrite`` replaces it as-is, ``merge`` replaces it with the merged
+    field values. Unblocks the doc for commit.
+    """
+    pipeline = _pipeline(request)
+    _require_session(pipeline, session_id)
+    try:
+        pipeline.resolve_collision(
+            session_id, doc_index, body.action, body.merged_fields,
+        )
+    except IndexError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {"status": "resolved", "action": body.action}
 
 
 @router.patch("/sessions/{session_id}/documents/{doc_index}")

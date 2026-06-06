@@ -107,4 +107,6 @@ flowchart TD
 - **禁止幻觉** —— 绝不向搜索响应添加 LLM 生成的文本。结果要么是原文文档，要么什么都没有。
 - **Taxonomy 约束** —— `project`/`equipment` 在入库时对照 `taxonomy.yaml` 校验。新值需要更新 taxonomy + 重新 seed。
 - **Banner 为强制契约** —— `loose_hit`/`vector_only` 携带必须展示的 banner，提示置信度降低。
-- **导入强制人工审核** —— 任何上传文件在人工接受暂存结果前都不会进入可检索索引。
+- **导入强制人工审核** —— 任何上传文件在人工接受暂存结果前都不会进入可检索索引。会覆盖已有
+  KB 文档的暂存文档在审阅者解决冲突（保留 / 覆盖 / 合并）前**被阻断提交** —— 见
+  [文件导入管道 → 冲突检测](import-pipeline.zh.md#conflict-detection)。

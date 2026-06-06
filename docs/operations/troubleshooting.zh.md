@@ -45,6 +45,7 @@
 | 某 PDF 文件以 扫描件/纯图片 错误结束（`ScannedPdfError`） | PDF 无文本层且 OCR 关闭 | 启用 OCR（`KB_INGEST__OCR_ENABLED=true` + `ocr` extra / `INSTALL_OCR=true` 镜像），或用 `force_ocr` 重试该文件：`POST …/files/{hash}/retry {"force_ocr":true}` |
 | 文件处理完成但界面显示 **"未提取到文档 / No documents extracted"**（0 条暂存文档） | 文本抽取正常，但切分未返回任何条目——通常是超预算的块被 LLM 截断，或全部条目落入被跳过的块 | 已在 `chunk_pages`（重叠现为预算受限，每块 ≤ `segmentation_chunk_chars`）与 `_split_oversized_page`（保留首个标题前的前导文本）中修复。查看该文件的 `skipped_chunks` 是否为 `no_entries`/`parse_failed`；调小 `KB_INGEST__SEGMENTATION_CHUNK_CHARS` 或设定知识类型提示后重新上传 |
 | 文件 `status: skipped_duplicate` | 其 SHA-256 哈希已提交过 | 刻意的去重；若确实要重导，上传/扫描时带 `force=true` |
+| 某暂存文档显示 **冲突** 徽章且提交被禁用 / 提交错误提示 *"Unresolved conflict"* | 该文档的身份（`doc_id` = 类型+项目+机台+标题+报警代码）在知识库中已存在，提交会覆盖它 | 打开 **比较并解决**，选择保留 / 覆盖 / 合并（`PATCH …/documents/{idx}/resolve`）。如需恢复旧的静默覆盖行为，设 `KB_INGEST__COLLISION_DETECTION_ENABLED=false` |
 | 文件 `status: unsupported` | 扩展名不在 `allowed_extensions` 中 | 加入 `KB_INGEST__ALLOWED_EXTENSIONS`（默认 pdf/xlsx/xls/csv/pptx/docx） |
 | 大文件被拒 | 超 `max_file_size_mb`（50），或 PDF 超 `pdf_max_pages`（2000）/ XLSX 超 `xlsx_max_cells`（200 万） | 调大上限，或拆分文件 —— 这些是抽取期防 OOM 的护栏 |
 | `GET /sessions/{id}` 返回 **410** | 会话已过期并被 TTL 清理器回收 | 重新上传；调 `KB_INGEST__SESSION_TTL_MINUTES` / `SESSION_HARD_TTL_MINUTES` |

@@ -272,8 +272,10 @@ source_file?, source_pages[], summary?, sections{} }`。`sections` 逐字保存�
 | `POST /api/v1/ingest/scan` | 扫描 `ingest.scan_root` 下的服务端文件夹 | `202` `UploadResponse` |
 | `GET /api/v1/ingest/sessions?limit=20` | 列出最近会话 | `200` `SessionListItem[]` |
 | `GET /api/v1/ingest/sessions/{id}` | 查看会话（轮询此接口） | `200` `SessionResponse` |
+| `GET /api/v1/ingest/sessions/{id}/summary` | 提交前的后果计数 | `200` `CommitSummary` |
 | `PUT /api/v1/ingest/sessions/{id}/documents/{idx}` | 编辑暂存文档（部分） | `200 {status:"updated"}` |
 | `PATCH /api/v1/ingest/sessions/{id}/documents/{idx}` | 接受/拒绝单条暂存文档 | `200 {status:"updated"}` |
+| `PATCH /api/v1/ingest/sessions/{id}/documents/{idx}/resolve` | 解决冲突（保留 / 覆盖 / 合并） | `200 {status:"resolved"}` |
 | `POST /api/v1/ingest/sessions/{id}/documents/accept-all` | 全部接受（可限定某类型） | `200 {accepted:N}` |
 | `POST /api/v1/ingest/sessions/{id}/files/{file_hash}/retry` | 重处理单个失败文件 | `202` `UploadResponse` |
 | `POST /api/v1/ingest/sessions/{id}/retry-failed` | 重处理**全部**失败文件 | `202` `UploadResponse` |
@@ -336,10 +338,24 @@ source_file?, source_pages[], summary?, sections{} }`。`sections` 逐字保存�
       "title": "真空泄漏报警", "error_codes": ["E-1234"],
       "content": "……", "resolution": "……", "notes": "",
       "source_file": "alarms.pptx", "source_pages": ["12"],
-      "raw_text_excerpt": "……", "confidence": 0.82, "warnings": [], "accepted": true }
+      "raw_text_excerpt": "……", "confidence": 0.82, "warnings": [], "accepted": true,
+      "collision": null, "collision_action": null, "related": [],
+      "dup_group_id": null, "dup_primary": true }
   ]
 }
 ```
+
+每条暂存文档还可能携带分段后新增的富化字段（见下文[冲突与交叉引用](#ingest-conflicts)）：
+
+- `collision` —— 当提交该文档**会覆盖**身份相同的已有 KB 文档时，设为一个
+  `ExistingDocSnapshot`，否则为 `null`。`collision_action`（`null` | `keep` | `overwrite`
+  | `merge`）是审阅者的决定 —— 当 `collision` 已设置且 `collision_action` 为 `null` 时，该文档
+  **被阻断提交**。
+- `related[]` —— 相关已提交文档（`RelatedDoc`：`doc_id`、`knowledge_type`、`title`、
+  `equipment`、`error_codes`、`match_reason` ∈ {`error_code`、`equipment`、`similar`}、
+  `snippet`）。
+- `dup_group_id` / `dup_primary` —— 批内近重复分组；变体共享 `dup_group_id`，仅
+  `dup_primary` 的那条默认 `accepted`。
 
 `ImportStatus` 取值：`pending` · `extracting` · `ready_for_review` · `committed` ·
 `failed`。`FileStatus` 取值：`processing` · `skipped_duplicate` · `unsupported` ·
@@ -371,9 +387,38 @@ source_file?, source_pages[], summary?, sections{} }`。`sections` 逐字保存�
 - `PUT …/documents/{idx}` —— 部分编辑。只发送你修改的字段（`project`、`equipment`、`title`、
   `error_codes`、各类型专有字段、`notes`、`accepted` 中任意几个）。`idx` 越界返回 `400`。
 - `PATCH …/documents/{idx}` —— `{ "accepted": true|false }`。
+- `PATCH …/documents/{idx}/resolve` —— 解决冲突（见下文）。
 - `POST …/documents/accept-all` —— 可选请求体 `{ "knowledge_type": "alarm" }` 以仅接受某类型；
   返回 `{ "accepted": N }`。
 - `POST …/commit` —— 索引每条已接受文档并在追踪索引中记录文件。
+
+### 冲突与交叉引用 {#ingest-conflicts}
+
+分段之后，每条暂存文档都会与线上 KB 比对。若某文档的内容寻址 `doc_id` 已存在，提交时会
+**覆盖**那条已提交文档，因此它会被标记（设置 `collision`）并**阻断提交**直到解决 —— 普通提交
+绝不会静默覆盖。用以下方式解决：
+
+```json
+// PATCH …/documents/{idx}/resolve
+{ "action": "merge",
+  "merged_fields": { "content": "…合并…", "resolution": "…" } }
+```
+
+| `action` | 对提交的影响 |
+|---|---|
+| `keep` | 跳过该文档 —— 保留现有 KB 文档（计入 `skipped`）。 |
+| `overwrite` | 原样索引该文档，替换现有文档。 |
+| `merge` | 应用 `merged_fields`（部分编辑 —— 仅内容字段；身份字段被排除，使 `doc_id` 保持稳定），再索引。 |
+
+`GET …/sessions/{id}/summary` 返回 `CommitSummary`，描述提交将做什么 —— 用它驱动审阅横幅并
+控制提交按钮：
+
+```json
+{ "new": 3, "overwrite": 1, "keep": 1, "unresolved_conflicts": 0,
+  "dup_groups": 1, "missing_required": 0, "skipped_duplicate_files": 2, "rejected": 1 }
+```
+
+存在未解决冲突的已接受文档（`unresolved_conflicts > 0`）会作为提交错误被报告且**不**索引。
 
 `CommitResponse`：
 

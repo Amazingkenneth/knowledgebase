@@ -14,8 +14,7 @@ from kb.services.extraction import (
     extract_file,
 )
 from kb.services.segmentation import (
-    _deduplicate_alarms_with_context,
-    _deduplicate_entries,
+    _group_duplicates,
     _parse_json_array,
     _split_oversized_page,
     chunk_pages,
@@ -175,64 +174,79 @@ class TestVerifyExtractionFidelity:
         assert verify_extraction_fidelity(field, raw)
 
 
-class TestDeduplicateAlarms:
-    def test_no_duplicates(self) -> None:
+class TestGroupDuplicateAlarms:
+    def test_no_duplicates_all_standalone(self) -> None:
         entries = [
             ({"error_code": "E1001", "confidence": 0.9}, "chunk1"),
             ({"error_code": "E1002", "confidence": 0.8}, "chunk2"),
         ]
-        result = _deduplicate_alarms_with_context(entries)
+        result = _group_duplicates(entries, KnowledgeType.ALARM, "f.pdf")
         assert len(result) == 2
+        # Distinct codes ⇒ no group, both primary.
+        assert all(gid is None and primary for _, _, gid, primary in result)
 
-    def test_keeps_higher_confidence(self) -> None:
+    def test_duplicates_grouped_not_dropped(self) -> None:
         entries = [
             ({"error_code": "E1001", "confidence": 0.7}, "chunk1"),
             ({"error_code": "E1001", "confidence": 0.95}, "chunk2"),
         ]
-        result = _deduplicate_alarms_with_context(entries)
-        assert len(result) == 1
-        assert result[0][0]["confidence"] == 0.95
+        result = _group_duplicates(entries, KnowledgeType.ALARM, "f.pdf")
+        # Both variants are kept (not deduped away)...
+        assert len(result) == 2
+        gids = {gid for _, _, gid, _ in result}
+        assert gids == {result[0][2]} and result[0][2] is not None  # one shared group
+        # ...with exactly one primary: the higher-confidence entry.
+        primaries = [e for e, _, _, primary in result if primary]
+        assert len(primaries) == 1
+        assert primaries[0]["confidence"] == 0.95
 
-    def test_handles_empty_codes(self) -> None:
+    def test_empty_codes_stand_alone(self) -> None:
         entries = [
             ({"error_code": "", "confidence": 0.5}, "chunk1"),
             ({"error_code": "", "confidence": 0.6}, "chunk2"),
         ]
-        result = _deduplicate_alarms_with_context(entries)
+        result = _group_duplicates(entries, KnowledgeType.ALARM, "f.pdf")
         assert len(result) == 2
+        assert all(gid is None and primary for _, _, gid, primary in result)
 
 
-class TestUniversalDedup:
-    def test_setup_dedups_by_station(self) -> None:
+class TestGroupDuplicates:
+    def test_setup_groups_by_station(self) -> None:
         entries = [
             ({"station": "Loader 1", "procedure": "Step A then B", "confidence": 0.7}, "c1"),
             ({"station": "Loader 1", "procedure": "Step A then B", "confidence": 0.9}, "c2"),
             ({"station": "Unloader", "procedure": "X", "confidence": 0.8}, "c3"),
         ]
-        result = _deduplicate_entries(entries, KnowledgeType.SETUP)
-        stations = sorted(e["station"] for e, _ in result)
-        assert stations == ["Loader 1", "Unloader"]
-        # Higher-confidence Loader 1 wins
-        loader = next(e for e, _ in result if e["station"] == "Loader 1")
-        assert loader["confidence"] == 0.9
+        result = _group_duplicates(entries, KnowledgeType.SETUP, "f.pdf")
+        # All three retained; the two Loader 1 variants share a group.
+        assert len(result) == 3
+        loader = [(e, gid, p) for e, _, gid, p in result if e["station"] == "Loader 1"]
+        assert len({gid for _, gid, _ in loader}) == 1 and loader[0][1] is not None
+        primary = [e for e, gid, p in loader if p]
+        assert len(primary) == 1 and primary[0]["confidence"] == 0.9
+        # The standalone Unloader is its own primary, ungrouped.
+        unloader = next((gid, p) for e, _, gid, p in result if e["station"] == "Unloader")
+        assert unloader == (None, True)
 
-    def test_experience_dedups_by_problem(self) -> None:
+    def test_experience_groups_by_problem(self) -> None:
         entries = [
             ({"problem": "P1", "failure_desc": "leak", "confidence": 0.6}, "c1"),
             ({"problem": "P1", "failure_desc": "leak", "confidence": 0.9}, "c2"),
         ]
-        result = _deduplicate_entries(entries, KnowledgeType.EXPERIENCE)
-        assert len(result) == 1
-        assert result[0][0]["confidence"] == 0.9
+        result = _group_duplicates(entries, KnowledgeType.EXPERIENCE, "f.pdf")
+        assert len(result) == 2
+        primaries = [e for e, _, _, p in result if p]
+        assert len(primaries) == 1 and primaries[0]["confidence"] == 0.9
 
-    def test_empty_keys_pass_through(self) -> None:
+    def test_empty_keys_stand_alone(self) -> None:
         entries = [
             ({"station": "", "procedure": "", "confidence": 0.5}, "c1"),
             ({"station": "", "procedure": "", "confidence": 0.6}, "c2"),
         ]
-        result = _deduplicate_entries(entries, KnowledgeType.SETUP)
-        # Both kept — empty-keyed entries are not collapsed into each other
+        result = _group_duplicates(entries, KnowledgeType.SETUP, "f.pdf")
+        # Empty-keyed entries are never collapsed into a group.
         assert len(result) == 2
+        assert all(gid is None and primary for _, _, gid, primary in result)
 
 
 class TestParseJsonArray:

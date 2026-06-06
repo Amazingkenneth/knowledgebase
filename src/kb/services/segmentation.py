@@ -759,16 +759,24 @@ async def segment_text(
 
     skipped.extend(parse_failures)
 
-    # Dedup per type, then assemble.
+    # Group near-duplicates per type (overlapping chunks re-emit the same item),
+    # then assemble. Unlike a hard dedup, every variant is kept so the reviewer
+    # can compare them; only the highest-confidence one in a group stays checked.
     docs: list[StagedDocument] = []
     idx = 0
     for kt, entries in parsed_by_type.items():
-        for entry, raw_chunk in _deduplicate_entries(entries, kt):
+        for entry, raw_chunk, group_id, is_primary in _group_duplicates(
+            entries, kt, file_name
+        ):
             doc = _parsed_to_staged(
                 idx, entry, kt, file_name,
                 project_hint, equipment_hint,
                 raw_chunk, normalized_full_raw,
             )
+            doc.dup_group_id = group_id
+            doc.dup_primary = is_primary
+            if group_id is not None and not is_primary:
+                doc.accepted = False
             docs.append(doc)
             idx += 1
 
@@ -1067,36 +1075,71 @@ async def _binary_split_recover(
     return out
 
 
-# ── Deduplication ────────────────────────────────────────────────────────────
+# ── Near-duplicate grouping ──────────────────────────────────────────────────
 
-def _deduplicate_entries(
-    entries: list[tuple[dict[str, Any], str]],
-    knowledge_type: KnowledgeType,
-) -> list[tuple[dict[str, Any], str]]:
-    """Dedupe entries duplicated across overlapping chunks.
+# One output row: (entry, chunk_text, group_id, is_primary). ``group_id`` is
+# None for a standalone item; set (and shared) when ≥2 variants of the same item
+# were emitted by overlapping chunks. ``is_primary`` marks the highest-confidence
+# variant in a group — the one that stays checked for commit.
+GroupedEntry = tuple[dict[str, Any], str, "str | None", bool]
 
-    Per-type key:
+
+def _dedup_key(entry: dict[str, Any], knowledge_type: KnowledgeType) -> str:
+    """Per-type near-duplicate key. Empty string ⇒ the entry stands alone.
+
       - ALARM:      normalized error_code
       - SETUP:      normalized station + first 80 chars of procedure
       - EXPERIENCE: normalized problem + first 80 chars of failure_desc
-
-    Same key with higher confidence wins. Entries with empty keys pass through
-    untouched (preserved as distinct items) — better to over-keep and let the
-    human reviewer reject than silently drop borderline data.
     """
     if knowledge_type == KnowledgeType.ALARM:
-        return _deduplicate_alarms_with_context(entries)
+        return str(entry.get("error_code", "") or "").strip().upper()
     if knowledge_type == KnowledgeType.SETUP:
-        return _dedupe_by_key(
-            entries,
-            lambda e: _norm_key(e.get("station", ""), e.get("procedure", "")),
-        )
+        return _norm_key(entry.get("station", ""), entry.get("procedure", ""))
     if knowledge_type == KnowledgeType.EXPERIENCE:
-        return _dedupe_by_key(
-            entries,
-            lambda e: _norm_key(e.get("problem", ""), e.get("failure_desc", "")),
-        )
-    return entries
+        return _norm_key(entry.get("problem", ""), entry.get("failure_desc", ""))
+    return ""
+
+
+def _group_duplicates(
+    entries: list[tuple[dict[str, Any], str]],
+    knowledge_type: KnowledgeType,
+    file_name: str,
+) -> list[GroupedEntry]:
+    """Group entries duplicated across overlapping chunks instead of dropping them.
+
+    Every variant is preserved so the reviewer can compare versions and pick or
+    edit the best one — better than the old behaviour, which silently discarded
+    all but the highest-confidence copy. Entries with an empty key stand alone.
+    The highest-confidence variant in a multi-member group is the primary (stays
+    checked); the rest are returned grouped and start unchecked at the caller.
+    """
+    keyed: dict[str, list[tuple[dict[str, Any], str]]] = {}
+    standalone: list[tuple[dict[str, Any], str]] = []
+    order: list[str] = []  # preserve first-seen key order for stable output
+    for entry, chunk_text in entries:
+        key = _dedup_key(entry, knowledge_type)
+        if not key:
+            standalone.append((entry, chunk_text))
+            continue
+        if key not in keyed:
+            keyed[key] = []
+            order.append(key)
+        keyed[key].append((entry, chunk_text))
+
+    out: list[GroupedEntry] = []
+    for n, key in enumerate(order):
+        members = keyed[key]
+        if len(members) == 1:
+            entry, chunk_text = members[0]
+            out.append((entry, chunk_text, None, True))
+            continue
+        group_id = f"{file_name}#{knowledge_type.value}#{n}"
+        best = max(range(len(members)), key=lambda i: members[i][0].get("confidence", 0))
+        for i, (entry, chunk_text) in enumerate(members):
+            out.append((entry, chunk_text, group_id, i == best))
+    for entry, chunk_text in standalone:
+        out.append((entry, chunk_text, None, True))
+    return out
 
 
 def _norm_key(*parts: str, length: int = 80) -> str:
@@ -1108,48 +1151,6 @@ def _norm_key(*parts: str, length: int = 80) -> str:
         collapsed = " ".join(str(p).split())
         pieces.append(collapsed[:length].lower())
     return "|".join(pieces)
-
-
-def _dedupe_by_key(
-    entries: list[tuple[dict[str, Any], str]],
-    key_fn: Callable[[dict[str, Any]], str],
-) -> list[tuple[dict[str, Any], str]]:
-    seen: dict[str, tuple[dict[str, Any], str]] = {}
-    extras: list[tuple[dict[str, Any], str]] = []
-    for entry, chunk_text in entries:
-        key = key_fn(entry)
-        if not key:
-            extras.append((entry, chunk_text))
-            continue
-        if key in seen:
-            existing_entry, _ = seen[key]
-            if entry.get("confidence", 0) > existing_entry.get("confidence", 0):
-                seen[key] = (entry, chunk_text)
-        else:
-            seen[key] = (entry, chunk_text)
-    return list(seen.values()) + extras
-
-
-def _deduplicate_alarms_with_context(
-    entries: list[tuple[dict[str, Any], str]],
-) -> list[tuple[dict[str, Any], str]]:
-    """Deduplicate alarm entries from overlapping chunks by error_code.
-
-    Keeps the higher-confidence entry when the same code appears more than once.
-    """
-    seen: dict[str, tuple[dict[str, Any], str]] = {}
-    for entry, chunk_text in entries:
-        code = entry.get("error_code", "").strip().upper()
-        if not code:
-            seen[f"_unknown_{len(seen)}"] = (entry, chunk_text)
-            continue
-        if code in seen:
-            existing_entry, _ = seen[code]
-            if entry.get("confidence", 0) > existing_entry.get("confidence", 0):
-                seen[code] = (entry, chunk_text)
-        else:
-            seen[code] = (entry, chunk_text)
-    return list(seen.values())
 
 
 # ── Staged-doc conversion ────────────────────────────────────────────────────

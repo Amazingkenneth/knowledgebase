@@ -51,6 +51,11 @@ ingest:
   session_ttl_minutes: 120
   # Evict any session (including in-flight/under-review) after this long.
   session_hard_ttl_minutes: 480
+  # Conflict detection + cross-referencing for the import review (see config.py).
+  collision_detection_enabled: true
+  cross_reference_enabled: true
+  cross_reference_max: 5
+  cross_reference_semantic: true
 
 llm:
   # api_url / api_key / model come from env (.env) — never commit secrets.

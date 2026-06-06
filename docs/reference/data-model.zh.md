@@ -449,15 +449,29 @@ doc_id = f"{doc.knowledge_type.value}:{h}"   # 例如 alarm:9f2c…（共 24 位
 `source_file`、`source_pages`、`raw_text_excerpt`、`confidence`(0–1)、`warnings`、
 `accepted`(默认 True)。
 
+分段后新增的富化字段（见
+[文件导入管道 → 冲突检测](../architecture/import-pipeline.md#conflict-detection)）：
+
+- `collision`：`ExistingDocSnapshot | None`——当提交该文档会覆盖 `doc_id` 相同的已有 KB
+  文档时设置。`collision_action`（`None`/`keep`/`overwrite`/`merge`）是审阅者的决定；当
+  `collision` 已设置且动作为 `None` 时，该文档**被阻断提交**。
+- `related`：`list[RelatedDoc]`——指向相关已提交文档的交叉引用。
+- `dup_group_id` / `dup_primary`：批内近重复分组（变体共享一组；仅主条目默认 `accepted`）。
+
 ### 其他模型
 
+- `ExistingDocSnapshot`：冲突的已提交文档身份——`doc_id`、`knowledge_type`、`project`、
+  `equipment`、`title`、`error_codes`、`fields`（存储的 `sections` 映射，用于字段级 diff）、
+  `source_file`、`source_pages`、`updated_at`
+- `RelatedDoc`：`doc_id`、`knowledge_type`、`title`、`equipment`、`error_codes`、
+  `source_file`、`match_reason`（`error_code`/`equipment`/`similar`）、`score`、`snippet`
 - `SkippedChunk`：`source_file`、`page_range`、`reason`(`non_content`/`no_entries`/`parse_failed`)、`hint`
 - `FileInfo`：文件级状态 + 分段进度（`chunks_total`/`chunks_done`——`chunks_done` 统计**已完成**的块/`skipped_chunks`），以及仅当 `status == skipped_duplicate` 时设置的可选 `duplicate_info`
 - `DuplicateInfo` / `DuplicateDocSummary`：KB 已为某个重复上传文件保存的内容——`imported_at`、`original_file_name`、总 `doc_count`，以及不超过 50 条的 `documents` 预览（`knowledge_type`、`title`、`error_codes`）。由现有 tracker 记录构建，无需额外读 ES
 - `ImportSession`：会话整体（`session_id`、`status`、`files`、`documents`、各 `*_hint`、`created_at`）
 - 请求/响应：`UploadResponse`、`ScanRequest`、`SessionResponse`、`SessionListItem`、
-  `DocumentUpdate`、`AcceptReject`、`AcceptAllRequest`、`RetryRequest`、`CommitResponse`、
-  `RecommitTrackingResponse`（字段细节见 [API 参考](../api-reference.md)）。
+  `DocumentUpdate`、`AcceptReject`、`ResolveCollision`、`AcceptAllRequest`、`RetryRequest`、
+  `CommitResponse`、`CommitSummary`、`RecommitTrackingResponse`（字段细节见 [API 参考](../api-reference.md)）。
 
 ---
 

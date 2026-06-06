@@ -174,6 +174,10 @@ KB_LLM__MODEL=gpt-4o-mini
 | `session_ttl_minutes` | `KB_INGEST__SESSION_TTL_MINUTES` | int | `120` | 10–1440 | 软 TTL：清理已 committed/failed 的会话 |
 | `session_hard_ttl_minutes` | `KB_INGEST__SESSION_HARD_TTL_MINUTES` | int | `480` | 10–10080 | 硬 TTL：清理任意会话（含审阅中），防内存泄漏 |
 | `session_evict_interval_minutes` | `KB_INGEST__SESSION_EVICT_INTERVAL_MINUTES` | int | `15` | 1–1440 | 后台清理器扫描间隔 |
+| `collision_detection_enabled` | `KB_INGEST__COLLISION_DETECTION_ENABLED` | bool | `True` | — | 标记（并拦截）会覆盖已提交文档的暂存文档 |
+| `cross_reference_enabled` | `KB_INGEST__CROSS_REFERENCE_ENABLED` | bool | `True` | — | 为每条暂存文档附加相关已提交文档 |
+| `cross_reference_max` | `KB_INGEST__CROSS_REFERENCE_MAX` | int | `5` | 1–50 | 每条暂存文档的相关文档上限 |
+| `cross_reference_semantic` | `KB_INGEST__CROSS_REFERENCE_SEMANTIC` | bool | `True` | — | 相关查找加入向量相似度（需 `KB_EMBEDDING__API_KEY`，否则回退 BM25） |
 
 !!! warning "OCR 依赖需单独安装"
     `ocr_enabled=true` 仅是开关；运行时还需安装 PaddleOCR（`ocr` extra，或镜像构建参数

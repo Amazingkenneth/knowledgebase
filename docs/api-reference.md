@@ -283,8 +283,10 @@ status is `ready_for_review`.
 | `POST /api/v1/ingest/scan` | Scan a server-side folder under `ingest.scan_root` | `202` `UploadResponse` |
 | `GET /api/v1/ingest/sessions?limit=20` | List recent sessions | `200` `SessionListItem[]` |
 | `GET /api/v1/ingest/sessions/{id}` | Inspect a session (poll this) | `200` `SessionResponse` |
+| `GET /api/v1/ingest/sessions/{id}/summary` | Pre-commit consequence counts | `200` `CommitSummary` |
 | `PUT /api/v1/ingest/sessions/{id}/documents/{idx}` | Edit a staged document (partial) | `200 {status:"updated"}` |
 | `PATCH /api/v1/ingest/sessions/{id}/documents/{idx}` | Accept / reject one staged doc | `200 {status:"updated"}` |
+| `PATCH /api/v1/ingest/sessions/{id}/documents/{idx}/resolve` | Resolve a collision (keep / overwrite / merge) | `200 {status:"resolved"}` |
 | `POST /api/v1/ingest/sessions/{id}/documents/accept-all` | Accept all (optionally one type) | `200 {accepted:N}` |
 | `POST /api/v1/ingest/sessions/{id}/files/{file_hash}/retry` | Re-process one failed file | `202` `UploadResponse` |
 | `POST /api/v1/ingest/sessions/{id}/retry-failed` | Re-process **all** failed files | `202` `UploadResponse` |
@@ -348,10 +350,26 @@ whose hash was already committed). `POST /scan` takes a JSON `ScanRequest`:
       "title": "真空泄漏报警", "error_codes": ["E-1234"],
       "content": "……", "resolution": "……", "notes": "",
       "source_file": "alarms.pptx", "source_pages": ["12"],
-      "raw_text_excerpt": "……", "confidence": 0.82, "warnings": [], "accepted": true }
+      "raw_text_excerpt": "……", "confidence": 0.82, "warnings": [], "accepted": true,
+      "collision": null, "collision_action": null, "related": [],
+      "dup_group_id": null, "dup_primary": true }
   ]
 }
 ```
+
+Each staged document may also carry enrichment fields added after segmentation
+(see [Conflicts & cross-references](#ingest-conflicts) below):
+
+- `collision` — set to an `ExistingDocSnapshot` when committing this doc **would
+  overwrite** an existing KB doc with the same identity; otherwise `null`.
+  `collision_action` (`null` | `keep` | `overwrite` | `merge`) is the reviewer's
+  decision — while `collision` is set and `collision_action` is `null`, the doc is
+  **blocked from commit**.
+- `related[]` — related committed docs (`RelatedDoc`: `doc_id`, `knowledge_type`,
+  `title`, `equipment`, `error_codes`, `match_reason` ∈ {`error_code`, `equipment`,
+  `similar`}, `snippet`).
+- `dup_group_id` / `dup_primary` — near-duplicate grouping within the batch; variants
+  share a `dup_group_id` and only the `dup_primary` one defaults to `accepted`.
 
 `ImportStatus` values: `pending` · `extracting` · `ready_for_review` · `committed` ·
 `failed`. `FileStatus` values: `processing` · `skipped_duplicate` · `unsupported` ·
@@ -391,9 +409,40 @@ the same bytes were imported under a different filename.
   `project`, `equipment`, `title`, `error_codes`, the type-specific fields, `notes`,
   `accepted`). `400` if `idx` is out of range.
 - `PATCH …/documents/{idx}` — `{ "accepted": true|false }`.
+- `PATCH …/documents/{idx}/resolve` — resolve a collision (see below).
 - `POST …/documents/accept-all` — body optional `{ "knowledge_type": "alarm" }` to accept
   only one type; returns `{ "accepted": N }`.
 - `POST …/commit` — indexes every accepted doc and records the file in the tracker.
+
+### Conflicts & cross-references {#ingest-conflicts}
+
+After segmentation, each staged doc is checked against the live KB. A doc whose
+content-addressed `doc_id` already exists would **overwrite** that committed doc on
+commit, so it is flagged (`collision` set) and **blocked from commit** until resolved
+— a plain commit can never silently overwrite. Resolve with:
+
+```json
+// PATCH …/documents/{idx}/resolve
+{ "action": "merge",
+  "merged_fields": { "content": "…merged…", "resolution": "…" } }
+```
+
+| `action` | Effect on commit |
+|---|---|
+| `keep` | Skip this doc — the existing KB doc is preserved (counts as `skipped`). |
+| `overwrite` | Index this doc as-is, replacing the existing one. |
+| `merge` | Apply `merged_fields` (a partial edit — content fields only; identity fields are excluded so the `doc_id` stays stable), then index. |
+
+`GET …/sessions/{id}/summary` returns a `CommitSummary` of what commit will do — use
+it to drive a review banner and gate the Commit button:
+
+```json
+{ "new": 3, "overwrite": 1, "keep": 1, "unresolved_conflicts": 0,
+  "dup_groups": 1, "missing_required": 0, "skipped_duplicate_files": 2, "rejected": 1 }
+```
+
+An accepted doc with an unresolved collision (`unresolved_conflicts > 0`) is reported
+as a commit error and **not** indexed.
 
 `CommitResponse`:
 

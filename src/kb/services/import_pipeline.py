@@ -36,6 +36,7 @@ from kb.models.ingest import (
 )
 from kb.models.taxonomy import KnowledgeType, Taxonomy
 from kb.observability import metrics
+from kb.services.cross_reference import detect_collisions, find_related
 from kb.services.embedding import EmbeddingClient, EmbeddingError
 from kb.services.extraction import ScannedPdfError, extract_file
 from kb.services.file_tracker import FileTracker, compute_bytes_hash
@@ -412,6 +413,7 @@ class ImportPipeline:
         )
         session.documents.extend(docs)
         session.documents.sort(key=lambda d: d.index)
+        await self._enrich(session)
         session.status = ImportStatus.READY
         session.message = ""
 
@@ -439,8 +441,88 @@ class ImportPipeline:
             doc_index += len(docs)
 
         session.documents = all_docs
+        await self._enrich(session)
         session.status = ImportStatus.READY
         session.message = ""
+
+    async def _enrich(self, session: ImportSession) -> None:
+        """Best-effort post-segmentation enrichment: flag KB collisions and
+        attach related docs. Failures never block the review — the reviewer just
+        sees no badges rather than a broken session."""
+        try:
+            await detect_collisions(self._es, self._settings, session.documents)
+            await find_related(self._es, self._settings, self._embedder, session.documents)
+        except Exception as exc:
+            log.warning("Import enrichment failed for session %s: %s",
+                        session.session_id, exc)
+
+    def resolve_collision(
+        self,
+        session_id: str,
+        doc_index: int,
+        action: str,
+        merged_fields: Any | None = None,
+    ) -> StagedDocument:
+        """Record the reviewer's decision for a colliding staged doc.
+
+        ``action`` is "keep" (skip on commit, existing KB doc preserved),
+        "overwrite" (replace as-is), or "merge" (replace using ``merged_fields``,
+        a DocumentUpdate already applied to the staged doc). Returns the updated
+        doc so the caller can echo it back.
+        """
+        session = self._sessions.get(session_id)
+        if session is None:
+            raise ValueError(f"Session not found: {session_id}")
+        if doc_index < 0 or doc_index >= len(session.documents):
+            raise IndexError("Document index out of range")
+        if action not in ("keep", "overwrite", "merge"):
+            raise ValueError(f"Invalid resolution action: {action!r}")
+        doc = session.documents[doc_index]
+        if action == "merge" and merged_fields is not None:
+            for field, value in merged_fields.model_dump(exclude_none=True).items():
+                setattr(doc, field, value)
+        doc.collision_action = action
+        return doc
+
+    def session_summary(self, session_id: str) -> dict[str, int]:
+        """Pre-commit consequence counts for the review banner (no ES writes)."""
+        session = self._sessions.get(session_id)
+        if session is None:
+            raise ValueError(f"Session not found: {session_id}")
+        new = overwrite = keep = unresolved = missing = rejected = 0
+        dup_groups: set[str] = set()
+        for d in session.documents:
+            if d.dup_group_id:
+                dup_groups.add(d.dup_group_id)
+            if not d.accepted:
+                rejected += 1
+                continue
+            if d.collision is not None:
+                if d.collision_action is None:
+                    unresolved += 1
+                    continue
+                if d.collision_action == "keep":
+                    keep += 1
+                    continue
+                overwrite += 1
+            else:
+                new += 1
+            # Only docs that will actually commit count toward missing-required.
+            if not d.project:
+                missing += 1
+        skipped_dup_files = sum(
+            1 for f in session.files if f.status == FileStatus.SKIPPED_DUPLICATE
+        )
+        return {
+            "new": new,
+            "overwrite": overwrite,
+            "keep": keep,
+            "unresolved_conflicts": unresolved,
+            "dup_groups": len(dup_groups),
+            "missing_required": missing,
+            "skipped_duplicate_files": skipped_dup_files,
+            "rejected": rejected,
+        }
 
     async def _process_one(
         self,
@@ -627,6 +709,27 @@ class ImportPipeline:
         # a bad doc surfaces a clear error rather than a half-committed batch.
         prepared: list[tuple[StagedDocument, KnowledgeDoc]] = []
         for staged in accepted:
+            # Collision guard: a doc that would overwrite an existing KB doc must
+            # be resolved first. Unresolved → reported, not committed; "keep" →
+            # skip so the existing doc is preserved; overwrite/merge fall through.
+            if staged.collision is not None:
+                if staged.collision_action is None:
+                    errors.append({
+                        "index": staged.index,
+                        "title": staged.title or "Untitled",
+                        "error": (
+                            "Unresolved conflict — this document would overwrite an "
+                            "existing one in the knowledge base."
+                        ),
+                        "hint": (
+                            "Open \"Compare & resolve\" and choose keep, overwrite, "
+                            "or merge before committing."
+                        ),
+                    })
+                    continue
+                if staged.collision_action == "keep":
+                    skipped += 1
+                    continue
             try:
                 doc = _staged_to_knowledge_doc(staged)
                 validate_against_taxonomy(doc, self._taxonomy)

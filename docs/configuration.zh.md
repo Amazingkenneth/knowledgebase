@@ -91,6 +91,10 @@ Schema 是 `src/kb/config.py` 中的 pydantic-settings `Settings` 类——所�
 | `session_ttl_minutes` | `120` | 软 TTL：回收 COMMITTED/FAILED 会话 |
 | `session_hard_ttl_minutes` | `480` | 硬 TTL：回收任意会话，约束内存 |
 | `session_evict_interval_minutes` | `15` | 后台清扫器周期 |
+| `collision_detection_enabled` | `true` | 拦截会覆盖知识库已有文档的暂存文档，须先解决冲突 |
+| `cross_reference_enabled` | `true` | 为每条暂存文档附加相关已提交文档 |
+| `cross_reference_max` | `5` | 每条暂存文档的相关文档上限 |
+| `cross_reference_semantic` | `true` | 相关查找加入向量相似度（无 key 时回退 BM25） |
 
 ### Observability（`observability`） {#observability}
 

@@ -4918,6 +4918,105 @@ function LibraryPage({ taxonomy, stats, density, onOpen }) {
 // --- Admin page: stats + taxonomy reload + add knowledge form
 // ── Import Page ─────────────────────────────────────────────────────────────
 
+// Content fields shown in the conflict compare/merge panel, per knowledge type.
+// `staged` is the StagedDocument field; `existing` is the key inside the
+// committed doc's stored `sections` object (experience stores body as "body").
+// Identity fields (title / project / equipment / error_codes) are intentionally
+// excluded — changing them would change the doc_id, so it would no longer be the
+// same document being overwritten.
+const MERGE_FIELDS = {
+  alarm: [
+    { staged: 'content',       existing: 'content',       label: '内容 Content' },
+    { staged: 'resolution',    existing: 'resolution',    label: '解除流程 Resolution' },
+    { staged: 'notes',         existing: 'notes',         label: '注意事项 Notes' },
+  ],
+  setup: [
+    { staged: 'prerequisites', existing: 'prerequisites', label: '规格/要求 Prerequisites' },
+    { staged: 'procedure',     existing: 'procedure',     label: '调试步骤 Procedure' },
+    { staged: 'notes',         existing: 'notes',         label: '注意事项 Notes' },
+  ],
+  experience: [
+    { staged: 'body_text',     existing: 'body',          label: '内容 Body' },
+    { staged: 'procedure',     existing: 'procedure',     label: '流程 Procedure' },
+    { staged: 'notes',         existing: 'notes',         label: '注意事项 Notes' },
+  ],
+};
+
+// Side-by-side conflict resolver. The staged doc would overwrite an existing KB
+// doc with the same identity; the reviewer compares each field and chooses to
+// keep the existing doc, overwrite it wholesale, or merge field-by-field.
+function CompareResolveModal({ doc, onResolve, onClose }) {
+  const fields = MERGE_FIELDS[doc.knowledge_type] || [];
+  const existing = (doc.collision && doc.collision.fields) || {};
+  // Merge buffer starts from the incoming (staged) values; per field the
+  // reviewer can pull in the existing value or hand-edit.
+  const [buf, setBuf] = React.useState(() => {
+    const o = {};
+    fields.forEach(f => { o[f.staged] = doc[f.staged] || ''; });
+    return o;
+  });
+  const setField = (k, v) => setBuf(b => ({ ...b, [k]: v }));
+  const col = { flex: 1, minWidth: 0 };
+  const pre = { whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '12px', background: 'var(--surface-2, var(--surface))', border: '1px solid var(--border)', borderRadius: 6, padding: '6px 8px', margin: 0, maxHeight: 160, overflow: 'auto' };
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', width: 'min(920px, 96vw)', maxHeight: '90vh', overflow: 'auto', padding: '18px 20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+          <span style={{ fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: 8, background: 'color-mix(in oklab, var(--danger) 15%, var(--surface))', color: 'var(--danger)' }}>冲突 · Conflict</span>
+          <h3 style={{ margin: 0, fontSize: '15px' }}>{doc.title || '(无标题)'}</h3>
+        </div>
+        <div style={{ fontSize: '12px', color: 'var(--ink-2)', marginBottom: 14 }}>
+          此文档与知识库中已有的一条记录标识相同，提交将覆盖它。请逐字段选择保留、覆盖或合并。
+          <span style={{ display: 'block', marginTop: 2, color: 'var(--muted)' }}>
+            This document has the same identity as an existing KB record — committing would overwrite it. Choose per field, then keep, overwrite, or save a merge.
+          </span>
+          {doc.collision && doc.collision.updated_at && (
+            <span style={{ display: 'block', marginTop: 4, color: 'var(--muted)' }}>
+              现有记录更新于 · existing last updated {new Date(doc.collision.updated_at).toLocaleString()}
+              {doc.collision.source_file ? ` · ${doc.collision.source_file}` : ''}
+            </span>
+          )}
+        </div>
+
+        {fields.map(f => {
+          const ex = existing[f.existing] || '';
+          const inc = doc[f.staged] || '';
+          const same = ex.trim() === inc.trim();
+          return (
+            <div key={f.staged} style={{ marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <label style={{ fontSize: '12px', fontWeight: 600 }}>{f.label}</label>
+                {same && <span style={{ fontSize: '10px', color: 'var(--muted)' }}>相同 · identical</span>}
+              </div>
+              <div style={{ display: 'flex', gap: 12, marginBottom: 6 }}>
+                <div style={col}>
+                  <div style={{ fontSize: '10px', color: 'var(--muted)', marginBottom: 2 }}>现有 · Existing</div>
+                  <pre style={pre}>{ex || '—'}</pre>
+                  <button className="btn btn-sm" style={{ marginTop: 4 }} onClick={() => setField(f.staged, ex)}>← 用现有 Use existing</button>
+                </div>
+                <div style={col}>
+                  <div style={{ fontSize: '10px', color: 'var(--muted)', marginBottom: 2 }}>新 · Incoming</div>
+                  <pre style={pre}>{inc || '—'}</pre>
+                  <button className="btn btn-sm" style={{ marginTop: 4 }} onClick={() => setField(f.staged, inc)}>用新值 Use incoming →</button>
+                </div>
+              </div>
+              <div style={{ fontSize: '10px', color: 'var(--muted)', marginBottom: 2 }}>合并结果 · Merged result (editable)</div>
+              <textarea rows={3} value={buf[f.staged]} onChange={e => setField(f.staged, e.target.value)} style={{ width: '100%' }} />
+            </div>
+          );
+        })}
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 8, position: 'sticky', bottom: 0, background: 'var(--surface)', paddingTop: 10 }}>
+          <button className="btn btn-sm" onClick={onClose}>取消 Cancel</button>
+          <button className="btn btn-sm" onClick={() => onResolve('keep')}>保留现有 Keep existing</button>
+          <button className="btn btn-sm" onClick={() => onResolve('overwrite')}>覆盖 Overwrite</button>
+          <button className="btn btn-sm btn-primary" onClick={() => onResolve('merge', buf)}>保存合并 Save merge</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ImportPage({ taxonomy, onStatsRefresh }) {
   const [phase, setPhase]           = React.useState('upload'); // upload | processing | preview | committing | result
   const [sessionId, setSessionId]   = React.useState(null);
@@ -4928,6 +5027,7 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
   const [elapsed, setElapsed]       = React.useState(0);
   const [expanded, setExpanded]     = React.useState({});
   const [dupExpanded, setDupExpanded] = React.useState({}); // duplicate cards, keyed by file_hash
+  const [resolveIdx, setResolveIdx] = React.useState(null); // doc.index being conflict-resolved
   const [commitResult, setCommitResult] = React.useState(null);
   const [commitProgress, setCommitProgress] = React.useState({ current: 0, total: 0, phase: 'syncing' });
   const [toast, setToast]           = React.useState(null);
@@ -5111,6 +5211,36 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
   const acceptHighConf = () => setDocuments(docs => docs.map(d => ({ ...d, accepted: d.confidence >= 0.8 })));
   const toggleExpand = (idx) => setExpanded(e => ({ ...e, [idx]: !e[idx] }));
 
+  // ── Resolve a collision (keep / overwrite / merge) ──
+  const resolveCollision = async (idx, action, mergedFields) => {
+    if (!sessionId) return;
+    try {
+      const resp = await fetch(`/api/v1/ingest/sessions/${sessionId}/documents/${idx}/resolve`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, merged_fields: mergedFields || null }),
+      });
+      if (!resp.ok) {
+        const e = await resp.json().catch(() => ({}));
+        throw new Error(e.detail || `Resolve failed: ${resp.status}`);
+      }
+      // Mirror the server decision locally so the commit-time PUT carries the
+      // merged values and the badge/gate update immediately.
+      setDocuments(docs => docs.map(d => d.index === idx ? {
+        ...d,
+        collision_action: action,
+        ...(action === 'merge' && mergedFields ? mergedFields : {}),
+      } : d));
+      setResolveIdx(null);
+      showToast(
+        action === 'keep' ? '已保留现有记录 · Kept existing'
+        : action === 'overwrite' ? '将覆盖现有记录 · Will overwrite'
+        : '已保存合并 · Merge saved');
+    } catch (err) {
+      showToast(err.message, 'err');
+    }
+  };
+
   // ── Retry one failed file in place (optionally forcing OCR) ──
   const retryFile = async (fileHash, forceOcr) => {
     if (!sessionId) return;
@@ -5247,6 +5377,13 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
   // only docs missing a project so the reviewer isn't badgered about docs
   // whose source genuinely doesn't name a piece of equipment.
   const docsWithEmptyRequired = documents.filter(d => d.accepted && !d.project);
+  // Conflict accounting drives the pre-commit banner and the commit gate.
+  const unresolvedConflicts = documents.filter(d => d.accepted && d.collision && !d.collision_action);
+  const overwriteCount = documents.filter(d => d.accepted && d.collision && (d.collision_action === 'overwrite' || d.collision_action === 'merge')).length;
+  const keepCount = documents.filter(d => d.accepted && d.collision && d.collision_action === 'keep').length;
+  const newCount = documents.filter(d => d.accepted && !d.collision).length;
+  const dupGroupCount = new Set(documents.filter(d => d.dup_group_id).map(d => d.dup_group_id)).size;
+  const resolveDoc = resolveIdx === null ? null : documents.find(d => d.index === resolveIdx);
   // Per-file outcome for the preview summary: how many docs each file produced,
   // plus the files that failed or were skipped so nothing silently disappears.
   const docsByFile = documents.reduce((m, d) => { m[d.source_file] = (m[d.source_file] || 0) + 1; return m; }, {});
@@ -5261,6 +5398,14 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
           <Icon name={toast.kind === 'err' ? 'info' : 'check'} size={14} />
           {toast.msg}
         </div>
+      )}
+
+      {resolveDoc && resolveDoc.collision && (
+        <CompareResolveModal
+          doc={resolveDoc}
+          onResolve={(action, merged) => resolveCollision(resolveDoc.index, action, merged)}
+          onClose={() => setResolveIdx(null)}
+        />
       )}
 
       <div className="import-inner">
@@ -5570,6 +5715,25 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
               </div>
             )}
 
+            {documents.length > 0 && (
+              <div style={{ padding: '8px 14px', borderRadius: 'var(--radius)', background: 'var(--surface-2, var(--surface))', border: '1px solid var(--border)', fontSize: '12px', color: 'var(--ink-2)', marginBottom: 12, display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+                <span><b style={{ color: 'var(--strict)' }}>{newCount}</b> 新增 new</span>
+                <span><b style={{ color: 'var(--loose)' }}>{overwriteCount}</b> 覆盖 overwrite</span>
+                <span><b>{keepCount}</b> 保留 keep</span>
+                {unresolvedConflicts.length > 0 && <span><b style={{ color: 'var(--danger)' }}>{unresolvedConflicts.length}</b> 待解决冲突 unresolved</span>}
+                {dupGroupCount > 0 && <span><b style={{ color: 'var(--accent)' }}>{dupGroupCount}</b> 变体组 variant group(s)</span>}
+              </div>
+            )}
+
+            {unresolvedConflicts.length > 0 && (
+              <div style={{ padding: '10px 14px', borderRadius: 'var(--radius)', background: 'color-mix(in oklab, var(--danger) 8%, var(--surface))', border: '1px solid color-mix(in oklab, var(--danger) 30%, var(--border))', fontSize: '12.5px', color: 'var(--danger)', marginBottom: 12 }}>
+                ⚠ {unresolvedConflicts.length} 条文档会覆盖知识库中已有记录，需先解决冲突才能提交。
+                <span style={{ display: 'block', marginTop: 2, color: 'var(--ink-2)' }}>
+                  {unresolvedConflicts.length} accepted document(s) would overwrite an existing KB record — resolve each conflict (Compare & resolve) before committing.
+                </span>
+              </div>
+            )}
+
             <div className="import-doc-cards">
               {documents.map(doc => {
                 const isExpanded = expanded[doc.index];
@@ -5592,6 +5756,24 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
                       {doc.accepted && missingFields.length > 0 && (
                         <span title={`Missing: ${missingFields.join(', ')}`} style={{ fontSize: '11px', padding: '1px 6px', borderRadius: 8, background: 'color-mix(in oklab, var(--loose) 15%, var(--surface))', color: 'var(--loose)', flexShrink: 0 }}>
                           ⚠ {missingFields.join(' · ')}
+                        </span>
+                      )}
+                      {doc.collision && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setResolveIdx(doc.index); }}
+                          title="此文档将覆盖知识库中已有记录 · would overwrite an existing KB doc"
+                          style={{ fontSize: '11px', padding: '1px 8px', borderRadius: 8, flexShrink: 0, cursor: 'pointer', border: '1px solid color-mix(in oklab, var(--danger) 35%, var(--border))',
+                            background: doc.collision_action ? 'color-mix(in oklab, var(--strict) 12%, var(--surface))' : 'color-mix(in oklab, var(--danger) 12%, var(--surface))',
+                            color: doc.collision_action ? 'var(--strict)' : 'var(--danger)' }}
+                        >
+                          {doc.collision_action
+                            ? (doc.collision_action === 'keep' ? '✓ 保留现有 Kept' : doc.collision_action === 'overwrite' ? '✓ 覆盖 Overwrite' : '✓ 合并 Merged')
+                            : '冲突 · Compare & resolve'}
+                        </button>
+                      )}
+                      {doc.dup_group_id && (
+                        <span title="同一项目的多个版本 · multiple variants of the same item" style={{ fontSize: '11px', padding: '1px 6px', borderRadius: 8, flexShrink: 0, background: 'color-mix(in oklab, var(--accent) 12%, var(--surface))', color: 'var(--accent)' }}>
+                          {doc.dup_primary ? '变体·主 Variant (primary)' : '变体 Variant'}
                         </span>
                       )}
                       <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
@@ -5682,6 +5864,30 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
                           </div>
                         )}
 
+                        {doc.related?.length > 0 && (
+                          <details className="import-doc-raw">
+                            <summary>相关条目 · Related ({doc.related.length})</summary>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
+                              {doc.related.map((r, i) => {
+                                const rt = r.knowledge_type === 'alarm' ? '报警' : r.knowledge_type === 'setup' ? '调试' : '经验';
+                                const reason = r.match_reason === 'error_code' ? '同代码 same code' : r.match_reason === 'equipment' ? '同机台 same equipment' : '相似 similar';
+                                return (
+                                  <div key={i} style={{ fontSize: '12px', borderLeft: '2px solid var(--border)', paddingLeft: 8 }}>
+                                    <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                                      <span style={{ fontSize: '10px', color: 'var(--muted)' }}>[{rt}]</span>
+                                      <span style={{ fontWeight: 500 }}>{r.title || '(无标题)'}</span>
+                                      {r.error_codes?.length > 0 && <span className="mono" style={{ color: 'var(--loose)' }}>{r.error_codes.join(', ')}</span>}
+                                      <span style={{ fontSize: '10px', padding: '0 6px', borderRadius: 8, background: 'color-mix(in oklab, var(--accent) 12%, var(--surface))', color: 'var(--accent)' }}>{reason}</span>
+                                      {r.source_file && <span style={{ fontSize: '10px', color: 'var(--muted)' }}>· {r.source_file}</span>}
+                                    </div>
+                                    {r.snippet && <div style={{ color: 'var(--ink-2)', marginTop: 2 }}>{r.snippet}</div>}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </details>
+                        )}
+
                         {doc.raw_text_excerpt && (
                           <details className="import-doc-raw">
                             <summary>原始文本 Raw Text</summary>
@@ -5705,12 +5911,18 @@ function ImportPage({ taxonomy, onStatsRefresh }) {
                     ⚠ {docsWithEmptyRequired.length} 条缺少项目，提交将部分失败 · {docsWithEmptyRequired.length} missing project — will error on commit
                   </div>
                 )}
+                {unresolvedConflicts.length > 0 && (
+                  <div style={{ fontSize: '11.5px', color: 'var(--danger)' }}>
+                    ⚠ {unresolvedConflicts.length} 条冲突待解决，无法提交 · {unresolvedConflicts.length} unresolved conflict(s) — resolve before commit
+                  </div>
+                )}
               </div>
               <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
                 <button className="btn btn-sm" onClick={() => { setPhase('upload'); setDocuments([]); setSessionId(null); }}>
                   返回 Back
                 </button>
-                <button className="btn btn-primary" onClick={handleCommit} disabled={acceptedCount === 0 || loading}>
+                <button className="btn btn-primary" onClick={handleCommit} disabled={acceptedCount === 0 || loading || unresolvedConflicts.length > 0}
+                  title={unresolvedConflicts.length > 0 ? '请先解决冲突 · resolve conflicts first' : ''}>
                   提交 {acceptedCount} 条 · Commit
                 </button>
               </div>

@@ -116,6 +116,18 @@ class IngestConfig(BaseModel):
     # How often the background sweeper reclaims expired sessions, so an idle
     # server (no new uploads to trigger eviction) doesn't pin abandoned ones.
     session_evict_interval_minutes: int = Field(default=15, ge=1, le=1440)
+    # Detect when a staged doc would overwrite an existing committed KB doc and
+    # block its commit until the reviewer resolves the conflict. Disable to fall
+    # back to the old silent-overwrite behaviour.
+    collision_detection_enabled: bool = True
+    # Attach related committed KB docs (same error code / equipment / similar)
+    # to each staged doc so the reviewer sees existing coverage before importing.
+    cross_reference_enabled: bool = True
+    # Max related docs surfaced per staged doc.
+    cross_reference_max: int = Field(default=5, ge=1, le=50)
+    # Add embedding-based semantic similarity to the related-docs lookup. Needs
+    # KB_EMBEDDING__API_KEY; falls back to BM25-only when unset or unreachable.
+    cross_reference_semantic: bool = True
 
 
 class Settings(BaseSettings):

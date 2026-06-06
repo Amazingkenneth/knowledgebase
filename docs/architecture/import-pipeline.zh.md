@@ -9,6 +9,8 @@
 - `GET  /api/v1/ingest/sessions[/{id}]` — 列出 / 查询会话
 - `PUT  /api/v1/ingest/sessions/{id}/documents/{idx}` — 编辑暂存文档
 - `PATCH /api/v1/ingest/sessions/{id}/documents/{idx}` — 接受 / 拒绝
+- `PATCH /api/v1/ingest/sessions/{id}/documents/{idx}/resolve` — 解决冲突（保留 / 覆盖 / 合并）
+- `GET  /api/v1/ingest/sessions/{id}/summary` — 提交前的后果计数
 - `POST /api/v1/ingest/sessions/{id}/commit` — 将已接受文档写入 ES
 
 编排逻辑位于 `src/kb/services/import_pipeline.py`。
@@ -53,7 +55,7 @@
         │  每次按类型的调用都带"忽略其他类型内容"以及"无条目则返回 []、
         │    禁止输出空字段占位条目"的规则
         │  超长单页按结构（标题/段落/换行）继续细分
-        │  相邻块保留 1 页重叠；按知识类型在切分后做去重
+        │  相邻块保留 1 页重叠；按知识类型对近重复条目分组（保留而非丢弃）
         │  JSON 解析失败时：抢救最长合法前缀 → 对象扫描 →
         │                   触发修复重试 → 按页二分递归（递归下限：1 页）
         │  条目校验：丢弃必填字段为空或 confidence < 0.3 的条目（路由误判防护）
@@ -62,13 +64,24 @@
         │  on_chunk_progress 上报*已完成*的块数（n/total → "Finalizing…"）
         │
         ▼
+[3.5] 富化（services/cross_reference.py，尽力而为）
+        │  detect_collisions(): 用每条暂存文档的预期 doc_id 对线上 kb_<type>
+        │      索引做 mget。命中 ⇒ 提交将覆盖一条已提交文档 → 附加
+        │      ExistingDocSnapshot，并令 collision_action = None（阻断提交）。
+        │      同批内身份相同的暂存文档改为折叠成一个精确重复组。
+        │  find_related(): 附加相关已提交文档（同 error_code / 机台 /
+        │      向量或 BM25 相似度）到 StagedDocument.related[]
+        │
+        ▼
 [4] 会话进入 READY 状态
         │  ImportSession.documents 已填充；status = ready_for_review
         │
-        ▼ （客户端审阅 / 编辑 / 接受拒绝）
+        ▼ （客户端审阅 / 编辑 / 接受拒绝 / 解决冲突）
         │
 [5] POST /commit
         │  对每个 accepted=True 的 StagedDocument：
+        │    → 冲突拦截：未解决冲突 → 报告但不写入；"keep" → 跳过（保留现有）；
+        │         overwrite/merge → 正常写入
         │    → _staged_to_knowledge_doc(): 转为 Alarm/Setup/ExperienceDoc
         │    → validate_against_taxonomy()
         │    → 通过 DashScope embed [title_text, body_text]（尽力而为）
@@ -194,17 +207,20 @@ LLM 的网络/HTTP 异常同样会触发二分恢复。注意：**能解析成�
 
 这是对**路由误判**失败形态的首要防护：当分类器把某块错误展开到它实际不含的类型时，按类型抽取器被要求抽取并不存在的条目，LLM 往往会输出字段全空、`confidence: 0.0` 的占位 dict。在上游丢弃它们，意味着某个被路由的类型若无产出，会被视作真正的无条目，而不会作为低置信度文档堆给审阅者。
 
-### 跨块去重
+### 跨块近重复分组
 
-`_deduplicate_entries()` 折叠由 1 页重叠产生的重复条目，按知识类型使用不同 key：
+`_group_duplicates()` 处理由 1 页重叠产生的重复条目，按知识类型使用不同 key：
 
-| 类型 | 去重 key | 冲突保留规则 |
+| 类型 | 分组 key | 主条目（保持勾选） |
 |---|---|---|
-| ALARM | 归一化的 `error_code` | `confidence` 较高者胜 |
-| SETUP | 归一化的 `station` + `procedure` 前 80 字符 | `confidence` 较高者胜 |
-| EXPERIENCE | 归一化的 `problem` + `failure_desc` 前 80 字符 | `confidence` 较高者胜 |
+| ALARM | 归一化的 `error_code` | `confidence` 最高者 |
+| SETUP | 归一化的 `station` + `procedure` 前 80 字符 | `confidence` 最高者 |
+| EXPERIENCE | 归一化的 `problem` + `failure_desc` 前 80 字符 | `confidence` 最高者 |
 
-key 为空的条目**原样保留**，不会被相互折叠——边界条目交给人工复核，胜过被静默合并。
+与硬去重不同，**所有变体都保留**，以便审阅者比较各版本并选出或编辑最佳者。多变体组的
+成员共享 `dup_group_id`，置信度最高者为 `dup_primary`（保持 `accepted`），其余默认不勾选。
+key 为空的条目独立存在（`dup_group_id = None`）。这取代了旧的 `_deduplicate_entries()`——
+后者会静默丢弃除最高置信度副本以外的全部条目。
 
 ### 按块多类型路由
 
@@ -250,6 +266,55 @@ key 为空的条目**原样保留**，不会被相互折叠——边界条目交
 
 ---
 
+## 冲突检测与交叉引用（`services/cross_reference.py`） {#conflict-detection}
+
+文件字节去重（见下文）只能拦截*同一文件*被重复上传。更危险的是**文档级冲突**：某条暂存
+文档的内容寻址 `doc_id`——`hash(knowledge_type | project | equipment | title | error_codes)`，
+与 `commit` 所用的 id 完全一致——在知识库中已存在。直接提交会**静默覆盖**它。分段之后
+（步骤 [3.5]，会话进入 READY 之前）对 `session.documents` 运行两项尽力而为的富化。
+
+### `detect_collisions`
+
+`compute_staged_doc_id()` 复用提交时的同一转换（`_staged_to_knowledge_doc` → `doc_id`），
+因此"将覆盖"的判定与真正会发生的覆盖一致。预期 id 按 `kb_<type>` 别名分组，每类一次
+`mget`。命中时，暂存文档获得 `collision: ExistingDocSnapshot`（现有文档的身份及其存储的
+`sections` 作为 `fields`，供字段级 diff），`collision_action` 保持 `None`——该文档的提交被
+**阻断**直到解决。同批内彼此身份相同的暂存文档是与同伴而非知识库冲突，因此被折叠成一个
+精确重复组（最高置信度为主，其余不勾选），而不标记为知识库冲突。
+
+通过 `PATCH .../documents/{idx}/resolve`（`pipeline.resolve_collision`）记录决定：
+
+| `action` | 提交行为 |
+|---|---|
+| `keep` | 跳过该暂存文档——保留现有知识库文档（计入 `skipped`）。 |
+| `overwrite` | 原样写入暂存文档，替换现有文档。 |
+| `merge` | 应用 `merged_fields`（一个 `DocumentUpdate`——仅内容字段；身份字段被排除，使 `doc_id` 保持稳定），再写入。 |
+
+`commit_session` 中的冲突拦截会把仍未解决的冲突作为错误（`"Unresolved conflict …"`）报告
+而非写入，从而杜绝静默覆盖。
+
+### `find_related`
+
+对每条暂存文档，`find_related` 附加至多 `cross_reference_max` 条相关已提交文档到
+`StagedDocument.related[]`，按共享 `error_codes`、共享 `equipment`，以及——当
+`cross_reference_semantic` 开启且配置了嵌入 key 时——title+body 的向量相似度匹配（整个会话
+一次批量嵌入；否则回退 BM25）。会排除暂存文档自身的预期 id 及来自同一源文件的文档。每条
+`RelatedDoc` 带 `match_reason`（`error_code` | `equipment` | `similar`）与简短 `snippet`，让
+审阅者在再导入一份副本前看到已有覆盖。
+
+### 提交前汇总
+
+`GET .../sessions/{id}/summary`（`pipeline.session_summary`）返回 `CommitSummary` 后果计数
+——`new`、`overwrite`、`keep`、`unresolved_conflicts`、`dup_groups`、`missing_required`、
+`skipped_duplicate_files`、`rejected`——审阅 UI 据此渲染横幅并控制提交按钮（当任一已接受文档
+存在未解决冲突时禁用）。全部由线上会话计算，不写 ES。
+
+以上均为尽力而为：任何 ES/嵌入失败都会被吞掉，审阅者只是看不到徽章。可通过
+`ingest.collision_detection_enabled` 与 `ingest.cross_reference_enabled` /
+`cross_reference_max` / `cross_reference_semantic` 开关。
+
+---
+
 ## 会话状态与审核
 
 ```python
@@ -273,6 +338,7 @@ class ImportSession:
 
 对每个 `accepted=True` 的 `StagedDocument`：
 
+0. **冲突拦截**（见[冲突检测](#conflict-detection)）：存在未解决 `collision` 的文档会被报告且**不**写入；`keep` 决定被跳过（保留现有文档）；`overwrite`/`merge` 继续走下面的步骤。
 1. `_staged_to_knowledge_doc` 根据类型构建子类（`AlarmDoc` / `SetupDoc` / `ExperienceDoc`）。缺失的必填字符串回退为 `"—"`；setup 缺少标题时回退为 `f"{equipment} 调试"`。
 2. `validate_against_taxonomy` 拒绝未知的 `project` / `equipment`——这些会被聚合到 `errors` 列表。
 3. `EmbeddingClient.embed([title_text, body_text])` 采用**尽力而为**策略：任何失败都仅记 warning，文档以 `null` 向量入库（BM25 仍可用，向量重排会静默忽略）。
@@ -320,6 +386,9 @@ Tracker 记录的生命周期状态：
 - **项目/机台绝不阻塞提交**：值在源文提及时原文取用，否则从文件名推断，再否则默认为 `所有项目`。机台为可选。
 - **友好反馈**：被跳过的块与提交错误均附带可操作的 `hint`。
 - **Embedding 尽力而为**：commit 时 embedding 失败不会中断写入。
+- **绝不静默覆盖**：`doc_id` 已存在于知识库的暂存文档，在审阅者解决（保留 / 覆盖 / 合并）前被阻断提交。
+- **保留变体而非丢弃**：近重复片段被分组以供并排比较，而不是塌缩为最高置信度的一条。
+- **交叉引用**：每条暂存文档会呈现相关已提交文档（同代码 / 机台 / 相似），让审阅者在导入前看到已有覆盖。
 - **按内容哈希去重**：相同字节二次上传直接短路，除非显式 `force=true`。
 - **导入数据可在 CSV 重 seed 后存活**：tracker 的 `committed_docs` 缓存在启动重 seed 后被回放。
 - **会话仅在内存**：服务重启会丢失尚未 commit 的会话。

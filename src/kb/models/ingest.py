@@ -76,6 +76,42 @@ class FileInfo(BaseModel):
     duplicate_info: DuplicateInfo | None = None
 
 
+class ExistingDocSnapshot(BaseModel):
+    """The committed KB document a staged document would overwrite on commit.
+
+    Populated when a staged doc's content-addressed ``doc_id`` already exists in
+    the live ``kb_<type>`` index. ``fields`` mirrors the stored ES ``sections``
+    object (content/resolution/procedure/…) so the UI can render a field-level
+    diff and merge without re-extracting anything.
+    """
+    doc_id: str
+    knowledge_type: str = ""
+    project: str = ""
+    equipment: str = ""
+    title: str = ""
+    error_codes: list[str] = Field(default_factory=list)
+    fields: dict[str, str] = Field(default_factory=dict)
+    source_file: str | None = None
+    source_pages: list[str] = Field(default_factory=list)
+    updated_at: str | None = None
+
+
+class RelatedDoc(BaseModel):
+    """A committed KB document related to a staged one — cross-reference shown
+    next to the staged doc so the reviewer sees existing coverage of the same
+    error/equipment/topic before importing yet another copy."""
+    doc_id: str
+    knowledge_type: str = ""
+    title: str = ""
+    equipment: str = ""
+    error_codes: list[str] = Field(default_factory=list)
+    source_file: str | None = None
+    # Why this doc surfaced: "error_code" | "equipment" | "similar".
+    match_reason: str = ""
+    score: float = 0.0
+    snippet: str = ""
+
+
 class StagedDocument(BaseModel):
     """A document extracted from a file, pending review before commit."""
     index: int
@@ -100,6 +136,19 @@ class StagedDocument(BaseModel):
     confidence: float = 0.0
     warnings: list[str] = Field(default_factory=list)
     accepted: bool = True
+    # Set when committing this doc would overwrite an existing KB doc. While
+    # ``collision`` is set and ``collision_action`` is None the doc is blocked
+    # from commit — the reviewer must compare & resolve first.
+    collision: ExistingDocSnapshot | None = None
+    collision_action: str | None = None  # None | "keep" | "overwrite" | "merge"
+    # Committed KB docs related by error_code / equipment / similarity.
+    related: list[RelatedDoc] = Field(default_factory=list)
+    # Near-duplicate grouping within a single import. Docs sharing a group are
+    # variants of the same item; ``dup_primary`` marks the auto-selected best
+    # (the others default to accepted=False so only one lands unless the
+    # reviewer says otherwise).
+    dup_group_id: str | None = None
+    dup_primary: bool = True
 
 
 class ImportSession(BaseModel):
@@ -166,6 +215,33 @@ class DocumentUpdate(BaseModel):
 
 class AcceptReject(BaseModel):
     accepted: bool
+
+
+class ResolveCollision(BaseModel):
+    """Resolve a staged doc that collides with a committed KB doc.
+
+    ``action``:
+      - "keep"      — keep the existing KB doc; skip this staged doc on commit.
+      - "overwrite" — replace the KB doc with this staged doc as-is.
+      - "merge"     — replace using ``merged_fields`` (field-level merge result).
+    ``merged_fields`` is applied to the staged doc before commit (same field set
+    as DocumentUpdate); only used for "merge".
+    """
+    action: str
+    merged_fields: DocumentUpdate | None = None
+
+
+class CommitSummary(BaseModel):
+    """Pre-commit consequence preview so the reviewer sees every outcome before
+    clicking Commit. Computed from the live session — no ES writes."""
+    new: int = 0                  # accepted docs that create a brand-new KB doc
+    overwrite: int = 0            # accepted docs resolved to overwrite/merge
+    keep: int = 0                 # collisions resolved to keep existing (skipped)
+    unresolved_conflicts: int = 0  # accepted docs with an unresolved collision
+    dup_groups: int = 0           # near-duplicate comparison groups
+    missing_required: int = 0     # accepted docs missing project/equipment
+    skipped_duplicate_files: int = 0  # files skipped as exact-byte duplicates
+    rejected: int = 0             # staged docs the reviewer unchecked
 
 
 class AcceptAllRequest(BaseModel):

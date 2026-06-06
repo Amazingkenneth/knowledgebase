@@ -98,6 +98,10 @@ See [Search & Ranking](architecture/search-ranking.md) for what each knob does.
 | `session_ttl_minutes` | `120` | Soft TTL: evict COMMITTED/FAILED sessions |
 | `session_hard_ttl_minutes` | `480` | Hard TTL: evict any session, bounding memory |
 | `session_evict_interval_minutes` | `15` | Background sweeper cadence |
+| `collision_detection_enabled` | `true` | Block staged docs that would overwrite a committed KB doc until resolved |
+| `cross_reference_enabled` | `true` | Attach related committed docs to each staged doc |
+| `cross_reference_max` | `5` | Max related docs per staged doc |
+| `cross_reference_semantic` | `true` | Add embedding similarity to related lookup (BM25 fallback) |
 
 ### Observability (`observability`) {#observability}
 
